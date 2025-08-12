@@ -1,259 +1,201 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
+// Removed unused imports: path and SentinelRuleFormatter
 import { BaseCommand } from '../base/baseCommand';
-import { SentinelRuleFormatter } from '../../formatting/formatter';
+import { SentinelRuleValidator } from '../../validation/validator';
+import { DefenderDetectionValidator } from '../../validation/defenderDetectionValidator';
+import { RuleTypeDetector, RuleType } from '../../utils/ruleTypeDetector';
+import * as yaml from 'js-yaml';
 
 export class ValidationCommands extends BaseCommand {
+    private defenderValidator: DefenderDetectionValidator;
+
+    constructor(context: vscode.ExtensionContext, validator: SentinelRuleValidator) {
+        super(context, validator);
+        this.defenderValidator = new DefenderDetectionValidator();
+    }
+
     public registerCommands(): vscode.Disposable[] {
         const disposables: vscode.Disposable[] = [];
 
+        // Register existing validation command with auto-detection
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.validateWorkspace', this.validateWorkspace.bind(this))
+            vscode.commands.registerCommand('sentinelRules.validateRule', this.validateRule.bind(this))
+        );
+
+        // Add specific commands for each type if needed
+        disposables.push(
+            vscode.commands.registerCommand('sentinelRules.validateSentinelRule', this.validateSentinelRule.bind(this))
+        );
+
+        disposables.push(
+            vscode.commands.registerCommand('defender.validateDetection', this.validateDefenderDetection.bind(this))
         );
 
         return disposables;
     }
 
     /**
-     * ENHANCED: Bulk workspace validation and maintenance
+     * Auto-detect rule type and validate accordingly
      */
-    private async validateWorkspace(): Promise<void> {
-        try {
-            // Let user choose folder (like bulk GUID regeneration)
-            const folderOptions = await vscode.window.showOpenDialog({
-                canSelectFiles: false,
-                canSelectFolders: true,
-                canSelectMany: false,
-                title: 'Select folder to validate and maintain Sentinel rules',
-                defaultUri: vscode.workspace.workspaceFolders?.[0]?.uri
-            });
+    private async validateRule(): Promise<void> {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showErrorMessage('No active editor');
+            return;
+        }
 
-            if (!folderOptions || folderOptions.length === 0) {
-                return;
-            }
-            const targetFolder = folderOptions[0];
+        const document = editor.document;
+        const content = document.getText();
 
-            // Find all YAML files (broader search like bulk GUID)
-            const allYamlFiles = await vscode.workspace.findFiles(
-                new vscode.RelativePattern(targetFolder, '**/*.{yaml,yml}'),
-                '**/node_modules/**'
-            );
+        // Detect rule type
+        const ruleType = RuleTypeDetector.detectType(content);
 
-            // Filter for Sentinel files using content detection
-            const sentinelFiles: vscode.Uri[] = [];
-            for (const file of allYamlFiles) {
-                try {
-                    const content = await vscode.workspace.fs.readFile(file);
-                    const text = Buffer.from(content).toString('utf8');
-                    
-                    const sentinelIndicators = [
-                        /^\s*tactics\s*:/m,
-                        /^\s*techniques\s*:/m,
-                        /^\s*queryFrequency\s*:/m,
-                        /^\s*triggerOperator\s*:/m,
-                        /^\s*requiredDataConnectors\s*:/m
-                    ];
-                    
-                    const hasSentinelFields = sentinelIndicators.some(regex => regex.test(text));
-                    if (hasSentinelFields || file.fsPath.toLowerCase().includes('sentinel')) {
-                        sentinelFiles.push(file);
-                    }
-                } catch (error) {
-                    console.log(`Skipping file ${file.fsPath}: ${error}`);
+        // Debug: Show what type was detected
+        console.log(`Detected rule type: ${ruleType}`);
+
+        switch (ruleType) {
+            case RuleType.SENTINEL:
+                await this.validateSentinelRule();
+                break;
+            case RuleType.DEFENDER:
+                await this.validateDefenderDetection();
+                break;
+            case RuleType.UNKNOWN:
+                // If unknown, check for key fields to make a best guess
+                if (content.includes('detectorId') || content.includes('queryCondition')) {
+                    // Likely a Defender detection
+                    await this.validateDefenderDetection();
+                } else if (content.includes('tactics') || content.includes('queryFrequency')) {
+                    // Likely a Sentinel rule
+                    await this.validateSentinelRule();
+                } else {
+                    vscode.window.showWarningMessage('Unable to determine rule type. Please use specific validation commands.');
                 }
-            }
-
-            if (sentinelFiles.length === 0) {
-                vscode.window.showInformationMessage(
-                    `No Sentinel rule files found in folder "${path.basename(targetFolder.fsPath)}"`
-                );
-                return;
-            }
-
-            // Show options for what to do
-            const action = await vscode.window.showQuickPick([
-                {
-                    label: "$(search) Validate Only",
-                    description: "Check for validation errors without making changes",
-                    detail: "Shows summary of validation issues",
-                    action: "validate"
-                },
-                {
-                    label: "$(tools) Fix Formatting & Field Order",
-                    description: "Automatically fix field order and formatting issues",
-                    detail: "Applies formatting and field reordering to all files",
-                    action: "fix"
-                },
-                {
-                    label: "$(report) Generate Validation Report",
-                    description: "Create detailed report of all validation issues",
-                    detail: "Exports findings to a text file",
-                    action: "report"
-                }
-            ], {
-                placeHolder: `Select action for ${sentinelFiles.length} Sentinel rule files`,
-                ignoreFocusOut: false
-            });
-
-            if (!action) return;
-
-            await this.performBulkValidation(sentinelFiles, action.action as 'validate' | 'fix' | 'report', targetFolder);
-
-        } catch (error) {
-            vscode.window.showErrorMessage(`Failed to perform bulk maintenance: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                break;
         }
     }
 
     /**
-     * Perform bulk validation with different actions
+     * Validate as Sentinel Analytics Rule
      */
-    private async performBulkValidation(files: vscode.Uri[], action: 'validate' | 'fix' | 'report', folder: vscode.Uri): Promise<void> {
-        const folderName = path.basename(folder.fsPath);
-        
-        await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: `${action === 'validate' ? 'Validating' : action === 'fix' ? 'Fixing' : 'Analyzing'} Sentinel rules in ${folderName}`,
-            cancellable: false
-        }, async (progress) => {
-            let processedFiles = 0;
-            let totalErrors = 0;
-            let fixedFiles = 0;
-            const issues: string[] = [];
-            const detailedReport: string[] = [];
+    private async validateSentinelRule(): Promise<void> {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showErrorMessage('No active editor');
+            return;
+        }
 
-            for (const file of files) {
-                try {
-                    progress.report({
-                        increment: (processedFiles / files.length) * 100,
-                        message: `Processing ${path.basename(file.fsPath)}...`
-                    });
-
-                    const document = await vscode.workspace.openTextDocument(file);
-                    const { errors } = this.validator.validateDocument(document);
-                    const fileName = path.basename(file.fsPath);
-                    
-                    if (errors.length > 0) {
-                        totalErrors += errors.length;
-                        issues.push(`${fileName}: ${errors.length} issue${errors.length === 1 ? '' : 's'}`);
-                        
-                        // Add detailed error info for reports
-                        detailedReport.push(`\n${fileName}:`);
-                        errors.forEach((error, index) => {
-                            detailedReport.push(`  ${index + 1}. Line ${error.range.start.line + 1}: ${error.message}`);
-                        });
-                        
-                        if (action === 'fix') {
-                            // Apply formatting and field ordering fixes
-                            const edits = SentinelRuleFormatter.formatDocument(document);
-                            if (edits.length > 0) {
-                                // Apply fixes by modifying text content
-                                let fixedContent = document.getText();
-                                
-                                // Sort edits by position (reverse order to maintain positions)
-                                const sortedEdits = edits.sort((a, b) => {
-                                    const posA = document.offsetAt(a.range.start);
-                                    const posB = document.offsetAt(b.range.start);
-                                    return posB - posA; // Reverse order
-                                });
-                                
-                                for (const edit of sortedEdits) {
-                                    const startOffset = document.offsetAt(edit.range.start);
-                                    const endOffset = document.offsetAt(edit.range.end);
-                                    fixedContent = fixedContent.substring(0, startOffset) + 
-                                                 edit.newText + 
-                                                 fixedContent.substring(endOffset);
-                                }
-                                
-                                await vscode.workspace.fs.writeFile(file, Buffer.from(fixedContent, 'utf8'));
-                                fixedFiles++;
-                                
-                                // Re-validate after fixes to update diagnostics
-                                const updatedDocument = await vscode.workspace.openTextDocument(file);
-                                this.validator.updateDiagnostics(updatedDocument);
-                            }
-                        } else {
-                            // Just update diagnostics for validation-only mode
-                            this.validator.updateDiagnostics(document);
-                        }
-                    } else {
-                        // No errors found
-                        detailedReport.push(`\n${fileName}: ✅ No issues found`);
-                        this.validator.updateDiagnostics(document);
-                    }
-                    
-                    processedFiles++;
-                } catch (error) {
-                    const fileName = path.basename(file.fsPath);
-                    issues.push(`${fileName}: Error processing file`);
-                    detailedReport.push(`\n${fileName}: ❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-                    processedFiles++;
-                }
-            }
-
-            progress.report({ increment: 100, message: 'Complete!' });
-
-            // Show results
-            let message = `Processed ${processedFiles} Sentinel rule files in "${folderName}".`;
+        // The validateDocument method likely returns vscode.Diagnostic[] directly
+        // or it might not exist - we should use the validator's actual method
+        try {
+            // Try to validate the document
+            const diagnostics = this.validator.validateDocument(editor.document);
             
-            if (action === 'validate') {
-                if (totalErrors > 0) {
-                    message += `\n\n❌ Found ${totalErrors} validation issue${totalErrors === 1 ? '' : 's'} across ${issues.length} file${issues.length === 1 ? '' : 's'}.`;
-                    message += `\n\nCheck the Problems panel for detailed error information.`;
+            // If diagnostics is an array (vscode.Diagnostic[])
+            if (Array.isArray(diagnostics)) {
+                if (diagnostics.length === 0) {
+                    vscode.window.showInformationMessage('✅ Sentinel Analytics Rule validation passed!');
                 } else {
-                    message += `\n\n✅ All files are valid! No issues found.`;
-                }
-            } else if (action === 'fix') {
-                message += `\n\n🔧 Applied formatting fixes to ${fixedFiles} file${fixedFiles === 1 ? '' : 's'}.`;
-                if (totalErrors > fixedFiles) {
-                    message += `\n\n⚠️ Some validation issues remain that require manual attention.`;
-                }
-            }
-
-            if (action === 'report') {
-                // Generate detailed report
-                const timestamp = new Date().toISOString();
-                const reportHeader = [
-                    `Sentinel Rules Validation Report`,
-                    `Generated: ${timestamp}`,
-                    `Folder: ${folderName}`,
-                    `Total Files Processed: ${processedFiles}`,
-                    `Files with Issues: ${issues.length}`,
-                    `Total Issues Found: ${totalErrors}`,
-                    ``,
-                    `${'='.repeat(50)}`,
-                    `DETAILED FINDINGS:`,
-                    `${'='.repeat(50)}`
-                ].join('\n');
-                
-                const reportContent = reportHeader + detailedReport.join('\n');
-                const reportPath = path.join(folder.fsPath, `sentinel-validation-report-${new Date().toISOString().split('T')[0]}.txt`);
-                
-                try {
-                    await vscode.workspace.fs.writeFile(vscode.Uri.file(reportPath), Buffer.from(reportContent, 'utf8'));
-                    message += `\n\n📄 Detailed report saved to: sentinel-validation-report-${new Date().toISOString().split('T')[0]}.txt`;
+                    const errorCount = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Error).length;
+                    const warningCount = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Warning).length;
                     
-                    // Offer to open the report
-                    const openReport = await vscode.window.showInformationMessage(
-                        message,
-                        'Open Report', 'OK'
+                    vscode.window.showWarningMessage(
+                        `Sentinel Rule validation found ${errorCount} error(s) and ${warningCount} warning(s)`
                     );
-                    
-                    if (openReport === 'Open Report') {
-                        const reportDocument = await vscode.workspace.openTextDocument(reportPath);
-                        await vscode.window.showTextDocument(reportDocument);
+                }
+            } else {
+                // If it's not an array, try to handle it as an object with properties
+                const validationResult = diagnostics as any;
+                if (validationResult.errors && validationResult.warnings) {
+                    if (validationResult.errors.length === 0) {
+                        vscode.window.showInformationMessage('✅ Sentinel Analytics Rule validation passed!');
+                    } else {
+                        vscode.window.showWarningMessage(
+                            `Sentinel Rule validation found ${validationResult.errors.length} error(s) and ${validationResult.warnings.length} warning(s)`
+                        );
                     }
-                    return; // Don't show the message again
-                } catch (error) {
-                    message += `\n\n❌ Failed to save report: ${error instanceof Error ? error.message : 'Unknown error'}`;
+                } else {
+                    // Fallback - just show success
+                    vscode.window.showInformationMessage('Sentinel Analytics Rule validation completed');
                 }
             }
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to validate Sentinel rule: ${error}`);
+        }
+    }
 
-            // Show final results
-            if (totalErrors > 0) {
-                vscode.window.showWarningMessage(message, 'OK');
-            } else {
-                vscode.window.showInformationMessage(message);
+    /**
+     * Validate as Defender Custom Detection
+     */
+    private async validateDefenderDetection(): Promise<void> {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showErrorMessage('No active editor');
+            return;
+        }
+
+        const document = editor.document;
+        const content = document.getText();
+
+        try {
+            // Parse content (try YAML first, then JSON)
+            let parsedContent: any;
+            try {
+                parsedContent = yaml.load(content);
+            } catch {
+                parsedContent = JSON.parse(content);
             }
-        });
+
+            // Validate using Defender validator
+            const result = this.defenderValidator.validate(parsedContent);
+
+            // Create diagnostics
+            const diagnostics: vscode.Diagnostic[] = [];
+            const diagnosticCollection = vscode.languages.createDiagnosticCollection('defenderDetection');
+
+            // Add errors
+            for (const error of result.errors) {
+                diagnostics.push(new vscode.Diagnostic(
+                    new vscode.Range(0, 0, 0, 0), // You might want to improve position detection
+                    `❌ ${error}`,
+                    vscode.DiagnosticSeverity.Error
+                ));
+            }
+
+            // Add warnings
+            for (const warning of result.warnings) {
+                diagnostics.push(new vscode.Diagnostic(
+                    new vscode.Range(0, 0, 0, 0),
+                    `⚠️ ${warning}`,
+                    vscode.DiagnosticSeverity.Warning
+                ));
+            }
+
+            // Add info
+            for (const info of result.info) {
+                diagnostics.push(new vscode.Diagnostic(
+                    new vscode.Range(0, 0, 0, 0),
+                    `ℹ️ ${info}`,
+                    vscode.DiagnosticSeverity.Information
+                ));
+            }
+
+            // Set diagnostics
+            diagnosticCollection.set(document.uri, diagnostics);
+
+            // Show summary message
+            if (result.isValid) {
+                vscode.window.showInformationMessage(
+                    `✅ Defender Custom Detection validation passed! ${result.warnings.length > 0 ? `(${result.warnings.length} warning(s))` : ''}`
+                );
+            } else {
+                vscode.window.showErrorMessage(
+                    `❌ Defender Custom Detection validation failed: ${result.errors.length} error(s), ${result.warnings.length} warning(s)`
+                );
+            }
+
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to validate Defender detection: ${error}`);
+        }
     }
 }

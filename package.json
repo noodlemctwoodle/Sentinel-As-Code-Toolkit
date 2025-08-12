@@ -49,36 +49,11 @@
     "onCommand:defender.listCustomDetections",
     "onCommand:defender.exportCustomDetections",
     "onCommand:defender.importCustomDetections",
-    "onCommand:defender.showAuthStatus"
+    "onCommand:defender.showAuthStatus",
+    "onCommand:defender.convertYamlToJson",
+    "onCommand:defender.convertJsonToYaml"
   ],
   "contributes": {
-    "languages": [
-      {
-        "id": "sentinel-rule",
-        "aliases": [
-          "Sentinel Analytics Rule",
-          "sentinel-rule"
-        ],
-        "extensions": [
-          ".sentinel.yaml",
-          ".sentinel.yml"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "sentinel-rule",
-        "scopeName": "source.yaml.sentinel",
-        "path": "./syntaxes/sentinel-rule.tmGrammar.json"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "sentinel-rule",
-        "path": "./snippets/sentinel-rules.json"
-      }
-    ],
     "commands": [
       {
         "command": "sentinelRules.fixFieldOrder",
@@ -174,6 +149,58 @@
         "command": "defender.showAuthStatus",
         "title": "Show Authentication Status",
         "category": "Defender"
+      },
+      {
+        "command": "defender.convertYamlToJson",
+        "title": "Convert Custom Detection YAML to JSON",
+        "category": "Defender"
+      },
+      {
+        "command": "defender.convertJsonToYaml",
+        "title": "Convert Custom Detection JSON to YAML",
+        "category": "Defender"
+      },
+      {
+        "command": "sentinelRules.validateRule",
+        "title": "Validate Rule (Auto-detect Type)",
+        "category": "Validation"
+      },
+      {
+        "command": "sentinelRules.validateSentinelRule",
+        "title": "Validate as Sentinel Analytics Rule",
+        "category": "Sentinel"
+      },
+      {
+        "command": "defender.validateDetection",
+        "title": "Validate as Custom Detection",
+        "category": "Defender"
+      }
+    ],
+    "languages": [
+      {
+        "id": "sentinel-rule",
+        "aliases": [
+          "Sentinel Analytics Rule",
+          "sentinel-rule"
+        ],
+        "extensions": [
+          ".sentinel.yaml",
+          ".sentinel.yml"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "sentinel-rule",
+        "scopeName": "source.yaml.sentinel",
+        "path": "./syntaxes/sentinel-rule.tmGrammar.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "sentinel-rule",
+        "path": "./snippets/sentinel-rules.json"
       }
     ],
     "menus": {

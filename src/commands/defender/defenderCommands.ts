@@ -39,7 +39,8 @@ export class DefenderCommands {
                 await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Exporting custom detections' }, async () => {
                     await this.service.exportRules({
                         includeDisabled,
-                        separateFiles: true  // Always true now since we only export as separate files
+                        separateFiles: true,
+                        format: 'yaml'  // Always export as YAML
                     });
                 });
             }),
@@ -52,6 +53,12 @@ export class DefenderCommands {
             vscode.commands.registerCommand('defender.showAuthStatus', async () => {
                 await this.ensureAuth();
                 vscode.window.showInformationMessage(this.auth.getAuthSummaryDetailed());
+            }),
+            vscode.commands.registerCommand('defender.convertYamlToJson', async () => {
+                await this.service.convertYamlToJson();
+            }),
+            vscode.commands.registerCommand('defender.convertJsonToYaml', async () => {
+                await this.service.convertJsonToYaml();
             })
         ];
     }

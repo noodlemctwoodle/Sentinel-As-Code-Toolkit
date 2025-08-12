@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
+import * as yaml from 'js-yaml';
 import { DefenderAuthProvider } from '../auth/defenderAuthProvider';
-import { DetectionRule, ExportPerRuleFile } from '../types/defenderTypes';
+import { DetectionRule } from '../types/defenderTypes'; // Removed unused import: ExportPerRuleFile
 
 const GRAPH_BASE = 'https://graph.microsoft.com/beta';
 const RULES_ENDPOINT = `${GRAPH_BASE}/security/rules/detectionRules`;
@@ -12,6 +13,7 @@ interface ListOptions {
 interface ExportOptions extends ListOptions {
     separateFiles: boolean;
     outputUri?: vscode.Uri;
+    format?: 'json' | 'yaml';  // Add format option
 }
 
 interface ImportOptions {
@@ -90,6 +92,9 @@ export class DefenderXdrService {
             folderUri = picked[0];
         }
         
+        // Always export as YAML
+        const extension = 'yaml';
+        
         // Export directly to the selected folder, no timestamp subfolder
         for (const rule of rules) {
             // Format filename: lowercase, replace spaces and special chars with underscores
@@ -100,11 +105,21 @@ export class DefenderXdrService {
                 .replace(/_+/g, '_')  // Replace multiple underscores with single underscore
                 .replace(/^_|_$/g, '');  // Remove leading/trailing underscores
             
-            // Export just the rule without metadata wrapper, directly to selected folder
-            const fileUri = vscode.Uri.joinPath(folderUri, `${formattedName}.json`);
-            await vscode.workspace.fs.writeFile(fileUri, Buffer.from(JSON.stringify(rule, null, 2), 'utf8'));
+            // Clean up the rule object by removing OData metadata
+            const cleanRule = this.cleanRuleForExport(rule);
+            
+            // Export as YAML
+            const content = yaml.dump(cleanRule, { 
+                lineWidth: -1,  // Don't wrap lines
+                noRefs: true,   // No anchors/aliases
+                quotingType: '"', // Use double quotes
+                forceQuotes: false // Only quote when necessary
+            });
+            
+            const fileUri = vscode.Uri.joinPath(folderUri, `${formattedName}.${extension}`);
+            await vscode.workspace.fs.writeFile(fileUri, Buffer.from(content, 'utf8'));
         }
-        vscode.window.showInformationMessage(`Exported ${rules.length} rule${rules.length === 1 ? '' : 's'} to selected folder.`);
+        vscode.window.showInformationMessage(`Exported ${rules.length} rule${rules.length === 1 ? '' : 's'} as YAML to selected folder.`);
     }
 
     public async importRules(options: ImportOptions): Promise<void> {
@@ -184,5 +199,107 @@ export class DefenderXdrService {
         }
 
         vscode.window.showInformationMessage(`Imported ${imported} of ${rules.length} rule(s).`);
+    }
+
+    // New method to convert YAML to JSON
+    public async convertYamlToJson(): Promise<void> {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showWarningMessage('No active editor found');
+            return;
+        }
+
+        const document = editor.document;
+        const yamlContent = document.getText();
+        
+        try {
+            const jsonObject = yaml.load(yamlContent);
+            const jsonContent = JSON.stringify(jsonObject, null, 2);
+            
+            // Create new document with JSON content
+            const doc = await vscode.workspace.openTextDocument({
+                content: jsonContent,
+                language: 'json'
+            });
+            await vscode.window.showTextDocument(doc, { preview: false });
+            
+            vscode.window.showInformationMessage('YAML converted to JSON successfully');
+        } catch (error: any) {
+            vscode.window.showErrorMessage(`Failed to convert YAML to JSON: ${error.message}`);
+        }
+    }
+
+    // New method to convert JSON to YAML
+    public async convertJsonToYaml(): Promise<void> {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showWarningMessage('No active editor found');
+            return;
+        }
+
+        const document = editor.document;
+        const jsonContent = document.getText();
+        
+        try {
+            const jsonObject = JSON.parse(jsonContent);
+            const yamlContent = yaml.dump(jsonObject, {
+                lineWidth: -1,
+                noRefs: true,
+                quotingType: '"',
+                forceQuotes: false
+            });
+            
+            // Create new document with YAML content
+            const doc = await vscode.workspace.openTextDocument({
+                content: yamlContent,
+                language: 'yaml'
+            });
+            await vscode.window.showTextDocument(doc, { preview: false });
+            
+            vscode.window.showInformationMessage('JSON converted to YAML successfully');
+        } catch (error: any) {
+            vscode.window.showErrorMessage(`Failed to convert JSON to YAML: ${error.message}`);
+        }
+    }
+
+    // New method to clean up rule for export
+    private cleanRuleForExport(rule: any): any {
+        // Create a deep copy to avoid modifying the original
+        const cleanRule = JSON.parse(JSON.stringify(rule));
+        
+        // Remove OData metadata fields only
+        delete cleanRule['@odata.context'];
+        delete cleanRule['@odata.etag'];
+        delete cleanRule['@odata.type'];
+        
+        // Clean up nested OData references in impactedAssets
+        if (cleanRule.detectionAction?.alertTemplate?.impactedAssets) {
+            cleanRule.detectionAction.alertTemplate.impactedAssets = 
+                cleanRule.detectionAction.alertTemplate.impactedAssets.map((asset: any) => {
+                    const cleanAsset = { ...asset };
+                    delete cleanAsset['@odata.type'];
+                    return cleanAsset;
+                });
+        }
+        
+        // Remove null values that aren't meaningful
+        if (cleanRule.lastRunDetails?.failureReason === null) {
+            delete cleanRule.lastRunDetails.failureReason;
+        }
+        if (cleanRule.lastRunDetails?.errorCode === null) {
+            delete cleanRule.lastRunDetails.errorCode;
+        }
+        if (cleanRule.detectionAction?.organizationalScope === null) {
+            delete cleanRule.detectionAction.organizationalScope;
+        }
+        
+        // Remove empty responseActions array if present
+        if (cleanRule.detectionAction?.responseActions && 
+            Array.isArray(cleanRule.detectionAction.responseActions) && 
+            cleanRule.detectionAction.responseActions.length === 0) {
+            delete cleanRule.detectionAction.responseActions;
+        }
+        
+        return cleanRule;
     }
 }

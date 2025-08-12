@@ -12,11 +12,7 @@ import {
     SENTINEL_RULE_INDICATORS,
     MIN_SENTINEL_INDICATORS
 } from './constants';
-
-export interface ValidationResult {
-    errors: vscode.Diagnostic[];
-    warnings: vscode.Diagnostic[];
-}
+import { RuleTypeDetector, RuleType } from '../utils/ruleTypeDetector';
 
 export class SentinelRuleValidator {
     private diagnosticCollection: vscode.DiagnosticCollection;
@@ -25,12 +21,57 @@ export class SentinelRuleValidator {
         this.diagnosticCollection = vscode.languages.createDiagnosticCollection('sentinel-rules');
     }
 
-    public validateDocument(document: vscode.TextDocument): ValidationResult {
-        const errors: vscode.Diagnostic[] = [];
-        const warnings: vscode.Diagnostic[] = [];
-
+    public validateDocument(document: vscode.TextDocument): vscode.Diagnostic[] {
+        const diagnostics: vscode.Diagnostic[] = [];
+        
+        // First check if this is actually a Defender Custom Detection
+        const content = document.getText();
+        const ruleType = RuleTypeDetector.detectType(content);
+        
+        // If it's a Defender detection, don't validate it as a Sentinel rule
+        if (ruleType === RuleType.DEFENDER) {
+            console.log('Skipping Sentinel validation - detected as Defender Custom Detection');
+            return diagnostics; // Return empty diagnostics array
+        }
+        
+        // Continue with existing Sentinel validation logic...
+        // Parse the document content and validate as Sentinel rule
         try {
-            const content = document.getText();
+            const parsedContent = yaml.load(content);
+            
+            // Check for required Sentinel fields
+            if (!parsedContent || typeof parsedContent !== 'object') {
+                diagnostics.push(new vscode.Diagnostic(
+                    new vscode.Range(0, 0, 0, 0),
+                    'Invalid YAML format',
+                    vscode.DiagnosticSeverity.Error
+                ));
+                return diagnostics;
+            }
+            
+            // Validate ID field - should be a GUID for Sentinel rules
+            if ('id' in parsedContent) {
+                const id = parsedContent.id?.toString();
+                if (id) {  // Only validate if id exists and is not undefined
+                    const guidPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
+                    if (!guidPattern.test(id)) {
+                        diagnostics.push(new vscode.Diagnostic(
+                            new vscode.Range(0, 0, 0, 0),
+                            `Invalid GUID format for id field: ${id}`,
+                            vscode.DiagnosticSeverity.Error
+                        ));
+                    }
+                } else {
+                    // ID field exists but has no value
+                    diagnostics.push(new vscode.Diagnostic(
+                        new vscode.Range(0, 0, 0, 0),
+                        'ID field exists but has no value',
+                        vscode.DiagnosticSeverity.Error
+                    ));
+                }
+            }
+            
+            // Continue with rest of Sentinel validation...
             const lines = content.split('\n');
             
             // Parse YAML
@@ -40,45 +81,54 @@ export class SentinelRuleValidator {
             } catch (yamlError: any) {
                 const line = yamlError.mark?.line || 0;
                 const character = yamlError.mark?.column || 0;
-                errors.push(new vscode.Diagnostic(
+                diagnostics.push(new vscode.Diagnostic(
                     new vscode.Range(line, character, line, character + 10),
                     `YAML Syntax Error: ${yamlError.message}`,
                     vscode.DiagnosticSeverity.Error
                 ));
-                return { errors, warnings };
+                return diagnostics;
             }
 
             if (!parsedYaml || typeof parsedYaml !== 'object') {
-                errors.push(new vscode.Diagnostic(
+                diagnostics.push(new vscode.Diagnostic(
                     new vscode.Range(0, 0, 0, 10),
                     'Invalid YAML structure',
                     vscode.DiagnosticSeverity.Error
                 ));
-                return { errors, warnings };
+                return diagnostics;
             }
 
             // Validate required fields
-            this.validateRequiredFields(parsedYaml, lines, errors);
+            this.validateRequiredFields(parsedYaml, lines, diagnostics);
             
             // Validate field values
-            this.validateFieldValues(parsedYaml, lines, errors, warnings);
+            this.validateFieldValues(parsedYaml, lines, diagnostics);
             
             // Validate field order
-            this.validateFieldOrder(parsedYaml, lines, warnings);
+            this.validateFieldOrder(parsedYaml, lines, diagnostics);
 
         } catch (error) {
-            console.error('Validation error:', error);
-            errors.push(new vscode.Diagnostic(
-                new vscode.Range(0, 0, 0, 10),
-                `Validation error: ${error}`,
+            diagnostics.push(new vscode.Diagnostic(
+                new vscode.Range(0, 0, 0, 0),
+                `Failed to parse document: ${error}`,
                 vscode.DiagnosticSeverity.Error
             ));
         }
-
+        
+        return diagnostics;
+    }
+    
+    // If there's a method that needs errors and warnings separately, fix it like this:
+    public validateWithDetails(document: vscode.TextDocument): { errors: vscode.Diagnostic[], warnings: vscode.Diagnostic[] } {
+        const allDiagnostics = this.validateDocument(document);
+        
+        const errors = allDiagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Error);
+        const warnings = allDiagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Warning);
+        
         return { errors, warnings };
     }
-
-    private validateRequiredFields(parsedYaml: any, lines: string[], errors: vscode.Diagnostic[]) {
+    
+    private validateRequiredFields(parsedYaml: any, lines: string[], diagnostics: vscode.Diagnostic[]) {
         // Get the rule kind, default to 'Scheduled' if not specified
         const ruleKind = parsedYaml.kind || 'Scheduled';
         const requiredFields = getRequiredFieldsForKind(ruleKind);
@@ -87,7 +137,7 @@ export class SentinelRuleValidator {
             if (!(field in parsedYaml)) {
                 // Add diagnostic at the end of the document
                 const lastLine = lines.length - 1;
-                errors.push(new vscode.Diagnostic(
+                diagnostics.push(new vscode.Diagnostic(
                     new vscode.Range(lastLine, 0, lastLine, lines[lastLine]?.length || 0),
                     `Missing required field for ${ruleKind} rule: ${field}`,
                     vscode.DiagnosticSeverity.Error
@@ -96,12 +146,12 @@ export class SentinelRuleValidator {
         }
     }
 
-    private validateFieldValues(parsedYaml: any, lines: string[], errors: vscode.Diagnostic[], warnings: vscode.Diagnostic[]) {
+    private validateFieldValues(parsedYaml: any, lines: string[], diagnostics: vscode.Diagnostic[]) {
         // Validate severity
         if (parsedYaml.severity && !VALID_SEVERITIES.includes(parsedYaml.severity)) {
             const line = this.findFieldLine(lines, 'severity');
             if (line !== -1) {
-                errors.push(new vscode.Diagnostic(
+                diagnostics.push(new vscode.Diagnostic(
                     new vscode.Range(line, 0, line, lines[line].length),
                     `Invalid severity. Must be one of: ${VALID_SEVERITIES.join(', ')}`,
                     vscode.DiagnosticSeverity.Error
@@ -113,7 +163,7 @@ export class SentinelRuleValidator {
         if (parsedYaml.triggerOperator && !VALID_TRIGGER_OPERATORS.includes(parsedYaml.triggerOperator)) {
             const line = this.findFieldLine(lines, 'triggerOperator');
             if (line !== -1) {
-                errors.push(new vscode.Diagnostic(
+                diagnostics.push(new vscode.Diagnostic(
                     new vscode.Range(line, 0, line, lines[line].length),
                     `Invalid trigger operator. Must be one of: ${VALID_TRIGGER_OPERATORS.join(', ')}`,
                     vscode.DiagnosticSeverity.Error
@@ -122,22 +172,22 @@ export class SentinelRuleValidator {
         }
 
         // Validate duration fields using dynamic patterns
-        this.validateDurationFields(parsedYaml, lines, errors);
+        this.validateDurationFields(parsedYaml, lines, diagnostics);
 
         // Validate entity types (dynamic validation)
-        this.validateEntityTypes(parsedYaml, lines, warnings);
+        this.validateEntityTypes(parsedYaml, lines, diagnostics);
 
         // Validate MITRE techniques and tactics
-        this.validateMitreTechniques(parsedYaml, lines, errors, warnings);
+        this.validateMitreTechniques(parsedYaml, lines, diagnostics);
 
         // Validate data connectors
-        this.validateDataConnectors(parsedYaml, lines, warnings, errors);
+        this.validateDataConnectors(parsedYaml, lines, diagnostics);
 
         // Validate GUID format for id field
         if (parsedYaml.id && !VALIDATION_PATTERNS.GUID.test(parsedYaml.id)) {
             const line = this.findFieldLine(lines, 'id');
             if (line !== -1) {
-                errors.push(new vscode.Diagnostic(
+                diagnostics.push(new vscode.Diagnostic(
                     new vscode.Range(line, 0, line, lines[line].length),
                     'Invalid GUID format for id field',
                     vscode.DiagnosticSeverity.Error
@@ -149,7 +199,7 @@ export class SentinelRuleValidator {
         if (parsedYaml.version && !VALIDATION_PATTERNS.VERSION.test(parsedYaml.version)) {
             const line = this.findFieldLine(lines, 'version');
             if (line !== -1) {
-                warnings.push(new vscode.Diagnostic(
+                diagnostics.push(new vscode.Diagnostic(
                     new vscode.Range(line, 0, line, lines[line].length),
                     'Version should follow semantic versioning (e.g., 1.0.0)',
                     vscode.DiagnosticSeverity.Warning
@@ -158,7 +208,7 @@ export class SentinelRuleValidator {
         }
     }
 
-    private validateDurationFields(parsedYaml: any, lines: string[], errors: vscode.Diagnostic[]) {
+    private validateDurationFields(parsedYaml: any, lines: string[], diagnostics: vscode.Diagnostic[]) {
         const durationFields = ['queryFrequency', 'queryPeriod', 'suppressionDuration', 'lookbackDuration'];
         
         const validateDuration = (obj: any, path: string[] = []) => {
@@ -174,7 +224,7 @@ export class SentinelRuleValidator {
                     if (!VALIDATION_PATTERNS.ISO_DURATION.test(value)) {
                         const line = this.findFieldLine(lines, fieldName);
                         if (line !== -1) {
-                            errors.push(new vscode.Diagnostic(
+                            diagnostics.push(new vscode.Diagnostic(
                                 new vscode.Range(line, 0, line, lines[line].length),
                                 `Invalid duration format for ${fieldName}. Must be ISO 8601 format (e.g., PT5M, PT1H, P1D)`,
                                 vscode.DiagnosticSeverity.Error
@@ -190,13 +240,13 @@ export class SentinelRuleValidator {
         validateDuration(parsedYaml);
     }
 
-    private validateEntityTypes(parsedYaml: any, lines: string[], warnings: vscode.Diagnostic[]) {
+    private validateEntityTypes(parsedYaml: any, lines: string[], diagnostics: vscode.Diagnostic[]) {
         if (parsedYaml.entityMappings && Array.isArray(parsedYaml.entityMappings)) {
             parsedYaml.entityMappings.forEach((mapping: any, index: number) => {
                 if (mapping.entityType && !VALID_ENTITY_TYPES.includes(mapping.entityType)) {
                     const line = this.findFieldLine(lines, `entityMappings[${index}].entityType`, mapping.entityType);
                     if (line !== -1) {
-                        warnings.push(new vscode.Diagnostic(
+                        diagnostics.push(new vscode.Diagnostic(
                             new vscode.Range(line, 0, line, lines[line].length),
                             `Unknown entity type: ${mapping.entityType}. Consider checking if this is a custom or new entity type.`,
                             vscode.DiagnosticSeverity.Warning
@@ -207,7 +257,7 @@ export class SentinelRuleValidator {
         }
     }
 
-    private validateMitreTechniques(parsedYaml: any, lines: string[], errors: vscode.Diagnostic[], warnings: vscode.Diagnostic[]) {
+    private validateMitreTechniques(parsedYaml: any, lines: string[], diagnostics: vscode.Diagnostic[]) {
         // Validate techniques using the MitreLoader validation methods
         if (parsedYaml.techniques && Array.isArray(parsedYaml.techniques)) {
             parsedYaml.techniques.forEach((technique: string) => {
@@ -221,12 +271,7 @@ export class SentinelRuleValidator {
                             validation.severity
                         );
                         
-                        // Add to appropriate array based on severity
-                        if (validation.severity === vscode.DiagnosticSeverity.Error) {
-                            errors.push(diagnostic);
-                        } else {
-                            warnings.push(diagnostic);
-                        }
+                        diagnostics.push(diagnostic);
                     }
                 }
             });
@@ -245,12 +290,7 @@ export class SentinelRuleValidator {
                             validation.severity
                         );
                         
-                        // Add to appropriate array based on severity
-                        if (validation.severity === vscode.DiagnosticSeverity.Error) {
-                            errors.push(diagnostic);
-                        } else {
-                            warnings.push(diagnostic);
-                        }
+                        diagnostics.push(diagnostic);
                     }
                 }
             });
@@ -273,11 +313,7 @@ export class SentinelRuleValidator {
                                 mainValidation.severity
                             );
                             
-                            if (mainValidation.severity === vscode.DiagnosticSeverity.Error) {
-                                errors.push(diagnostic);
-                            } else {
-                                warnings.push(diagnostic);
-                            }
+                            diagnostics.push(diagnostic);
                         }
                     }
                 }
@@ -285,7 +321,7 @@ export class SentinelRuleValidator {
         }
     }
 
-    private validateDataConnectors(parsedYaml: any, lines: string[], warnings: vscode.Diagnostic[], errors: vscode.Diagnostic[]) {
+    private validateDataConnectors(parsedYaml: any, lines: string[], diagnostics: vscode.Diagnostic[]) {
         if (parsedYaml.requiredDataConnectors && Array.isArray(parsedYaml.requiredDataConnectors)) {
             parsedYaml.requiredDataConnectors.forEach((connector: any, index: number) => {
                 if (connector.connectorId) {
@@ -305,11 +341,7 @@ export class SentinelRuleValidator {
                                 validation.connectorValidation.severity
                             );
                             
-                            if (validation.connectorValidation.severity === vscode.DiagnosticSeverity.Error) {
-                                errors.push(diagnostic);
-                            } else {
-                                warnings.push(diagnostic);
-                            }
+                            diagnostics.push(diagnostic);
                         }
                     }
                     
@@ -326,11 +358,7 @@ export class SentinelRuleValidator {
                                     validation.dataTypeValidation.severity || vscode.DiagnosticSeverity.Warning
                                 );
                                 
-                                if (validation.dataTypeValidation.severity === vscode.DiagnosticSeverity.Error) {
-                                    errors.push(diagnostic);
-                                } else {
-                                    warnings.push(diagnostic);
-                                }
+                                diagnostics.push(diagnostic);
                             }
                         }
                     }
@@ -344,7 +372,7 @@ export class SentinelRuleValidator {
                                     const connectorInfo = ConnectorLoader.getConnectorInfo(connector.connectorId);
                                     const availableTypes = connectorInfo?.dataTypes.join(', ') || 'none';
                                     
-                                    warnings.push(new vscode.Diagnostic(
+                                    diagnostics.push(new vscode.Diagnostic(
                                         new vscode.Range(line, 0, line, lines[line].length),
                                         `Data type '${dataType}' not available for connector '${connector.connectorId}'. Available: ${availableTypes}`,
                                         vscode.DiagnosticSeverity.Warning
@@ -358,7 +386,7 @@ export class SentinelRuleValidator {
         }
     }
 
-    private validateFieldOrder(parsedYaml: any, lines: string[], warnings: vscode.Diagnostic[]) {
+    private validateFieldOrder(parsedYaml: any, lines: string[], diagnostics: vscode.Diagnostic[]) {
         const presentFields = Object.keys(parsedYaml);
         const expectedPresentFields = EXPECTED_ORDER.filter(field => presentFields.includes(field));
         
@@ -370,7 +398,7 @@ export class SentinelRuleValidator {
                 if (expectedPresentFields.includes(fieldName)) {
                     const expectedField = expectedPresentFields[currentIndex];
                     if (fieldName !== expectedField) {
-                        warnings.push(new vscode.Diagnostic(
+                        diagnostics.push(new vscode.Diagnostic(
                             new vscode.Range(i, 0, i, line.length),
                             `Field order: '${fieldName}' should come after '${expectedField}' for better consistency`,
                             vscode.DiagnosticSeverity.Information
@@ -460,7 +488,9 @@ export class SentinelRuleValidator {
 
     public updateDiagnostics(document: vscode.TextDocument): void {
         if (this.isRelevantDocument(document)) {
-            const { errors, warnings } = this.validateDocument(document);
+            const diagnostics = this.validateDocument(document);
+            const errors = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Error);
+            const warnings = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Warning);
             this.diagnosticCollection.set(document.uri, [...errors, ...warnings]);
         } else {
             this.diagnosticCollection.delete(document.uri);
