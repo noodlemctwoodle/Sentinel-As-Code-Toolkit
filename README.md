@@ -1,6 +1,6 @@
 # SentinelCodeGuard
 
-![Beta](https://img.shields.io/badge/status-beta-orange) ![Version](https://img.shields.io/badge/version-0.0.11-blue) ![License](https://img.shields.io/badge/license-MIT-green)
+![Beta](https://img.shields.io/badge/status-beta-orange) ![Version](https://img.shields.io/badge/version-0.1.0-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
 **Development toolkit for Microsoft Sentinel Analytics Rules**
 
@@ -21,7 +21,7 @@
 
 ## Beta Notice
 
-**SentinelCodeGuard is currently in beta (v0.0.11).** We're actively developing and improving the extension. Please report any issues or feedback via [GitHub Issues](https://github.com/noodlemctwoodle/SentinelCodeGuard/issues).
+**SentinelCodeGuard is currently in beta (v0.1.0).** We're actively developing and improving the extension. Please report any issues or feedback via [GitHub Issues](https://github.com/noodlemctwoodle/SentinelCodeGuard/issues).
 
 ---
 
@@ -61,6 +61,25 @@ Created by **TobyG** - Visit [sentinel.blog](https://sentinel.blog) for more Mic
 
 ## 📈 Recent Updates
 
+### v0.1.0 (2025-08-12)
+
+#### ✨ New: Defender XDR Custom Detections
+
+- Export, import, and list Defender XDR custom detections via Microsoft Graph (no PowerShell required).
+- Service principal auth (client credentials) with secure secret storage; last-used clientId remembered.
+- Commands:
+  - Defender XDR: Configure Authentication
+  - Defender XDR: Clear Authentication
+  - Defender XDR: List Custom Detections
+  - Defender XDR: Export Custom Detections
+  - Defender XDR: Import Custom Detections
+  - Defender XDR: Show Auth Status
+
+#### 📊 Data
+
+- Refreshed Microsoft Sentinel connectors dataset (updated counts and timestamp).
+
+
 ### v0.0.11 (2025-07-04)
 
 #### ⚡ Performance & Security Enhancements
@@ -77,93 +96,6 @@ Created by **TobyG** - Visit [sentinel.blog](https://sentinel.blog) for more Mic
 #### 🎯 User Experience Refinements
 
 - **Better Resource Management** - Optimized background processes for seamless development experience
-
-### v0.0.10 (2025-07-03)
-
-#### 🔌 Comprehensive Data Connector Validation
-
-- **Official Sentinel Connector Database** - Validates against the complete catalog of Microsoft Sentinel data connectors from Content Hub
-- **Smart Connector Suggestions** - Intelligent autocomplete for connector IDs with descriptions and categories  
-- **Data Type Validation** - Comprehensive validation of data types (tables) for each connector with helpful suggestions
-- **Custom Connector Support** - Full support for custom and codeless connectors alongside official ones
-- **Enhanced Error Messages** - Clear, actionable validation messages with suggested alternatives for misspelled connectors
-- **Category-Based Organization** - Connectors grouped by categories (Cloud, Network, Security, etc.) for easier discovery
-
-#### 📊 Improved IntelliSense & Hover Information
-
-- **Rich Connector Details** - Hover over connector IDs to see descriptions, categories, and available data types
-- **Data Type Tooltips** - Hover over data types to see which connectors provide them
-- **Always-Fresh Data** - Connector information automatically updated from official Microsoft sources
-- **Deprecation Warnings** - Alerts for deprecated connectors with migration guidance
-- **Smart Completion** - Context-aware suggestions that understand your rule requirements
-
-#### 🎯 Enhanced User Experience
-
-- **Eliminated False Positives** - No more "unknown connector" errors for valid Microsoft connectors
-- **Faster Development** - Instant validation and suggestions reduce time spent looking up connector documentation
-- **Professional Validation** - Enterprise-grade validation using the same data sources as Azure Portal
-- **Backward Compatibility** - Existing rules continue to work while benefiting from enhanced validation
-
-### v0.0.9 (2025-07-03)
-
-#### 🌐 Enhanced MITRE ATT&CK Support
-
-- **Multi-Framework Coverage** - Now supports Enterprise, Mobile, and ICS MITRE ATT&CK frameworks
-- **Eliminated "Tactics Not Found" Errors** - Comprehensive coverage of all Sentinel-supported tactics and techniques
-- **Framework-Aware Hover Information** - Enhanced tooltips showing which framework tactics/techniques belong to
-- **Official MITRE Data Integration** - Direct use of official MITRE JSON data sources for accuracy
-
-#### 🆔 GUID Management Features
-
-- **Regenerate Rule GUID** - Right-click on YAML files to replace existing GUIDs with new ones
-- **Add Missing GUID** - Automatically detect files without GUIDs and offer to add them
-- **Smart GUID Detection** - Recognises both actual GUIDs and template placeholders (`{{GUID}}`)
-- **Confirmation Dialogs** - Preview old and new GUIDs before replacement
-- **Auto-GUID Templates** - All new templates automatically replace `{{GUID}}` placeholders with real UUIDs
-
-#### 🛠️ Enhanced Template Experience
-
-- **Unified Command Interface** - Single "Generate Rule Template" command in command palette with interactive template selection
-- **Streamlined Command Palette** - Removed individual template commands for cleaner interface
-- **Dual Access Points** - Templates available via both command palette and right-click context menu
-- **Unique IDs for Every Template** - No more duplicate GUIDs when creating multiple templates
-- **Proper Indentation Preservation** - GUID replacement maintains YAML formatting
-- **Context Menu Integration** - "Regenerate Rule GUID" available via right-click
-- **Bulk Template Creation** - Each template gets a unique GUID automatically
-
-#### 🎯 Developer Productivity
-
-- **Simplified Workflow** - One command for all template types instead of multiple separate commands
-- **Quick GUID Regeneration** - Perfect for duplicating existing rules
-- **Template-to-Production** - Convert templates with placeholder GUIDs to production-ready rules
-- **Rule Duplication Workflow** - Copy existing rules and generate new GUIDs instantly
-- **Error Prevention** - Ensures unique identifiers across rule sets
-- **Professional Command Structure** - Clean, organized command palette experience
-
-### v0.0.8 (2025-07-02)
-
-#### 🎯 Enhanced Template Creation Workflow
-
-- **Interactive template selection** with visual quick-pick interface
-- **Intelligent right-click workflow** - Right-click folder → Create Sentinel Rule Template → Choose type → Select location
-- **All template types available** from context menu (Standard, Advanced, NRT, Behaviour Analytics, Minimal, Fallback)
-- **Smart default locations** using right-clicked folder path
-- **Professional file naming** with template-specific suggestions
-
-#### 🛠️ Improved User Experience
-
-- **Single entry point** for all template creation via "Create Sentinel Rule Template..."
-- **Step-by-step workflow** with clear prompts and cancellation support
-- **Automatic file opening** after template creation
-- **Enhanced notifications** for success and error states
-- **Native VS Code integration** using standard save dialogues and UI patterns
-
-#### 📋 Template Management
-
-- **Visual template selection** with icons, descriptions, and use cases
-- **Template-specific filenames** following established naming conventions
-- **Support for both extensions** (.yaml and .yml)
-- **Comprehensive template library** covering all Sentinel rule scenarios
 
 [View Full Changelog](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki/Change-Log)
 
@@ -204,6 +136,17 @@ Created by **TobyG** - Visit [sentinel.blog](https://sentinel.blog) for more Mic
 | `Sentinel Rules: Format Sentinel Rule` | Format and optimise rule structure |
 | `Sentinel Rules: Bulk Maintenance & Validation` | Workspace-wide validation and maintenance |
 | `Sentinel Rules: Decompile ARM to YAML` | Convert ARM templates to YAML |
+
+### Defender XDR commands
+
+| Command | Description |
+|---------|-------------|
+| `Defender XDR: Configure Authentication` | Set up service principal (tenant, client, secret) for Graph access |
+| `Defender XDR: Clear Authentication` | Remove stored credentials |
+| `Defender XDR: List Custom Detections` | Show existing custom detection rules |
+| `Defender XDR: Export Custom Detections` | Export rules to JSON (single file or per-rule) |
+| `Defender XDR: Import Custom Detections` | Import rules from JSON with duplicate handling |
+| `Defender XDR: Show Auth Status` | View current auth configuration summary |
 
 ---
 
