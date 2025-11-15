@@ -460,7 +460,7 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.1.1",
     "jsonschema": "^1.4.1",
     "uuid": "^11.1.0"
   }
