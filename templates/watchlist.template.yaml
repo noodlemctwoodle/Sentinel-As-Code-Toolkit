@@ -1,0 +1,30 @@
+# =============================================================================
+# Sentinel-as-Code watchlist (metadata)
+# -----------------------------------------------------------------------------
+# Authored as    : YAML  (this file, for readable comments)
+# Deployed as    : JSON  (Content/Watchlists/<alias>/watchlist.json) -- the
+#                  plugin converts on export
+# -----------------------------------------------------------------------------
+# A watchlist is a reference table (high-value assets, allow-lists, VIP users)
+# used to enrich detections. This file is only the METADATA. The row data lives
+# alongside it as data.csv (or data.tsv) in the same folder -- the toolkit's
+# "Create Watchlist from CSV" command generates both files for you. Every
+# schema-allowed field is shown below (all are required).
+# =============================================================================
+
+# REQUIRED. Unique alias referenced in KQL via _GetWatchlist('ExampleWatchlist').
+# Must match the containing folder name.
+watchlistAlias: ExampleWatchlist
+
+# REQUIRED. Human-readable name shown in the Sentinel UI.
+displayName: Example Watchlist
+
+# REQUIRED. Describe the watchlist's purpose.
+description: Reference list of high-value assets used to enrich detections.
+
+# REQUIRED. Set to Custom for customer-authored watchlists.
+provider: Custom
+
+# REQUIRED. The primary-key column. Must match a header in the data file
+# EXACTLY (case-sensitive).
+itemsSearchKey: IPAddress

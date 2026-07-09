@@ -1,0 +1,55 @@
+# =============================================================================
+# Microsoft Sentinel hunting query
+# -----------------------------------------------------------------------------
+# On-disk format : YAML  (Content/HuntingQueries/)
+# Deployed as    : Log Analytics Saved Search
+# -----------------------------------------------------------------------------
+# Hunting queries have NO schedule, threshold, or trigger. They return rows
+# directly to the analyst in the Sentinel Hunting blade, so the query must be
+# self-contained. Every schema-allowed field is shown below; delete the optional
+# ones you don't need.
+# =============================================================================
+
+# REQUIRED. Stable GUID used as the saved-search resource name.
+# Do not change it after the first deployment.
+id: {{GUID}}
+
+# REQUIRED. Display name shown in the Hunting blade (1-260 characters).
+name: Hunting Query - Anomalous sign-in activity
+
+# OPTIONAL. Plain-English summary. Begin with "Identifies" or "Detects".
+description: |
+  Identifies accounts with a burst of failed sign-ins followed by a success,
+  a common indicator of password spray or credential stuffing.
+
+# REQUIRED. The KQL returned to the analyst. Keep it self-contained (a hunting
+# query has no implicit time window, so scope the time range inside the query).
+query: |
+  SigninLogs
+  | where TimeGenerated > ago(1d)
+  | summarize
+      Failures = countif(ResultType != 0),
+      Successes = countif(ResultType == 0),
+      UniqueIPs = dcount(IPAddress),
+      Countries = make_set(LocationDetails.countryOrRegion)
+    by UserPrincipalName
+  | where Failures > 10 and Successes > 0
+  | order by Failures desc
+
+# OPTIONAL. MITRE ATT&CK tactic names in camelCase; stored as a tag.
+tactics:
+  - CredentialAccess
+  - InitialAccess
+
+# OPTIONAL. MITRE ATT&CK technique IDs; stored as a tag. Sub-techniques
+# (T####.###) are supported. Use "techniques" here, NOT "relevantTechniques"
+# (that field belongs to analytics rules).
+techniques:
+  - T1110
+  - T1110.003
+
+# OPTIONAL. Extra key/value metadata appended alongside the tactics/techniques
+# tags at deploy time. Remove the block if you have no custom tags.
+tags:
+  - name: environment
+    value: production

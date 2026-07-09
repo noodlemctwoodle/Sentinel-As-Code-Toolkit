@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { BaseCommand } from '../base/baseCommand';
+import { RuleTypeDetector, RuleType } from '../../utils/ruleTypeDetector';  // Fixed path
 
 export class GuidCommands extends BaseCommand {
     public registerCommands(): vscode.Disposable[] {
@@ -9,12 +10,12 @@ export class GuidCommands extends BaseCommand {
 
         // Individual GUID regeneration
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.regenerateGuid', this.regenerateGuid.bind(this))
+            vscode.commands.registerCommand('sentinelAsCode.regenerateGuid', this.regenerateGuid.bind(this))
         );
 
         // Bulk GUID regeneration
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.regenerateAllGuids', this.regenerateAllGuids.bind(this))
+            vscode.commands.registerCommand('sentinelAsCode.regenerateAllGuids', this.regenerateAllGuids.bind(this))
         );
 
         return disposables;
@@ -29,29 +30,20 @@ export class GuidCommands extends BaseCommand {
             let document: vscode.TextDocument;
 
             if (uri) {
-                // Called from explorer context menu - use the provided URI
                 targetFile = uri;
-                
-                // Validate this is a YAML file
                 if (!targetFile.fsPath.match(/\.(yaml|yml)$/)) {
                     vscode.window.showErrorMessage('This command only works on YAML files');
                     return;
                 }
-                
-                // Open the document
                 document = await vscode.workspace.openTextDocument(targetFile);
             } else {
-                // Called from editor context or command palette - use active editor
                 const editor = vscode.window.activeTextEditor;
                 if (!editor) {
                     vscode.window.showErrorMessage('No active editor found');
                     return;
                 }
-
                 document = editor.document;
                 targetFile = document.uri;
-                
-                // Validate this is a YAML file
                 if (!document.fileName.match(/\.(yaml|yml)$/)) {
                     vscode.window.showErrorMessage('This command only works on YAML files');
                     return;
@@ -59,42 +51,67 @@ export class GuidCommands extends BaseCommand {
             }
 
             const text = document.getText();
-            const guidRegex = /^(\s*)id:\s*([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|\{\{GUID\}\})/im;
-            const match = text.match(guidRegex);
-
-            if (!match) {
-                // No existing GUID found, ask user if they want to add one
-                const addGuid = await vscode.window.showWarningMessage(
-                    'No GUID found in this file. Would you like to add an ID field at the top?',
-                    'Yes', 'No'
-                );
-                
-                if (addGuid === 'Yes') {
-                    await this.addGuidToFileUri(targetFile);
-                }
-                return;
-            }
-
-            const currentGuid = match[2];
-            const indentation = match[1];
-            const newGuid = uuidv4();
             
-            // Show confirmation dialog with current GUID
-            const action = await vscode.window.showWarningMessage(
-                `Generate new Rule ID for "${path.basename(targetFile.fsPath)}"?\n\nCurrent ID: ${currentGuid}\nNew ID: ${newGuid}`,
-                { modal: true },
-                'Generate New ID', 'Cancel'
-            );
+            // Detect rule type
+            const ruleType = RuleTypeDetector.detectType(text);
+            
+            const guidRegex = /^(\s*)id:\s*([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}|\{\{GUID\}\})/im;
+            const numericIdRegex = /^(\s*)id:\s*["']?(\d+)["']?/im;
+            const detectorIdRegex = /^(\s*)detectorId:\s*([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/im;
+            
+            let newText = text;
+            const fieldsUpdated = [];
 
-            if (action === 'Generate New ID') {
-                const newText = text.replace(guidRegex, `${indentation}id: ${newGuid}`);
+            if (ruleType === RuleType.DEFENDER) {
+                // For Defender detections, only regenerate detectorId (not the numeric id)
+                const detectorIdMatch = text.match(detectorIdRegex);
+                if (detectorIdMatch) {
+                    const indentation = detectorIdMatch[1];
+                    const newDetectorId = uuidv4();
+                    newText = newText.replace(detectorIdRegex, `${indentation}detectorId: ${newDetectorId}`);
+                    fieldsUpdated.push('detectorId');
+                }
                 
-                // Write the updated content directly to file
-                await vscode.workspace.fs.writeFile(targetFile, Buffer.from(newText, 'utf8'));
-                
-                vscode.window.showInformationMessage(`Rule ID generated successfully!\nFile: ${path.basename(targetFile.fsPath)}\nNew ID: ${newGuid}`);
+                // Don't regenerate numeric IDs for Defender detections
+                const numericIdMatch = text.match(numericIdRegex);
+                if (numericIdMatch && fieldsUpdated.length === 0) {
+                    vscode.window.showInformationMessage('Defender Custom Detection numeric IDs are managed by Microsoft Graph API and should not be regenerated');
+                    return;
+                }
+            } else {
+                // For Sentinel rules, regenerate the GUID id
+                const idMatch = text.match(guidRegex);
+                if (idMatch) {
+                    const indentation = idMatch[1];
+                    const newGuid = uuidv4();
+                    newText = newText.replace(guidRegex, `${indentation}id: ${newGuid}`);
+                    fieldsUpdated.push('id');
+                } else {
+                    // No existing GUID found, ask user if they want to add one
+                    const addGuid = await vscode.window.showWarningMessage(
+                        'No GUID found in this file. Would you like to add an ID field at the top?',
+                        'Yes', 'No'
+                    );
+                    if (addGuid === 'Yes') {
+                        await this.addGuidToFileUri(targetFile);
+                    }
+                    return;
+                }
             }
 
+            if (fieldsUpdated.length > 0) {
+                // Show confirmation dialog
+                const action = await vscode.window.showWarningMessage(
+                    `Generate new ${fieldsUpdated.join(' and ')} for "${path.basename(targetFile.fsPath)}"?`,
+                    { modal: true },
+                    'Generate New ID', 'Cancel'
+                );
+
+                if (action === 'Generate New ID') {
+                    await vscode.workspace.fs.writeFile(targetFile, Buffer.from(newText, 'utf8'));
+                    vscode.window.showInformationMessage(`Successfully regenerated ${fieldsUpdated.join(' and ')}`);
+                }
+            }
         } catch (error) {
             console.error('Error regenerating GUID:', error);
             vscode.window.showErrorMessage(`Failed to regenerate GUID: ${error instanceof Error ? error.message : 'Unknown error'}`);

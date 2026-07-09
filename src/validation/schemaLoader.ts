@@ -43,7 +43,7 @@ export class SchemaLoader {
             
         } catch (error) {
             console.error('❌ Failed to load schema:', error);
-            throw new Error(`Failed to load validation schema: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to load validation schema: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
         }
     }
 
@@ -252,8 +252,4 @@ export class SchemaLoader {
         return this.getValidEnums('triggerOperator');
     }
 
-    // Add method for statuses
-    public static getValidStatuses(): string[] {
-        return this.getValidEnums('status');
-    }
 }

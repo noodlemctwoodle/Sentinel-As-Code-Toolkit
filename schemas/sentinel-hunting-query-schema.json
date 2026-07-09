@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Microsoft Sentinel Hunting Query",
+  "description": "Schema for Sentinel-as-Code hunting queries deployed as Log Analytics Saved Searches.",
+  "type": "object",
+  "required": ["id", "name", "query"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "Stable GUID used as the saved search resource name. Must not change after first deployment."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 260,
+      "description": "Display name shown in the Sentinel Hunting blade."
+    },
+    "description": {
+      "type": "string",
+      "description": "Plain-English explanation of what the query hunts for. Begins with 'Identifies' or 'Detects'."
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "description": "KQL query returned directly to the analyst. Hunting queries have no scheduling or threshold."
+    },
+    "tactics": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][a-zA-Z]{2,30}$"
+      },
+      "description": "MITRE ATT&CK tactic names (camelCase), stored as a tag on the saved search."
+    },
+    "techniques": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^T[0-9]{4}(\\.[0-9]{3})?$"
+      },
+      "description": "MITRE ATT&CK technique IDs, stored as a tag. Use 'techniques' (not 'relevantTechniques') for hunting queries."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "value"],
+        "properties": {
+          "name": { "type": "string" },
+          "value": { "type": "string" }
+        },
+        "additionalProperties": false
+      },
+      "description": "Additional key-value metadata pairs appended to the tactics/techniques tags at deploy time."
+    }
+  },
+  "additionalProperties": false
+}

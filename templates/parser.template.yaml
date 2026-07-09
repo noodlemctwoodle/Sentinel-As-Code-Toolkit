@@ -1,0 +1,52 @@
+# =============================================================================
+# Sentinel-as-Code parser (saved KQL function)
+# -----------------------------------------------------------------------------
+# On-disk format : YAML  (Content/Parsers/)
+# Deployed as    : Log Analytics Saved Function
+# -----------------------------------------------------------------------------
+# A parser is a reusable KQL function. Other queries call it by its
+# functionAlias. Parsers usually normalise a raw source into a stable,
+# documented column set (for example an ASIM-aligned schema). Every
+# schema-allowed field is shown below.
+# =============================================================================
+
+# REQUIRED. Stable identifier for the parser. Conventionally matches the
+# functionAlias so the source is easy to locate.
+id: ExampleParser
+
+# REQUIRED. Display name of the parser (saved function).
+name: Example Parser
+
+# OPTIONAL. What the parser normalises and why.
+description: Normalises Example product logs into a consistent, documented schema.
+
+# OPTIONAL. Organisational category shown in the saved-functions list.
+category: Security
+
+# REQUIRED. The KQL function name used to invoke the parser from other queries.
+functionAlias: ExampleParser
+
+# OPTIONAL. Parameter signature for a parameterised function. Use an empty
+# string when the parser takes no parameters, e.g.:
+#   functionParameters: "starttime:datetime, endtime:datetime"
+functionParameters: ""
+
+# REQUIRED. The KQL body of the function. Project a stable, documented column
+# set so downstream analytics and hunting queries can rely on the shape.
+query: |
+  // Author the parser body here.
+  Example_CL
+  | project
+      TimeGenerated,
+      SrcIpAddr    = tostring(SourceIp_s),
+      DstIpAddr    = tostring(DestinationIp_s),
+      DvcAction    = tostring(Action_s),
+      EventResult  = tostring(Result_s)
+
+# OPTIONAL. Semantic version of the parser; bump when the output schema changes.
+version: 1.0.0
+
+# OPTIONAL. Free-form string tags for organisation and discovery.
+tags:
+  - normalisation
+  - asim

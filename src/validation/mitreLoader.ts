@@ -64,7 +64,7 @@ export class MitreLoader {
         }
 
         try {
-            const config = vscode.workspace.getConfiguration('sentinelRules');
+            const config = vscode.workspace.getConfiguration('sentinelAsCode');
             const enabledFrameworks = config.get<string[]>('mitre.frameworks', ['enterprise', 'mobile', 'ics']);
             
             console.log(`🔄 Loading MITRE ATT&CK frameworks: ${enabledFrameworks.join(', ')}`);
@@ -102,7 +102,7 @@ export class MitreLoader {
                 const errorMsg = `Failed to load any MITRE frameworks. Errors: ${loadErrors.join(', ')}`;
                 console.error(errorMsg);
                 vscode.window.showErrorMessage(
-                    'SentinelCodeGuard: Failed to load MITRE ATT&CK data. MITRE validation will be limited.',
+                    'Sentinel as Code Toolkit: Failed to load MITRE ATT&CK data. MITRE validation will be limited.',
                     { modal: false }
                 );
                 return;
@@ -115,7 +115,7 @@ export class MitreLoader {
             // Show success message if not all frameworks loaded
             if (loadErrors.length > 0) {
                 vscode.window.showWarningMessage(
-                    `SentinelCodeGuard: Partially loaded MITRE data. Some frameworks failed: ${loadErrors.join(', ')}`,
+                    `Sentinel as Code Toolkit: Partially loaded MITRE data. Some frameworks failed: ${loadErrors.join(', ')}`,
                     { modal: false }
                 );
             }
@@ -123,7 +123,7 @@ export class MitreLoader {
         } catch (error) {
             console.error('Critical error loading MITRE data:', error);
             vscode.window.showErrorMessage(
-                `SentinelCodeGuard: Critical error loading MITRE data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+                `Sentinel as Code Toolkit: Critical error loading MITRE data: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 { modal: false }
             );
         }
@@ -152,7 +152,7 @@ export class MitreLoader {
 
         } catch (error) {
             if (error instanceof vscode.FileSystemError) {
-                throw new Error(`File not found: ${fileName}. Please ensure MITRE data files are included in the extension.`);
+                throw new Error(`File not found: ${fileName}. Please ensure MITRE data files are included in the extension.`, { cause: error });
             }
             throw error;
         }
@@ -327,7 +327,7 @@ export class MitreLoader {
         message?: string;
         severity: vscode.DiagnosticSeverity;
     } {
-        const config = vscode.workspace.getConfiguration('sentinelRules');
+        const config = vscode.workspace.getConfiguration('sentinelAsCode');
         const allowUnknown = config.get('mitre.allowUnknownTactics', true);
         const strictValidation = config.get('mitre.strictValidation', false);
 
@@ -405,7 +405,7 @@ export class MitreLoader {
         message?: string;
         severity: vscode.DiagnosticSeverity;
     } {
-        const config = vscode.workspace.getConfiguration('sentinelRules');
+        const config = vscode.workspace.getConfiguration('sentinelAsCode');
         const allowUnknown = config.get('mitre.allowUnknownTechniques', true);
         const strictValidation = config.get('mitre.strictValidation', false);
 

@@ -1,0 +1,17 @@
+Sentinel as Code Toolkit
+Copyright 2025-2026 noodlemctwoodle
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE.txt).
+
+Releases up to and including 26.7.1 were published under the MIT License and
+remain available under those terms; the Apache License 2.0 applies from the next
+release onward.
+
+Portions of this repository are third-party content distributed under their own
+licences and are NOT covered by the Apache License above:
+
+  * MITRE ATT&CK data under data/ (mitre-v16.json, mitre-mobile.json,
+    mitre-ics.json) is (c) The MITRE Corporation, redistributed under the ATT&CK
+    Terms of Use (https://attack.mitre.org/resources/terms-of-use/).
+  * Microsoft-published schema and Content Hub connector metadata referenced or
+    bundled by this repository remains subject to Microsoft's own terms.

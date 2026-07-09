@@ -33,6 +33,7 @@ interface ConnectorDataStructure {
 
 export class ConnectorLoader {
     private static connectors: Map<string, ConnectorInfo> = new Map();
+    private static tableConnectorIndex?: Map<string, ConnectorInfo[]>;
     private static extensionContext: vscode.ExtensionContext;
 
     public static setExtensionContext(context: vscode.ExtensionContext) {
@@ -40,6 +41,7 @@ export class ConnectorLoader {
     }
 
     public static async loadConnectorData(): Promise<void> {
+        this.tableConnectorIndex = undefined;
         try {
             await this.loadFromEmbeddedData();
         } catch (error) {
@@ -227,7 +229,7 @@ export class ConnectorLoader {
     }
 
     private static async loadCustomConnectors(): Promise<void> {
-        const config = vscode.workspace.getConfiguration('sentinelRules');
+        const config = vscode.workspace.getConfiguration('sentinelAsCode');
         const customConnectors = config.get<string[]>('connectors.customConnectors', []);
         
         for (const connectorId of customConnectors) {
@@ -248,7 +250,7 @@ export class ConnectorLoader {
     }
 
     public static getValidationMode(): 'strict' | 'workspace' | 'permissive' {
-        const config = vscode.workspace.getConfiguration('sentinelRules');
+        const config = vscode.workspace.getConfiguration('sentinelAsCode');
         return config.get<'strict' | 'workspace' | 'permissive'>('connectors.validationMode', 'permissive');
     }
 
@@ -362,6 +364,77 @@ export class ConnectorLoader {
             .replace(/_CL$/, '') // Remove "_CL" suffix
             .trim()
             .toLowerCase();
+    }
+
+    private static getTableConnectorIndex(): Map<string, ConnectorInfo[]> {
+        if (this.tableConnectorIndex) {
+            return this.tableConnectorIndex;
+        }
+        const index = new Map<string, ConnectorInfo[]>();
+        for (const connector of this.connectors.values()) {
+            for (const dataType of connector.dataTypes) {
+                const key = this.normalizeDataType(dataType);
+                if (!key) {
+                    continue;
+                }
+                const list = index.get(key) ?? [];
+                list.push(connector);
+                index.set(key, list);
+            }
+        }
+        this.tableConnectorIndex = index;
+        return index;
+    }
+
+    // Connectors that provide a table, ranked non-deprecated + Microsoft first.
+    private static rankConnectorsForTable(table: string): ConnectorInfo[] {
+        const matches = this.getTableConnectorIndex().get(this.normalizeDataType(table)) ?? [];
+        return [...matches].sort((a, b) => {
+            if (!!a.deprecated !== !!b.deprecated) {
+                return a.deprecated ? 1 : -1;
+            }
+            const aMicrosoft = a.publisher === 'Microsoft' ? 0 : 1;
+            const bMicrosoft = b.publisher === 'Microsoft' ? 0 : 1;
+            if (aMicrosoft !== bMicrosoft) {
+                return aMicrosoft - bMicrosoft;
+            }
+            return a.id.localeCompare(b.id);
+        });
+    }
+
+    /**
+     * Extracts the Log Analytics tables referenced by a KQL query (identifiers that
+     * match a known connector table) and maps them to their best-fit data connectors,
+     * grouped as ready-to-use requiredDataConnectors entries.
+     */
+    public static suggestRequiredDataConnectorsForQuery(query: string): Array<{ connectorId: string; dataTypes: string[] }> {
+        const index = this.getTableConnectorIndex();
+        const seen = new Set<string>();
+        const tables: string[] = [];
+
+        const tokenRegex = /[A-Za-z_][A-Za-z0-9_]*/g;
+        let match: RegExpExecArray | null;
+        while ((match = tokenRegex.exec(query)) !== null) {
+            const key = this.normalizeDataType(match[0]);
+            if (index.has(key) && !seen.has(key)) {
+                seen.add(key);
+                tables.push(match[0]);
+            }
+        }
+
+        const byConnector = new Map<string, string[]>();
+        for (const table of tables) {
+            const ranked = this.rankConnectorsForTable(table);
+            if (ranked.length === 0) {
+                continue;
+            }
+            const bestConnectorId = ranked[0].id;
+            const list = byConnector.get(bestConnectorId) ?? [];
+            list.push(table);
+            byConnector.set(bestConnectorId, list);
+        }
+
+        return [...byConnector.entries()].map(([connectorId, dataTypes]) => ({ connectorId, dataTypes }));
     }
 
     public static validateConnector(connectorId: string): {
@@ -513,6 +586,22 @@ export class ConnectorLoader {
             )
             .map(dataType => this.normalizeDataType(dataType))
             .slice(0, 10);
+    }
+
+    /**
+     * Get every unique data type (Log Analytics table) across all connectors,
+     * sorted alphabetically. Used as the unscoped fallback for dataTypes completion.
+     */
+    public static getAllDataTypes(): string[] {
+        const tables = new Set<string>();
+        for (const connector of this.connectors.values()) {
+            for (const dataType of connector.dataTypes) {
+                if (dataType) {
+                    tables.add(dataType);
+                }
+            }
+        }
+        return Array.from(tables).sort((a, b) => a.localeCompare(b));
     }
 
     /**

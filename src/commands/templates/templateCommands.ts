@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import * as yaml from 'js-yaml';
 import { BaseCommand } from '../base/baseCommand';
 import { TemplateTypeOption } from './templateTypes';
 import { SentinelRuleFormatter } from '../../formatting/formatter';
@@ -11,38 +12,28 @@ export class TemplateCommands extends BaseCommand {
 
         // Enhanced template creation command (for context menus)
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.createSentinelRule', this.createSentinelRuleWorkflow.bind(this))
+            vscode.commands.registerCommand('sentinelAsCode.createSentinelRule', this.createSentinelRuleWorkflow.bind(this))
         );
 
         // Unified template command for command palette
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateRuleTemplate', this.createSentinelRuleWorkflow.bind(this))
+            vscode.commands.registerCommand('sentinelAsCode.generateRuleTemplate', this.createSentinelRuleWorkflow.bind(this))
         );
 
         // Legacy template commands for backward compatibility
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateTemplate', (uri?: vscode.Uri) => 
+            vscode.commands.registerCommand('sentinelAsCode.generateTemplate', (uri?: vscode.Uri) => 
                 this.generateTemplate('standard-rule', 'standard_sentinel_rule.yaml', uri))
         );
 
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateAdvancedTemplate', (uri?: vscode.Uri) => 
-                this.generateTemplate('advanced-rule', 'advanced_sentinel_rule.yaml', uri))
-        );
-
-        disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateNRTTemplate', (uri?: vscode.Uri) => 
+            vscode.commands.registerCommand('sentinelAsCode.generateNRTTemplate', (uri?: vscode.Uri) => 
                 this.generateTemplate('nrt-rule', 'nrt_sentinel_rule.yaml', uri))
         );
 
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateBehaviorAnalyticsTemplate', (uri?: vscode.Uri) => 
-                this.generateTemplate('behavior-analytics-rule', 'anomaly_sentinel_rule.yaml', uri))
-        );
-
-        disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateMinimalTemplate', (uri?: vscode.Uri) => 
-                this.generateTemplate('minimal-rule', 'minimal_sentinel_rule.yaml', uri))
+            vscode.commands.registerCommand('defender.generateDetectionTemplate', (uri?: vscode.Uri) => 
+                this.generateTemplate('custom-detection', 'custom_detection.yaml', uri))
         );
 
         return disposables;
@@ -74,11 +65,11 @@ export class TemplateCommands extends BaseCommand {
             }
 
             // Step 4: Generate template
-            await this.generateTemplateAtLocation(templateType.templateKey, saveLocation);
+            await this.generateTemplateAtLocation(templateType, saveLocation);
 
             // Step 5: Open the created file
             const document = await vscode.workspace.openTextDocument(saveLocation);
-            await vscode.languages.setTextDocumentLanguage(document, 'yaml');
+            await vscode.languages.setTextDocumentLanguage(document, templateType.language ?? 'yaml');
             await vscode.window.showTextDocument(document);
 
             vscode.window.showInformationMessage(`${templateType.displayName} template created successfully!`);
@@ -96,56 +87,82 @@ export class TemplateCommands extends BaseCommand {
         const templateOptions: TemplateTypeOption[] = [
             {
                 label: "$(file-code) Standard Rule",
-                description: "General-purpose detection rule with standard fields",
+                description: "General-purpose scheduled Sentinel analytics rule",
                 detail: "Recommended for most detection scenarios",
                 templateKey: "standard-rule",
                 defaultFilename: "standard_sentinel_rule.yaml",
                 displayName: "Standard Rule"
             },
             {
-                label: "$(gear) Advanced Rule",
-                description: "Complex multi-stage detection with advanced fields",
-                detail: "For sophisticated threat detection scenarios",
-                templateKey: "advanced-rule",
-                defaultFilename: "advanced_sentinel_rule.yaml",
-                displayName: "Advanced Rule"
-            },
-            {
                 label: "$(clock) Near Real-Time (NRT) Rule",
-                description: "Low-latency alerting for immediate threats",
-                detail: "For time-sensitive detections (5-minute intervals)",
+                description: "Low-latency Sentinel alerting for immediate threats",
+                detail: "For time-sensitive detections (no scheduling fields)",
                 templateKey: "nrt-rule",
                 defaultFilename: "nrt_sentinel_rule.yaml",
                 displayName: "NRT Rule"
             },
             {
-                label: "$(graph) Behaviour Analytics Rule",
-                description: "Machine learning-based anomaly detection",
-                detail: "For detecting unusual patterns and behaviours",
-                templateKey: "behavior-analytics-rule",
-                defaultFilename: "anomaly_sentinel_rule.yaml",
-                displayName: "Behaviour Analytics Rule"
+                label: "$(shield) Custom Detection",
+                description: "Defender XDR custom detection (Advanced Hunting KQL)",
+                detail: "Graph detectionRule schema for Content/DefenderCustomDetections",
+                templateKey: "custom-detection",
+                defaultFilename: "custom_detection.yaml",
+                displayName: "Custom Detection"
             },
             {
-                label: "$(file) Minimal Rule",
-                description: "Basic template with essential fields only",
-                detail: "Quick start template for simple rules",
-                templateKey: "minimal-rule",
-                defaultFilename: "minimal_sentinel_rule.yaml",
-                displayName: "Minimal Rule"
+                label: "$(search) Hunting Query",
+                description: "Log Analytics saved search for the Sentinel Hunting blade",
+                detail: "YAML for Content/HuntingQueries (no schedule or threshold)",
+                templateKey: "hunting-query",
+                templateFile: "hunting-query.template.yaml",
+                language: "yaml",
+                defaultFilename: "hunting_query.yaml",
+                displayName: "Hunting Query"
             },
             {
-                label: "$(archive) Fallback Rule",
-                description: "Generic fallback template",
-                detail: "For edge cases and custom scenarios",
-                templateKey: "fallback-rule",
-                defaultFilename: "fallback_sentinel_rule.yaml",
-                displayName: "Fallback Rule"
+                label: "$(symbol-function) Parser",
+                description: "Saved KQL function that normalises a source",
+                detail: "YAML for Content/Parsers, called by its functionAlias",
+                templateKey: "parser",
+                templateFile: "parser.template.yaml",
+                language: "yaml",
+                defaultFilename: "parser.yaml",
+                displayName: "Parser"
+            },
+            {
+                label: "$(graph) Summary Rule",
+                description: "Log Analytics scheduled aggregation into a _CL table",
+                detail: "JSON for Content/SummaryRules",
+                templateKey: "summary-rule",
+                templateFile: "summary-rule.template.yaml",
+                language: "json",
+                defaultFilename: "summary_rule.json",
+                displayName: "Summary Rule"
+            },
+            {
+                label: "$(zap) Automation Rule",
+                description: "Incident/alert automation (modify, run playbook, add task)",
+                detail: "JSON for Content/AutomationRules",
+                templateKey: "automation-rule",
+                templateFile: "automation-rule.template.yaml",
+                language: "json",
+                defaultFilename: "automation_rule.json",
+                displayName: "Automation Rule"
+            },
+            {
+                label: "$(list-flat) Watchlist",
+                description: "Watchlist metadata (pairs with a data.csv/data.tsv)",
+                detail: "JSON for Content/Watchlists/<alias>/watchlist.json",
+                templateKey: "watchlist",
+                templateFile: "watchlist.template.yaml",
+                language: "json",
+                defaultFilename: "watchlist.json",
+                displayName: "Watchlist"
             }
         ];
 
         const selected = await vscode.window.showQuickPick(templateOptions, {
-            placeHolder: "Select a Sentinel rule template type",
+            placeHolder: "Select a Sentinel-as-Code content template",
             matchOnDescription: true,
             matchOnDetail: true,
             ignoreFocusOut: false
@@ -162,6 +179,7 @@ export class TemplateCommands extends BaseCommand {
             defaultUri: defaultPath ? vscode.Uri.file(path.join(defaultPath, defaultFilename || 'sentinel_rule.yaml')) : undefined,
             filters: {
                 'YAML Files': ['yaml', 'yml'],
+                'JSON Files': ['json'],
                 'All Files': ['*']
             },
             title: "Save Sentinel Rule Template"
@@ -173,16 +191,25 @@ export class TemplateCommands extends BaseCommand {
     /**
      * Generate template at specific location with GUID replacement
      */
-    private async generateTemplateAtLocation(templateKey: string, filePath: string): Promise<void> {
+    private async generateTemplateAtLocation(templateType: TemplateTypeOption, filePath: string): Promise<void> {
         try {
-            const template = await SentinelRuleFormatter.loadTemplate(templateKey);
-            
-            // Replace {{GUID}} placeholder with actual GUID
-            const processedTemplate = template.replace(/\{\{GUID\}\}/g, uuidv4());
-            
-            await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(processedTemplate, 'utf8'));
+            const template = templateType.templateFile
+                ? await SentinelRuleFormatter.loadContentTemplate(templateType.templateFile)
+                : await SentinelRuleFormatter.loadTemplate(templateType.templateKey);
+
+            // Replace {{GUID}} placeholder with an actual GUID.
+            let output = template.replace(/\{\{GUID\}\}/g, uuidv4());
+
+            // Content templates are authored in YAML for readable comments. The
+            // Sentinel-as-Code project stores automation rules, summary rules, and
+            // watchlists as JSON, so convert the parsed YAML on export.
+            if (templateType.language === 'json') {
+                output = JSON.stringify(yaml.load(output), null, 2) + '\n';
+            }
+
+            await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(output, 'utf8'));
         } catch (error) {
-            throw new Error(`Failed to load or create template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to load or create template: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
         }
     }
 

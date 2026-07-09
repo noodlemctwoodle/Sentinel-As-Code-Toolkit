@@ -8,7 +8,7 @@ export class ConversionCommands extends BaseCommand {
         const disposables: vscode.Disposable[] = [];
 
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.convertArmToYaml', this.convertArmToYaml.bind(this))
+            vscode.commands.registerCommand('sentinelAsCode.convertArmToYaml', this.convertArmToYaml.bind(this))
         );
 
         return disposables;
@@ -54,15 +54,14 @@ export class ConversionCommands extends BaseCommand {
             }
 
             // Get conversion options from configuration
-            const config = vscode.workspace.getConfiguration('sentinelRules.conversion');
+            const config = vscode.workspace.getConfiguration('sentinelAsCode.conversion');
             const options: Partial<ConversionOptions> = {
                 namingStrategy: config.get('defaultNamingStrategy', 'displayName'),
                 validateMitre: config.get('validateMitreOnConversion', true),
                 autoFormat: config.get('autoFormatAfterConversion', true),
                 includeOptionalFields: config.get('includeOptionalFields', true),
                 preserveQueryFormatting: config.get('preserveQueryFormatting', true),
-                defaultVersion: config.get('defaultVersion', '1.0.0'),
-                defaultStatus: config.get('defaultStatus', 'Available')
+                defaultVersion: config.get('defaultVersion', '1.0.0')
             };
 
             // Show progress

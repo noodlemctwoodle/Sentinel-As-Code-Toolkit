@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Sentinel-as-Code Watchlist",
+  "description": "Schema for Sentinel-as-Code watchlist metadata (watchlist.json). The data lives alongside in data.csv/data.tsv.",
+  "type": "object",
+  "required": ["watchlistAlias", "displayName", "description", "provider", "itemsSearchKey"],
+  "properties": {
+    "watchlistAlias": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Unique alias used in KQL via _GetWatchlist(...). Must match the containing folder name."
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable name shown in the Sentinel UI."
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the watchlist's purpose."
+    },
+    "provider": {
+      "type": "string",
+      "description": "Set to Custom for custom watchlists."
+    },
+    "itemsSearchKey": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Column name used as the primary key. Must match a CSV header exactly (case-sensitive)."
+    }
+  },
+  "additionalProperties": false
+}

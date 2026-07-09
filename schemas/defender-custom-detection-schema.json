@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Defender XDR Custom Detection",
+  "description": "Schema for Sentinel-as-Code Defender XDR custom detections (Microsoft Graph detectionRule authoring schema).",
+  "type": "object",
+  "required": ["displayName", "queryCondition", "schedule", "detectionAction"],
+  "properties": {
+    "displayName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "Rule display name."
+    },
+    "isEnabled": {
+      "type": "boolean",
+      "description": "Whether the rule is active (default: true)."
+    },
+    "queryCondition": {
+      "type": "object",
+      "required": ["queryText"],
+      "properties": {
+        "queryText": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Advanced Hunting KQL query. Return the columns required by your source table."
+        }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "required": ["period"],
+      "properties": {
+        "period": {
+          "type": "string",
+          "enum": ["0", "1H", "3H", "12H", "24H"],
+          "description": "Run frequency. 0 = near real-time (NRT)."
+        }
+      }
+    },
+    "detectionAction": {
+      "type": "object",
+      "required": ["alertTemplate"],
+      "properties": {
+        "alertTemplate": {
+          "type": "object",
+          "required": ["title", "severity", "category", "mitreTechniques"],
+          "properties": {
+            "title": { "type": "string", "minLength": 1 },
+            "description": { "type": "string" },
+            "severity": {
+              "type": "string",
+              "enum": ["informational", "low", "medium", "high"],
+              "description": "Lowercase severity."
+            },
+            "category": { "type": "string" },
+            "mitreTechniques": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^T[0-9]{4}(\\.[0-9]{3})?$" }
+            },
+            "recommendedActions": { "type": "string" },
+            "impactedAssets": {
+              "type": "array",
+              "description": "Entities surfaced on the alert. Map each to a column the query returns.",
+              "items": {
+                "type": "object",
+                "required": ["@odata.type", "identifier"],
+                "properties": {
+                  "@odata.type": {
+                    "type": "string",
+                    "enum": [
+                      "#microsoft.graph.security.impactedDeviceAsset",
+                      "#microsoft.graph.security.impactedUserAsset",
+                      "#microsoft.graph.security.impactedMailboxAsset"
+                    ]
+                  },
+                  "identifier": { "type": "string" }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responseActions": {
+          "type": "array",
+          "description": "Automated actions run on matching entities. Each identifier must map to a column the query returns.",
+          "items": {
+            "type": "object",
+            "required": ["@odata.type", "identifier"],
+            "properties": {
+              "@odata.type": {
+                "type": "string",
+                "enum": [
+                  "#microsoft.graph.security.isolateDeviceResponseAction",
+                  "#microsoft.graph.security.restrictAppExecutionResponseAction",
+                  "#microsoft.graph.security.runAntivirusScanResponseAction",
+                  "#microsoft.graph.security.collectInvestigationPackageResponseAction",
+                  "#microsoft.graph.security.initiateInvestigationResponseAction",
+                  "#microsoft.graph.security.stopAndQuarantineFileResponseAction",
+                  "#microsoft.graph.security.blockFileResponseAction",
+                  "#microsoft.graph.security.allowFileResponseAction",
+                  "#microsoft.graph.security.disableUserResponseAction",
+                  "#microsoft.graph.security.forceUserPasswordResetResponseAction",
+                  "#microsoft.graph.security.markUserAsCompromisedResponseAction",
+                  "#microsoft.graph.security.softDeleteResponseAction",
+                  "#microsoft.graph.security.hardDeleteResponseAction",
+                  "#microsoft.graph.security.moveToInboxResponseAction",
+                  "#microsoft.graph.security.moveToJunkResponseAction",
+                  "#microsoft.graph.security.moveToDeletedItemsResponseAction"
+                ]
+              },
+              "identifier": { "type": "string" },
+              "isolationType": {
+                "type": "string",
+                "enum": ["full", "selective"],
+                "description": "isolateDevice only: type of network isolation."
+              },
+              "deviceGroupNames": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "allowFile/blockFile only: limit to named device groups."
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

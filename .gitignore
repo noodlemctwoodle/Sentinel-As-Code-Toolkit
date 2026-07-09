@@ -148,4 +148,4 @@ docs/_build/
 .internal
 local/
 temp
-SentinelCodeGuard.code-workspace
+Sentinel-As-Code.code-workspace

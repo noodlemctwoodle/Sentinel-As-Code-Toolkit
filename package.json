@@ -1,18 +1,18 @@
 {
   "name": "sentinelcodeguard",
-  "displayName": "SentinelCodeGuard (Beta)",
-  "description": "Professional development toolkit for Microsoft Sentinel Analytics Rules with intelligent validation, formatting, and comprehensive templates (Beta Version)",
-  "version": "0.0.11",
+  "displayName": "Sentinel as Code Toolkit",
+  "description": "The dedicated VS Code toolkit for the Sentinel-as-Code project: intelligent validation, formatting, templates, and ARM-to-YAML conversion for Microsoft Sentinel Analytics Rules",
+  "version": "26.7.1",
   "publisher": "noodlemctwoodle",
   "icon": "images/icon.png",
   "engines": {
-    "vscode": "^1.101.0"
+    "vscode": "^1.125.0"
   },
   "categories": [
     "Linters",
     "Formatters",
     "Snippets",
-    "Language Packs"
+    "Programming Languages"
   ],
   "keywords": [
     "sentinel",
@@ -26,26 +26,152 @@
     "kql",
     "mitre",
     "attack",
-    "codeguard",
+    "sentinel-as-code",
     "detection",
-    "threat-hunting",
-    "beta",
-    "preview"
+    "threat-hunting"
   ],
   "homepage": "https://sentinel.blog",
   "repository": {
     "type": "git",
-    "url": "https://github.com/noodlemctwoodle/SentinelCodeGuard"
+    "url": "https://github.com/noodlemctwoodle/Sentinel-As-Code"
   },
   "bugs": {
-    "url": "https://github.com/noodlemctwoodle/SentinelCodeGuard/issues"
+    "url": "https://github.com/noodlemctwoodle/Sentinel-As-Code/issues"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "main": "./dist/extension.js",
   "activationEvents": [
-    "onLanguage:yaml"
+    "onLanguage:yaml",
+    "onLanguage:json"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "sentinelAsCode.fixFieldOrder",
+        "title": "Fix Field Order",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.formatRule",
+        "title": "Format Sentinel Rule",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.formatContent",
+        "title": "Format Sentinel Content (Auto-detect)",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.createSentinelRule",
+        "title": "Create Sentinel Rule Template...",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.generateRuleTemplate",
+        "title": "Generate Rule Template",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.regenerateGuid",
+        "title": "Generate New Rule ID",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.regenerateAllGuids",
+        "title": "Generate New IDs for All Rules",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.generateTemplate",
+        "title": "Generate Standard Rule Template",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.generateNRTTemplate",
+        "title": "Generate NRT Rule Template",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "defender.generateDetectionTemplate",
+        "title": "Generate Custom Detection Template",
+        "category": "Defender-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.createWatchlistFromCsv",
+        "title": "Create Watchlist from CSV",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.newContent",
+        "title": "New Sentinel-as-Code Content...",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.createHuntingQuery",
+        "title": "New Hunting Query",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.createParser",
+        "title": "New Parser",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.createSummaryRule",
+        "title": "New Summary Rule",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.createAutomationRule",
+        "title": "New Automation Rule",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.populateDataConnectors",
+        "title": "Populate Required Data Connectors from Query",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.validateWorkspace",
+        "title": "Bulk Maintenance & Validation",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.convertArmToYaml",
+        "title": "Decompile ARM to YAML",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "defender.formatForRepo",
+        "title": "Format Custom Detection for Repo",
+        "category": "Defender-As-Code"
+      },
+      {
+        "command": "defender.convertYamlToJson",
+        "title": "Convert Custom Detection YAML to JSON",
+        "category": "Defender-As-Code"
+      },
+      {
+        "command": "defender.convertJsonToYaml",
+        "title": "Convert Custom Detection JSON to YAML",
+        "category": "Defender-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.validateRule",
+        "title": "Validate Rule (Auto-detect Type)",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "sentinelAsCode.validateSentinelRule",
+        "title": "Validate as Sentinel Analytics Rule",
+        "category": "Sentinel-As-Code"
+      },
+      {
+        "command": "defender.validateDetection",
+        "title": "Validate as Custom Detection",
+        "category": "Defender-As-Code"
+      }
+    ],
     "languages": [
       {
         "id": "sentinel-rule",
@@ -73,212 +199,186 @@
         "path": "./snippets/sentinel-rules.json"
       }
     ],
-    "commands": [
-      {
-        "command": "sentinelRules.fixFieldOrder",
-        "title": "Fix Field Order",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.formatRule",
-        "title": "Format Sentinel Rule",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.createSentinelRule",
-        "title": "Create Sentinel Rule Template...",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.generateRuleTemplate",
-        "title": "Generate Rule Template",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.regenerateGuid",
-        "title": "Generate New Rule ID",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.regenerateAllGuids",
-        "title": "Generate New IDs for All Rules",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.generateTemplate",
-        "title": "Generate Standard Rule Template",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.generateAdvancedTemplate",
-        "title": "Generate Advanced Rule Template",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.generateNRTTemplate",
-        "title": "Generate NRT Rule Template",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.generateBehaviorAnalyticsTemplate",
-        "title": "Generate Behavior Analytics Rule Template",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.generateMinimalTemplate",
-        "title": "Generate Minimal Rule Template",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.validateWorkspace",
-        "title": "Bulk Maintenance & Validation",
-        "category": "Sentinel Rules"
-      },
-      {
-        "command": "sentinelRules.convertArmToYaml",
-        "title": "Decompile ARM to YAML",
-        "category": "Sentinel Rules"
-      }
-    ],
     "menus": {
       "editor/context": [
         {
           "when": "resourceExtname == .yaml && resourceFilename =~ /.*\\.sentinel\\.(yaml|yml)$/",
-          "command": "sentinelRules.fixFieldOrder",
+          "command": "sentinelAsCode.fixFieldOrder",
           "group": "sentinel@1"
         },
         {
           "when": "resourceExtname == .yaml && resourceFilename =~ /.*\\.sentinel\\.(yaml|yml)$/",
-          "command": "sentinelRules.formatRule",
+          "command": "sentinelAsCode.formatRule",
           "group": "sentinel@2"
         },
         {
           "when": "resourceExtname == .yaml || resourceExtname == .yml",
-          "command": "sentinelRules.regenerateGuid",
+          "command": "sentinelAsCode.regenerateGuid",
           "group": "sentinel@3"
         },
         {
-          "when": "resourceExtname == .json && config.sentinelRules.conversion.enabled",
-          "command": "sentinelRules.convertArmToYaml",
+          "when": "resourceExtname == .json && config.sentinelAsCode.conversion.enabled",
+          "command": "sentinelAsCode.convertArmToYaml",
           "group": "sentinel@4"
+        },
+        {
+          "when": "resourceExtname == .yaml || resourceExtname == .yml || resourceExtname == .json",
+          "command": "sentinelAsCode.formatContent",
+          "group": "sentinel@5"
+        },
+        {
+          "when": "resourceExtname == .csv || resourceExtname == .tsv",
+          "command": "sentinelAsCode.createWatchlistFromCsv",
+          "group": "sentinel@6"
+        },
+        {
+          "when": "resourceExtname == .yaml || resourceExtname == .yml",
+          "command": "sentinelAsCode.populateDataConnectors",
+          "group": "sentinel@7"
         }
       ],
       "explorer/context": [
         {
           "when": "explorerResourceIsFolder",
-          "command": "sentinelRules.createSentinelRule",
+          "command": "sentinelAsCode.createSentinelRule",
           "group": "sentinel@1"
         },
         {
           "when": "resourceExtname == .yaml || resourceExtname == .yml",
-          "command": "sentinelRules.regenerateGuid",
+          "command": "sentinelAsCode.regenerateGuid",
           "group": "sentinel@2"
         },
         {
-          "when": "resourceExtname == .json && config.sentinelRules.conversion.enabled",
-          "command": "sentinelRules.convertArmToYaml",
+          "when": "resourceExtname == .json && config.sentinelAsCode.conversion.enabled",
+          "command": "sentinelAsCode.convertArmToYaml",
           "group": "sentinel@3"
         }
       ],
       "commandPalette": [
         {
-          "command": "sentinelRules.fixFieldOrder",
+          "command": "sentinelAsCode.fixFieldOrder",
           "when": "resourceExtname == .yaml"
         },
         {
-          "command": "sentinelRules.createSentinelRule",
+          "command": "sentinelAsCode.createSentinelRule",
           "when": "false"
         },
         {
-          "command": "sentinelRules.generateRuleTemplate"
+          "command": "sentinelAsCode.generateRuleTemplate"
         },
         {
-          "command": "sentinelRules.regenerateGuid",
+          "command": "sentinelAsCode.regenerateGuid",
           "when": "resourceExtname == .yaml"
         },
         {
-          "command": "sentinelRules.regenerateAllGuids"
+          "command": "sentinelAsCode.regenerateAllGuids"
         },
         {
-          "command": "sentinelRules.formatRule",
+          "command": "sentinelAsCode.formatRule",
           "when": "resourceExtname == .yaml"
         },
         {
-          "command": "sentinelRules.validateWorkspace"
+          "command": "sentinelAsCode.formatContent",
+          "when": "resourceExtname == .yaml || resourceExtname == .yml || resourceExtname == .json"
         },
         {
-          "command": "sentinelRules.convertArmToYaml",
-          "when": "config.sentinelRules.conversion.enabled"
+          "command": "sentinelAsCode.validateWorkspace"
         },
         {
-          "command": "sentinelRules.generateTemplate",
+          "command": "sentinelAsCode.convertArmToYaml",
+          "when": "config.sentinelAsCode.conversion.enabled"
+        },
+        {
+          "command": "sentinelAsCode.generateTemplate",
           "when": "false"
         },
         {
-          "command": "sentinelRules.generateAdvancedTemplate",
+          "command": "sentinelAsCode.generateNRTTemplate",
           "when": "false"
         },
         {
-          "command": "sentinelRules.generateNRTTemplate",
-          "when": "false"
+          "command": "defender.generateDetectionTemplate"
         },
         {
-          "command": "sentinelRules.generateBehaviorAnalyticsTemplate",
-          "when": "false"
+          "command": "sentinelAsCode.createWatchlistFromCsv",
+          "when": "resourceExtname == .csv || resourceExtname == .tsv"
         },
         {
-          "command": "sentinelRules.generateMinimalTemplate",
-          "when": "false"
+          "command": "sentinelAsCode.newContent"
+        },
+        {
+          "command": "sentinelAsCode.createHuntingQuery"
+        },
+        {
+          "command": "sentinelAsCode.createParser"
+        },
+        {
+          "command": "sentinelAsCode.createSummaryRule"
+        },
+        {
+          "command": "sentinelAsCode.createAutomationRule"
+        },
+        {
+          "command": "sentinelAsCode.populateDataConnectors",
+          "when": "resourceExtname == .yaml || resourceExtname == .yml"
         }
       ]
     },
     "keybindings": [
       {
-        "command": "sentinelRules.fixFieldOrder",
+        "command": "sentinelAsCode.fixFieldOrder",
         "key": "ctrl+shift+f",
         "mac": "cmd+shift+f",
         "when": "resourceExtname == .yaml && resourceFilename =~ /.*\\.sentinel\\.(yaml|yml)$/"
       }
     ],
     "configuration": {
-      "title": "Sentinel Analytics Rules",
+      "title": "Sentinel as Code Toolkit",
       "properties": {
-        "sentinelRules.validation.enabled": {
+        "sentinelAsCode.validation.enabled": {
           "type": "boolean",
           "default": true,
           "description": "Enable automatic validation of Sentinel rules"
         },
-        "sentinelRules.validation.onSave": {
+        "sentinelAsCode.validation.onSave": {
           "type": "boolean",
           "default": true,
           "description": "Validate rules automatically on save"
         },
-        "sentinelRules.validation.onType": {
+        "sentinelAsCode.validation.onType": {
           "type": "boolean",
           "default": false,
           "description": "Validate rules as you type (may impact performance)"
         },
-        "sentinelRules.formatting.enabled": {
+        "sentinelAsCode.validation.excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Glob patterns for files to exclude from validation (for example: **/test/**, **/*.draft.yaml, **/.archive/**). Matching files show no diagnostics. Supports *, **, ?, and {a,b} alternation."
+        },
+        "sentinelAsCode.formatting.enabled": {
           "type": "boolean",
           "default": true,
           "description": "Enable automatic formatting of Sentinel rules"
         },
-        "sentinelRules.fieldOrdering.enforceOrder": {
+        "sentinelAsCode.fieldOrdering.enforceOrder": {
           "type": "boolean",
           "default": true,
           "description": "Enforce proper field ordering in Sentinel rules"
         },
-        "sentinelRules.fieldOrdering.showOrderHints": {
+        "sentinelAsCode.fieldOrdering.showOrderHints": {
           "type": "boolean",
           "default": true,
           "description": "Show field ordering hints in diagnostics"
         },
-        "sentinelRules.intellisense.enabled": {
+        "sentinelAsCode.intellisense.enabled": {
           "type": "boolean",
           "default": true,
           "description": "Enable IntelliSense for Sentinel rule fields"
         },
-        "sentinelRules.mitre.version": {
+        "sentinelAsCode.mitre.version": {
           "type": "string",
           "default": "v16",
           "enum": [
@@ -288,7 +388,7 @@
           ],
           "description": "MITRE ATT&CK framework version to use for validation"
         },
-        "sentinelRules.mitre.frameworks": {
+        "sentinelAsCode.mitre.frameworks": {
           "type": "array",
           "items": {
             "type": "string",
@@ -305,7 +405,7 @@
           ],
           "description": "MITRE ATT&CK frameworks to load and validate against"
         },
-        "sentinelRules.connectors.validationMode": {
+        "sentinelAsCode.connectors.validationMode": {
           "type": "string",
           "enum": [
             "strict",
@@ -320,7 +420,7 @@
           ],
           "description": "How strictly to validate connector IDs"
         },
-        "sentinelRules.connectors.customConnectors": {
+        "sentinelAsCode.connectors.customConnectors": {
           "type": "array",
           "items": {
             "type": "string"
@@ -328,27 +428,27 @@
           "default": [],
           "description": "Additional custom connector IDs to recognize"
         },
-        "sentinelRules.mitre.allowUnknownTactics": {
+        "sentinelAsCode.mitre.allowUnknownTactics": {
           "type": "boolean",
           "default": true,
           "description": "Allow tactics not found in loaded MITRE data (shows info message only)"
         },
-        "sentinelRules.mitre.allowUnknownTechniques": {
+        "sentinelAsCode.mitre.allowUnknownTechniques": {
           "type": "boolean",
           "default": true,
           "description": "Allow techniques not found in loaded MITRE data (shows info message only)"
         },
-        "sentinelRules.mitre.strictValidation": {
+        "sentinelAsCode.mitre.strictValidation": {
           "type": "boolean",
           "default": false,
           "description": "Require all tactics/techniques to be in loaded MITRE data (shows errors for unknown items)"
         },
-        "sentinelRules.conversion.enabled": {
+        "sentinelAsCode.conversion.enabled": {
           "type": "boolean",
           "default": true,
           "description": "Enable ARM template to YAML conversion functionality"
         },
-        "sentinelRules.conversion.defaultNamingStrategy": {
+        "sentinelAsCode.conversion.defaultNamingStrategy": {
           "type": "string",
           "enum": [
             "original",
@@ -363,54 +463,45 @@
           ],
           "description": "Default strategy for naming converted YAML files"
         },
-        "sentinelRules.conversion.validateMitreOnConversion": {
+        "sentinelAsCode.conversion.validateMitreOnConversion": {
           "type": "boolean",
           "default": true,
           "description": "Validate and correct MITRE tactics/techniques during conversion"
         },
-        "sentinelRules.conversion.autoFormatAfterConversion": {
+        "sentinelAsCode.conversion.autoFormatAfterConversion": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically format converted YAML files using SentinelCodeGuard formatting"
+          "description": "Automatically format converted YAML files using Sentinel as Code Toolkit formatting"
         },
-        "sentinelRules.conversion.showConversionSummary": {
+        "sentinelAsCode.conversion.showConversionSummary": {
           "type": "boolean",
           "default": true,
           "description": "Show conversion summary dialog with warnings and results"
         },
-        "sentinelRules.conversion.outputDirectory": {
+        "sentinelAsCode.conversion.outputDirectory": {
           "type": "string",
           "default": "",
           "description": "Custom output directory for converted files (empty = same directory as source)"
         },
-        "sentinelRules.conversion.preserveQueryFormatting": {
+        "sentinelAsCode.conversion.preserveQueryFormatting": {
           "type": "boolean",
           "default": true,
           "description": "Preserve original KQL query formatting in converted YAML"
         },
-        "sentinelRules.conversion.includeOptionalFields": {
+        "sentinelAsCode.conversion.includeOptionalFields": {
           "type": "boolean",
           "default": true,
           "description": "Include optional fields with default values in converted YAML"
         },
-        "sentinelRules.conversion.validateEntityMappings": {
+        "sentinelAsCode.conversion.validateEntityMappings": {
           "type": "boolean",
           "default": true,
           "description": "Validate entity types and identifiers during conversion"
         },
-        "sentinelRules.conversion.defaultVersion": {
+        "sentinelAsCode.conversion.defaultVersion": {
           "type": "string",
           "default": "1.0.0",
           "description": "Default version for rules missing templateVersion in ARM template"
-        },
-        "sentinelRules.conversion.defaultStatus": {
-          "type": "string",
-          "enum": [
-            "Available",
-            "Disabled"
-          ],
-          "default": "Available",
-          "description": "Default status when enabled=true in ARM template"
         }
       }
     },
@@ -422,6 +513,46 @@
       {
         "fileMatch": "*.sentinel.yml",
         "url": "./schemas/sentinel-analytics-rule-schema.json"
+      },
+      {
+        "fileMatch": "**/AnalyticalRules/**/*.yaml",
+        "url": "./schemas/sentinel-analytics-rule-schema.json"
+      },
+      {
+        "fileMatch": "**/HuntingQueries/**/*.yaml",
+        "url": "./schemas/sentinel-hunting-query-schema.json"
+      },
+      {
+        "fileMatch": "**/HuntingQueries/**/*.yml",
+        "url": "./schemas/sentinel-hunting-query-schema.json"
+      },
+      {
+        "fileMatch": "**/Parsers/**/*.yaml",
+        "url": "./schemas/sentinel-parser-schema.json"
+      },
+      {
+        "fileMatch": "**/Parsers/**/*.yml",
+        "url": "./schemas/sentinel-parser-schema.json"
+      },
+      {
+        "fileMatch": "**/SummaryRules/**/*.json",
+        "url": "./schemas/sentinel-summary-rule-schema.json"
+      },
+      {
+        "fileMatch": "**/AutomationRules/**/*.json",
+        "url": "./schemas/sentinel-automation-rule-schema.json"
+      },
+      {
+        "fileMatch": "**/Watchlists/**/watchlist.json",
+        "url": "./schemas/sentinel-watchlist-schema.json"
+      },
+      {
+        "fileMatch": "**/DefenderCustomDetections/**/*.yaml",
+        "url": "./schemas/defender-custom-detection-schema.json"
+      },
+      {
+        "fileMatch": "**/DefenderCustomDetections/**/*.yml",
+        "url": "./schemas/defender-custom-detection-schema.json"
       }
     ]
   },
@@ -432,7 +563,8 @@
     "webpack": "webpack --mode production --devtool hidden-source-map",
     "webpack-dev": "webpack --mode development --watch",
     "compile-tests": "tsc -p . --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "clean": "rimraf out",
+    "pretest": "npm run clean && npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src --ext ts --fix",
     "lint:check": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
@@ -440,28 +572,33 @@
     "publish": "vsce publish"
   },
   "devDependencies": {
-    "@eslint/js": "^9.30.1",
-    "@types/glob": "^8.1.0",
+    "@eslint/js": "^10.0.1",
     "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^24.0.10",
-    "@types/uuid": "^10.0.0",
-    "@types/vscode": "^1.101.0",
-    "@typescript-eslint/eslint-plugin": "^8.35.1",
-    "@typescript-eslint/parser": "^8.35.1",
-    "@vscode/test-electron": "^2.4.2",
-    "@vscode/vsce": "^3.6.0",
-    "eslint": "^9.30.1",
-    "glob": "^11.0.0",
-    "mocha": "^11.7.1",
-    "ts-loader": "^9.5.2",
-    "typescript": "^5.8.3",
-    "webpack": "^5.99.9",
-    "webpack-cli": "^6.0.1"
+    "@types/node": "^26.1.1",
+    "@types/vscode": "^1.125.0",
+    "@typescript-eslint/eslint-plugin": "^8.63.0",
+    "@typescript-eslint/parser": "^8.63.0",
+    "@vscode/test-electron": "^3.0.0",
+    "@vscode/vsce": "^3.9.2",
+    "eslint": "^10.6.0",
+    "glob": "^13.0.6",
+    "mocha": "^11.7.6",
+    "rimraf": "^6.1.3",
+    "ts-loader": "^9.6.2",
+    "typescript": "~6.0.3",
+    "webpack": "^5.108.4",
+    "webpack-cli": "^7.2.1"
   },
   "dependencies": {
     "js-yaml": "^4.1.0",
-    "jsonschema": "^1.4.1",
-    "uuid": "^11.1.0"
+    "jsonschema": "^1.5.0",
+    "tmp": "^0.2.7",
+    "uuid": "^14.0.1"
+  },
+  "overrides": {
+    "form-data": "^4.0.6",
+    "serialize-javascript": "^7.0.7",
+    "diff": "^9.0.0"
   }
 }

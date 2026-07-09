@@ -1,19 +1,25 @@
 import * as assert from 'assert';
-import { loadDataFile, isDateWithinDays } from './test-utils';
+import { loadDataFile } from './test-utils';
 
 suite('Data Freshness Tests', () => {
-    test('should have recent connector data with expected metadata', () => {
+    test('should have valid connector data with expected metadata', () => {
         const connectorData = loadDataFile('connectors.json');
-        
-        // Check metadata exists and is recent
+
+        // Check metadata exists and carries a generation date.
         assert.ok(connectorData.metadata, 'Connector data should have metadata');
         assert.ok(connectorData.metadata.generatedDate, 'Should have generation date');
-        
-        // Parse the date and ensure it's not too old (within last 30 days)
-        assert.ok(isDateWithinDays(connectorData.metadata.generatedDate, 30), 
-            `Connector data is old (${connectorData.metadata.generatedDate}), should be updated`
+
+        // Freshness of the committed data is enforced by the scheduled refresh-connectors
+        // workflow, not this deterministic suite. Assert only that the recorded date is
+        // valid and not in the future so the test stays time-independent.
+        const generatedDate = new Date(connectorData.metadata.generatedDate);
+        assert.ok(!Number.isNaN(generatedDate.getTime()),
+            `Generation date should be a valid date (${connectorData.metadata.generatedDate})`
         );
-        
+        assert.ok(generatedDate.getTime() <= Date.now(),
+            `Generation date should not be in the future (${connectorData.metadata.generatedDate})`
+        );
+
         // Check connector count is reasonable
         assert.ok(connectorData.metadata.totalConnectors >= 300, 
             'Should have at least 300 connectors'

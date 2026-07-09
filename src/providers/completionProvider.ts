@@ -25,61 +25,98 @@ export class SentinelCompletionProvider implements vscode.CompletionItemProvider
         _token: vscode.CancellationToken,
         _context: vscode.CompletionContext
     ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
-        
-        console.log('🔍 SentinelCodeGuard: Completion requested at', position.line, position.character);
-        
-        const lineText = document.lineAt(position).text;
-        const beforeCursor = lineText.substring(0, position.character);
-        
-        console.log('Line text:', lineText);
-        console.log('Before cursor:', beforeCursor);
-        
-        // Check context in order of specificity
-        if (this.isConnectorContext(document, position)) {
-            console.log('📋 Detected connector context');
-            return this.getConnectorCompletions();
+
+        // Identifiers here never contain a hyphen, so keep the leading YAML list
+        // dash ("- ") out of the replacement range.
+        const wordRange = document.getWordRangeAtPosition(position, /[A-Za-z0-9_.]+/);
+
+        // requiredDataConnectors -> connectorId: <value>
+        if (this.isConnectorIdContext(document, position)) {
+            return this.getConnectorCompletions(wordRange);
         }
-        
+
+        // requiredDataConnectors -> dataTypes: [ - <value> ], scoped to the entry's connectorId
+        const dataTypesContext = this.getDataTypesContext(document, position);
+        if (dataTypesContext) {
+            return this.getDataTypeCompletions(dataTypesContext.connectorId, wordRange);
+        }
+
         if (this.isTacticsContext(document, position)) {
-            console.log('🎯 Detected tactics context');
             return this.getTacticsCompletions();
         }
-        
+
         if (this.isTechniquesContext(document, position)) {
-            console.log('🔧 Detected techniques context');
             return this.getTechniquesCompletions();
         }
-        
-        // Fallback: if we're in a YAML file and near certain keywords, provide all completions
-        if (document.languageId === 'yaml') {
-            const text = document.getText();
-            if (text.includes('tactics') || text.includes('techniques') || text.includes('connectorId')) {
-                console.log('📝 YAML fallback: providing all completions');
-                return [
-                    ...this.getConnectorCompletions(),
-                    ...this.getTacticsCompletions(),
-                    ...this.getTechniquesCompletions()
-                ];
-            }
-        }
-        
-        console.log('❌ No completion context detected');
+
         return [];
     }
-    
-    private isConnectorContext(document: vscode.TextDocument, position: vscode.Position): boolean {
-        const lineText = document.lineAt(position).text;
-        const text = document.getText();
-        const offset = document.offsetAt(position);
-        const beforeText = text.substring(0, offset);
-        
-        // More comprehensive connector detection
-        return lineText.includes('connectorId') ||
-               lineText.includes('requiredDataConnectors') ||
-               beforeText.includes('connectorId:') || 
-               beforeText.includes('requiredDataConnectors:') ||
-               this.isInSection(document, position, 'connectorId') ||
-               this.isInSection(document, position, 'requiredDataConnectors');
+
+    private isConnectorIdContext(document: vscode.TextDocument, position: vscode.Position): boolean {
+        const line = document.lineAt(position.line).text;
+        const match = /^\s*(?:-\s*)?connectorId:\s*/.exec(line);
+        if (!match) {
+            return false;
+        }
+        // Only when the cursor sits in the value position (at or after "connectorId: ").
+        return position.character >= match[0].length;
+    }
+
+    private getDataTypesContext(
+        document: vscode.TextDocument,
+        position: vscode.Position
+    ): { connectorId?: string } | undefined {
+        const line = document.lineAt(position.line).text;
+
+        // The cursor must sit inside a block sequence value: either on a
+        // "- <item>" line, or on a blank / partially-typed line where the user
+        // is about to add one (so Ctrl+Space on a fresh list line still works).
+        const dashMatch = /^(\s*)-\s*/.exec(line);
+        const beforeCursor = line.slice(0, position.character);
+        const isBlankOrPartial = /^\s*[A-Za-z0-9_.]*$/.test(beforeCursor);
+        if (!dashMatch && !isBlankOrPartial) {
+            return undefined;
+        }
+        const itemIndent = dashMatch ? dashMatch[1].length : /^\s*/.exec(line)![0].length;
+
+        // Walk upward to the governing mapping key. Skip blank lines, sibling
+        // sequence items, and anything nested deeper than this item. The first
+        // shallower-or-equal bare "key:" line we reach governs the list, which is
+        // tolerant of both indented and compact YAML sequence styles.
+        for (let i = position.line - 1; i >= 0 && i >= position.line - 60; i--) {
+            const above = document.lineAt(i).text;
+            if (above.trim() === '') {
+                continue;
+            }
+            const indent = /^\s*/.exec(above)![0].length;
+            if (indent > itemIndent) {
+                continue; // nested content belonging to a sibling item
+            }
+            if (/^\s*-/.test(above)) {
+                continue; // a sibling sequence item
+            }
+            const keyMatch = /^\s*([A-Za-z0-9_]+):\s*$/.exec(above);
+            if (keyMatch && keyMatch[1] === 'dataTypes') {
+                return { connectorId: this.findEnclosingConnectorId(document, i) };
+            }
+            // Any other key (bare or with an inline value) governs this scope.
+            return undefined;
+        }
+        return undefined;
+    }
+
+    private findEnclosingConnectorId(document: vscode.TextDocument, fromLine: number): string | undefined {
+        for (let i = fromLine; i >= 0 && i >= fromLine - 60; i--) {
+            const line = document.lineAt(i).text;
+            const match = /^\s*(?:-\s*)?connectorId:\s*(.+?)\s*$/.exec(line);
+            if (match) {
+                return match[1].replace(/^['"]|['"]$/g, '').trim();
+            }
+            if (/^\s*requiredDataConnectors:/.test(line)) {
+                break;
+            }
+        }
+        return undefined;
     }
     
     private isTacticsContext(document: vscode.TextDocument, position: vscode.Position): boolean {
@@ -138,20 +175,53 @@ export class SentinelCompletionProvider implements vscode.CompletionItemProvider
         return false;
     }
     
-    private getConnectorCompletions(): vscode.CompletionItem[] {
-        console.log('📋 Getting connector completions...');
-        const connectors = ConnectorLoader.getAllConnectors();
-        console.log(`Found ${connectors.length} connectors`);
-        
-        return connectors.map(connector => {
+    private getConnectorCompletions(range?: vscode.Range): vscode.CompletionItem[] {
+        return ConnectorLoader.getAllConnectors().map(connector => {
             const item = new vscode.CompletionItem(connector.id, vscode.CompletionItemKind.Value);
-            item.detail = connector.name;
+            item.detail = connector.deprecated ? `${connector.name} (deprecated)` : connector.name;
+
+            const tables = connector.dataTypes.length > 0
+                ? connector.dataTypes.map(dt => `- ${dt}`).join('\n')
+                : '_No tables recorded_';
             item.documentation = new vscode.MarkdownString(
-                `**${connector.name}**\n\n${connector.description}\n\n**Data Types:**\n${connector.dataTypes.map(dt => `• ${dt}`).join('\n')}`
+                `**${connector.name}**\n\n${connector.description}\n\n**Tables**\n\n${tables}`
             );
+
             item.insertText = connector.id;
-            item.sortText = `connector_${connector.id}`;
+            if (range) {
+                item.range = range;
+            }
+            const microsoftRank = connector.category === 'microsoft' ? '0' : '1';
+            item.sortText = `${connector.deprecated ? '1' : '0'}_${microsoftRank}_${connector.id}`;
             item.filterText = `${connector.id} ${connector.name}`;
+            return item;
+        });
+    }
+
+    private getDataTypeCompletions(connectorId?: string, range?: vscode.Range): vscode.CompletionItem[] {
+        let tables: string[] = [];
+        let scoped = false;
+
+        if (connectorId) {
+            const info = ConnectorLoader.getConnectorInfo(connectorId);
+            if (info && info.dataTypes.length > 0) {
+                tables = info.dataTypes;
+                scoped = true;
+            }
+        }
+        if (!scoped) {
+            tables = ConnectorLoader.getAllDataTypes();
+        }
+
+        const unique = Array.from(new Set(tables)).sort((a, b) => a.localeCompare(b));
+        return unique.map(table => {
+            const item = new vscode.CompletionItem(table, vscode.CompletionItemKind.Value);
+            item.detail = scoped ? `Table provided by ${connectorId}` : 'Log Analytics table';
+            item.insertText = table;
+            if (range) {
+                item.range = range;
+            }
+            item.sortText = `${scoped ? '0' : '1'}_${table}`;
             return item;
         });
     }
