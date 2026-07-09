@@ -40,7 +40,6 @@ The toolkit is focused on authoring and repository hygiene. It does **not** depl
 
 - Visual Studio Code 1.125 or later.
 - Familiarity with the Microsoft Sentinel analytics rule schema (KQL, MITRE ATT&CK).
-- Optional, only for pulling existing Defender XDR detections into your repo: a Microsoft Entra application (service principal) granted the `CustomDetection.Read.All` Microsoft Graph permission.
 
 ---
 
