@@ -171,6 +171,18 @@ export class SentinelRuleValidator {
             }
         }
 
+        // Validate that 'enabled', if present, is a boolean (true/false)
+        if ('enabled' in parsedYaml && typeof parsedYaml.enabled !== 'boolean') {
+            const line = this.findFieldLine(lines, 'enabled');
+            if (line !== -1) {
+                diagnostics.push(new vscode.Diagnostic(
+                    new vscode.Range(line, 0, line, lines[line].length),
+                    "Field 'enabled' must be a boolean (true or false). Omit to default to enabled (true).",
+                    vscode.DiagnosticSeverity.Error
+                ));
+            }
+        }
+
         // Validate duration fields using dynamic patterns
         this.validateDurationFields(parsedYaml, lines, diagnostics);
 
@@ -258,6 +270,9 @@ export class SentinelRuleValidator {
     }
 
     private validateMitreTechniques(parsedYaml: any, lines: string[], diagnostics: vscode.Diagnostic[]) {
+        // Validate the canonical 'relevantTechniques' field (preferred over the deprecated 'techniques' alias)
+        this.validateTechniqueList('relevantTechniques', parsedYaml.relevantTechniques, lines, diagnostics);
+
         // Validate techniques using the MitreLoader validation methods
         if (parsedYaml.techniques && Array.isArray(parsedYaml.techniques)) {
             parsedYaml.techniques.forEach((technique: string) => {
@@ -319,6 +334,41 @@ export class SentinelRuleValidator {
                 }
             });
         }
+    }
+
+    private validateTechniqueList(fieldName: string, techniques: any, lines: string[], diagnostics: vscode.Diagnostic[]) {
+        if (!techniques || !Array.isArray(techniques)) {
+            return;
+        }
+
+        techniques.forEach((technique: string) => {
+            const validation = MitreLoader.validateTechnique(technique);
+            if (!validation.isValidFormat || (!validation.isKnown && validation.message)) {
+                const line = this.findFieldLine(lines, fieldName, technique);
+                if (line !== -1) {
+                    diagnostics.push(new vscode.Diagnostic(
+                        new vscode.Range(line, 0, line, lines[line].length),
+                        validation.message || `Technique validation failed for: ${technique}`,
+                        validation.severity
+                    ));
+                }
+            }
+
+            if (typeof technique === 'string' && technique.includes('.')) {
+                const [mainTechnique] = technique.split('.');
+                const mainValidation = MitreLoader.validateTechnique(mainTechnique);
+                if (!mainValidation.isValidFormat || (!mainValidation.isKnown && mainValidation.message)) {
+                    const line = this.findFieldLine(lines, fieldName, technique);
+                    if (line !== -1) {
+                        diagnostics.push(new vscode.Diagnostic(
+                            new vscode.Range(line, 0, line, lines[line].length),
+                            `Parent technique '${mainTechnique}' validation failed: ${mainValidation.message}`,
+                            mainValidation.severity
+                        ));
+                    }
+                }
+            }
+        });
     }
 
     private validateDataConnectors(parsedYaml: any, lines: string[], diagnostics: vscode.Diagnostic[]) {

@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Sentinel-as-Code Automation Rule",
+  "description": "Schema for Sentinel-as-Code automation rules.",
+  "type": "object",
+  "required": ["automationRuleId", "displayName", "order", "triggeringLogic", "actions"],
+  "properties": {
+    "automationRuleId": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "Stable GUID used as the resource name. Do not change after creation."
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "order": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "description": "Execution priority. Lower numbers run first."
+    },
+    "triggeringLogic": {
+      "type": "object",
+      "required": ["isEnabled", "triggersOn", "triggersWhen"],
+      "properties": {
+        "isEnabled": { "type": "boolean" },
+        "triggersOn": { "type": "string", "enum": ["Incidents", "Alerts"] },
+        "triggersWhen": { "type": "string", "enum": ["Created", "Updated"] },
+        "expirationTimeUtc": { "type": "string" },
+        "conditions": { "type": "array" }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["actionType", "order"],
+        "properties": {
+          "actionType": { "type": "string", "enum": ["ModifyProperties", "RunPlaybook", "AddIncidentTask"] },
+          "order": { "type": "integer", "minimum": 1 },
+          "actionConfiguration": { "type": "object" }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

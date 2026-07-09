@@ -19,12 +19,12 @@ export class ValidationCommands extends BaseCommand {
 
         // Register existing validation command with auto-detection
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.validateRule', this.validateRule.bind(this))
+            vscode.commands.registerCommand('sentinelAsCode.validateRule', this.validateRule.bind(this))
         );
 
         // Add specific commands for each type if needed
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.validateSentinelRule', this.validateSentinelRule.bind(this))
+            vscode.commands.registerCommand('sentinelAsCode.validateSentinelRule', this.validateSentinelRule.bind(this))
         );
 
         disposables.push(

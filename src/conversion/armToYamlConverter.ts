@@ -52,7 +52,7 @@ export interface SentinelYamlRule {
     queryPeriod: string;
     triggerOperator: string;
     triggerThreshold: number;
-    status?: string;
+    enabled?: boolean;
     tactics: string[];
     techniques?: string[];
     tags?: string[];
@@ -92,7 +92,6 @@ export interface ConversionOptions {
     includeOptionalFields?: boolean;
     preserveQueryFormatting?: boolean;
     defaultVersion?: string;
-    defaultStatus?: string;
 }
 
 export interface ConversionResult {
@@ -119,8 +118,7 @@ export class ArmToYamlConverter {
         autoFormat: true,
         includeOptionalFields: true,
         preserveQueryFormatting: true,
-        defaultVersion: '1.0.0',
-        defaultStatus: 'Available'
+        defaultVersion: '1.0.0'
     };
 
     /**
@@ -243,7 +241,7 @@ export class ArmToYamlConverter {
             return parsed as ArmTemplate;
         } catch (error) {
             if (error instanceof SyntaxError) {
-                throw new Error('Invalid JSON syntax in ARM template');
+                throw new Error('Invalid JSON syntax in ARM template', { cause: error });
             }
             throw error;
         }
@@ -282,7 +280,7 @@ export class ArmToYamlConverter {
                 queryPeriod: this.normalizeFrequency(armProps.queryPeriod || 'PT5M'),
                 triggerOperator: this.normalizeTriggerOperator(armProps.triggerOperator || 'gt'),
                 triggerThreshold: armProps.triggerThreshold || 0,
-                status: this.determineStatus(armProps.enabled, options.defaultStatus),
+                enabled: armProps.enabled !== false,
                 tactics: this.normalizeTactics(armProps.tactics || []),
                 techniques: armProps.techniques || [],
                 query: this.formatQuery(armProps.query, options.preserveQueryFormatting),
@@ -408,11 +406,6 @@ export class ArmToYamlConverter {
         const normalizedOp = operator.toLowerCase();
         const validOperator = VALID_TRIGGER_OPERATORS.find(op => op.toLowerCase() === normalizedOp);
         return validOperator || 'gt';
-    }
-
-    private static determineStatus(enabled: boolean | undefined, defaultStatus: string | undefined): string {
-        if (enabled === false) return 'Disabled';
-        return defaultStatus || 'Available';
     }
 
     private static normalizeTactics(tactics: string[]): string[] {

@@ -12,13 +12,12 @@ queryFrequency: PT5M
 queryPeriod: P1D
 triggerOperator: gt
 triggerThreshold: 0
-status: Available
+enabled: true
 tactics:
   - InitialAccess
 relevantTechniques:
   - T1078
-tags:
-  - SecurityOps
+  - T1078.004
 query: |
   SigninLogs
   | where TimeGenerated >= ago(1d)
@@ -54,6 +53,17 @@ entityMappings:
     fieldMappings:
       - identifier: Address
         columnName: IPAddress
+alertDetailsOverride:
+  alertDisplayNameFormat: "Suspicious sign-ins for {{UserPrincipalName}} from {{IPAddress}}"
+  alertDescriptionFormat: "{{UserPrincipalName}} had {{FailedAttempts}} failed sign-ins from {{UniqueIPs}} distinct IPs. Risk score: {{RiskScore}}."
+  alertSeverityColumnName: RiskScore
+  alertTacticsColumnName: ""          # optional: column containing a comma-separated MITRE tactic list
+customDetails:
+  FailedAttempts: FailedAttempts
+  UniqueIPs: UniqueIPs
+  RiskScore: RiskScore
+eventGroupingSettings:
+  aggregationKind: SingleAlert
 incidentConfiguration:
   createIncident: true
   groupingConfiguration:
@@ -61,9 +71,12 @@ incidentConfiguration:
     reopenClosedIncident: false
     lookbackDuration: PT5H
     matchingMethod: AllEntities
-eventGroupingSettings:
-  aggregationKind: SingleAlert
+    groupByEntities:
+      - Account
+      - IP
 suppressionDuration: PT5H
 suppressionEnabled: false
 version: 1.0.0
 kind: Scheduled
+tags:
+  - SecurityOps

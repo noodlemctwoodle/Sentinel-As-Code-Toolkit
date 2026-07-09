@@ -1,207 +1,42 @@
 import * as vscode from 'vscode';
 import * as yaml from 'js-yaml';
-import { DefenderAuthProvider } from '../auth/defenderAuthProvider';
-import { DetectionRule } from '../types/defenderTypes'; // Removed unused import: ExportPerRuleFile
-
-const GRAPH_BASE = 'https://graph.microsoft.com/beta';
-const RULES_ENDPOINT = `${GRAPH_BASE}/security/rules/detectionRules`;
-
-interface ListOptions {
-    includeDisabled: boolean;
-}
-
-interface ExportOptions extends ListOptions {
-    separateFiles: boolean;
-    outputUri?: vscode.Uri;
-    format?: 'json' | 'yaml';  // Add format option
-}
-
-interface ImportOptions {
-    fileUri?: vscode.Uri;
-}
 
 export class DefenderXdrService {
-    constructor(private auth: DefenderAuthProvider) {}
-
-    private async api<T = any>(method: string, url: string, token: string, body?: any): Promise<T> {
-        const headers: Record<string, string> = {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        };
-        const resp = await fetch(url, {
-            method,
-            headers,
-            body: body ? JSON.stringify(body) : undefined
-        } as RequestInit);
-
-        if (!resp.ok) {
-            const text = await resp.text();
-            throw new Error(`${method} ${url} failed (${resp.status}): ${text}`);
-        }
-        if (resp.status === 204) return {} as T;
-        return await resp.json() as T;
-    }
-
-    private async getAllDetectionRules(includeDisabled: boolean): Promise<DetectionRule[]> {
-        const token = await this.auth.acquireToken();
-        const rules: DetectionRule[] = [];
-        let url = RULES_ENDPOINT;
-        while (url) {
-            const page = await this.api<{ value: DetectionRule[]; '@odata.nextLink'?: string }>('GET', url, token);
-            for (const rule of page.value) {
-                if (rule.isSystemRule) continue;
-                if (!includeDisabled && rule.isEnabled === false) continue;
-                // Fetch full detail
-                const full = await this.api<DetectionRule>('GET', `${RULES_ENDPOINT}/${rule.id}`, token);
-                rules.push(full);
-            }
-            url = (page as any)['@odata.nextLink'] || '';
-        }
-        return rules;
-    }
-
-    public async listRules(options: ListOptions): Promise<void> {
-        const rules = await this.getAllDetectionRules(options.includeDisabled);
-        if (rules.length === 0) {
-            vscode.window.showInformationMessage('No custom detection rules found.');
-            return;
-        }
-        const lines = rules.map(r => `${r.displayName} | Enabled=${r.isEnabled} | Period=${r.schedule?.period} | Id=${r.id}`);
-        const doc = await vscode.workspace.openTextDocument({ content: lines.join('\n'), language: 'plaintext' });
-        await vscode.window.showTextDocument(doc, { preview: false });
-    }
-
-    public async exportRules(options: ExportOptions): Promise<void> {
-        const rules = await this.getAllDetectionRules(options.includeDisabled);
-        if (rules.length === 0) {
-            vscode.window.showWarningMessage('No rules to export.');
+    public async formatActiveDocumentForRepo(): Promise<void> {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showWarningMessage('Open a Defender detection (JSON or YAML) to format for the repo.');
             return;
         }
 
-        // Always export as separate files
-        let folderUri = options.outputUri;
-        if (!folderUri) {
-            const picked = await vscode.window.showOpenDialog({
-                canSelectFiles: false,
-                canSelectFolders: true,
-                canSelectMany: false,
-                openLabel: 'Select export folder'
-            });
-            if (!picked || picked.length === 0) return;
-            folderUri = picked[0];
-        }
-        
-        // Always export as YAML
-        const extension = 'yaml';
-        
-        // Export directly to the selected folder, no timestamp subfolder
-        for (const rule of rules) {
-            // Format filename: lowercase, replace spaces and special chars with underscores
-            const formattedName = rule.displayName
-                .toLowerCase()
-                .replace(/[\s-]+/g, '_')  // Replace spaces and hyphens with underscores
-                .replace(/[^a-z0-9_]/g, '_')  // Replace any non-alphanumeric characters (except underscores) with underscores
-                .replace(/_+/g, '_')  // Replace multiple underscores with single underscore
-                .replace(/^_|_$/g, '');  // Remove leading/trailing underscores
-            
-            // Clean up the rule object by removing OData metadata
-            const cleanRule = this.cleanRuleForExport(rule);
-            
-            // Export as YAML
-            const content = yaml.dump(cleanRule, { 
-                lineWidth: -1,  // Don't wrap lines
-                noRefs: true,   // No anchors/aliases
-                quotingType: '"', // Use double quotes
-                forceQuotes: false // Only quote when necessary
-            });
-            
-            const fileUri = vscode.Uri.joinPath(folderUri, `${formattedName}.${extension}`);
-            await vscode.workspace.fs.writeFile(fileUri, Buffer.from(content, 'utf8'));
-        }
-        vscode.window.showInformationMessage(`Exported ${rules.length} rule${rules.length === 1 ? '' : 's'} as YAML to selected folder.`);
-    }
-
-    public async importRules(options: ImportOptions): Promise<void> {
-        let fileUri = options.fileUri;
-        if (!fileUri) {
-            const pick = await vscode.window.showOpenDialog({
-                canSelectFiles: true,
-                canSelectMany: false,
-                filters: { JSON: ['json'] },
-                openLabel: 'Select import file'
-            });
-            if (!pick || pick.length === 0) return;
-            fileUri = pick[0];
-        }
-        const rawBytes = await vscode.workspace.fs.readFile(fileUri);
-        const text = Buffer.from(rawBytes).toString('utf8');
-
-        let json: any;
+        const text = editor.document.getText();
+        let parsed: any;
         try {
-            json = JSON.parse(text);
-        } catch (e: any) {
-            vscode.window.showErrorMessage(`Failed to parse JSON: ${e.message}`);
+            const looksLikeJson = editor.document.languageId === 'json'
+                || text.trimStart().startsWith('{')
+                || text.trimStart().startsWith('[');
+            parsed = looksLikeJson ? JSON.parse(text) : yaml.load(text);
+        } catch (error) {
+            vscode.window.showErrorMessage(`Could not parse the active document: ${error instanceof Error ? error.message : 'Unknown error'}`);
             return;
         }
 
-        let rules: DetectionRule[] = [];
-        if (Array.isArray(json.rules)) rules = json.rules;
-        else if (json.rule) rules = [json.rule];
-        else {
-            vscode.window.showErrorMessage('No rules found in file (expected "rules" or "rule" property).');
+        const rule = this.extractRule(parsed);
+
+        if (!rule || !rule.displayName) {
+            vscode.window.showErrorMessage('No detection rule found (expected an object with a displayName).');
             return;
         }
 
-        const token = await this.auth.acquireToken();
-        const existing = await this.getAllDetectionRules(true);
-        const existingNames = new Set(existing.map(r => r.displayName));
-
-        let imported = 0;
-        for (const rule of rules) {
-            let targetName = rule.displayName;
-            if (existingNames.has(targetName)) {
-                const choice = await vscode.window.showQuickPick(
-                    [
-                        { label: 'Skip', value: 'skip' },
-                        { label: 'Duplicate (append timestamp)', value: 'dup' },
-                        { label: 'Cancel Import', value: 'cancel' }
-                    ],
-                    { title: `Rule "${targetName}" already exists` }
-                );
-                if (!choice || choice.value === 'cancel') {
-                    vscode.window.showInformationMessage('Import cancelled.');
-                    return;
-                }
-                if (choice.value === 'skip') continue;
-                if (choice.value === 'dup') {
-                    targetName = `${targetName}_${new Date().toISOString().replace(/[-:T]/g, '').substring(0, 15)}`;
-                }
-            }
-
-            const body: DetectionRule = {
-                displayName: targetName,
-                isEnabled: rule.isEnabled,
-                queryCondition: { queryText: rule.queryCondition?.queryText || '' },
-                schedule: { period: rule.schedule?.period || '1H' }
-            };
-
-            if (rule.detectionAction && rule.detectionAction.alertTemplate) {
-                body.detectionAction = { alertTemplate: { ...rule.detectionAction.alertTemplate } };
-            }
-
-            try {
-                await this.api('POST', RULES_ENDPOINT, token, body);
-                imported++;
-            } catch (e: any) {
-                vscode.window.showWarningMessage(`Failed to import "${targetName}": ${e.message}`);
-            }
-        }
-
-        vscode.window.showInformationMessage(`Imported ${imported} of ${rules.length} rule(s).`);
+        const content = this.dumpRepoYaml(this.formatRuleForRepo(rule));
+        const doc = await vscode.workspace.openTextDocument({ content, language: 'yaml' });
+        await vscode.window.showTextDocument(doc, { preview: false });
+        vscode.window.showInformationMessage(`Formatted "${rule.displayName}" for the repo. Save as ${this.toPascalCase(rule.displayName)}.yaml under Content/DefenderCustomDetections/.`);
     }
 
-    // New method to convert YAML to JSON
+    // Convert repo YAML into a deployable Microsoft Graph detectionRule JSON body.
+    // Detection rules are reshaped to the clean Graph schema (runtime fields dropped);
+    // any other YAML is converted verbatim.
     public async convertYamlToJson(): Promise<void> {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
@@ -209,27 +44,27 @@ export class DefenderXdrService {
             return;
         }
 
-        const document = editor.document;
-        const yamlContent = document.getText();
-        
         try {
-            const jsonObject = yaml.load(yamlContent);
-            const jsonContent = JSON.stringify(jsonObject, null, 2);
-            
-            // Create new document with JSON content
-            const doc = await vscode.workspace.openTextDocument({
-                content: jsonContent,
-                language: 'json'
-            });
+            const parsed = yaml.load(editor.document.getText());
+            const rule = this.extractRule(parsed);
+            const output = (rule && rule.displayName) ? this.formatRuleForRepo(rule) : parsed;
+            const jsonContent = JSON.stringify(output, null, 2);
+
+            const doc = await vscode.workspace.openTextDocument({ content: jsonContent, language: 'json' });
             await vscode.window.showTextDocument(doc, { preview: false });
-            
-            vscode.window.showInformationMessage('YAML converted to JSON successfully');
+
+            const message = (rule && rule.displayName)
+                ? 'Converted to Graph detectionRule JSON (ready for the Custom Detections API).'
+                : 'YAML converted to JSON.';
+            vscode.window.showInformationMessage(message);
         } catch (error: any) {
             vscode.window.showErrorMessage(`Failed to convert YAML to JSON: ${error.message}`);
         }
     }
 
-    // New method to convert JSON to YAML
+    // Convert a Graph detectionRule JSON export into clean repo YAML.
+    // Detection rules are reshaped to the documented authoring schema (runtime
+    // fields dropped); any other JSON is converted verbatim.
     public async convertJsonToYaml(): Promise<void> {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
@@ -237,69 +72,80 @@ export class DefenderXdrService {
             return;
         }
 
-        const document = editor.document;
-        const jsonContent = document.getText();
-        
         try {
-            const jsonObject = JSON.parse(jsonContent);
-            const yamlContent = yaml.dump(jsonObject, {
-                lineWidth: -1,
-                noRefs: true,
-                quotingType: '"',
-                forceQuotes: false
-            });
-            
-            // Create new document with YAML content
-            const doc = await vscode.workspace.openTextDocument({
-                content: yamlContent,
-                language: 'yaml'
-            });
+            const parsed = JSON.parse(editor.document.getText());
+            const rule = this.extractRule(parsed);
+            const output = (rule && rule.displayName) ? this.formatRuleForRepo(rule) : parsed;
+            const yamlContent = this.dumpRepoYaml(output);
+
+            const doc = await vscode.workspace.openTextDocument({ content: yamlContent, language: 'yaml' });
             await vscode.window.showTextDocument(doc, { preview: false });
-            
-            vscode.window.showInformationMessage('JSON converted to YAML successfully');
+
+            const message = (rule && rule.displayName)
+                ? 'Converted to repo YAML (clean authoring schema).'
+                : 'JSON converted to YAML.';
+            vscode.window.showInformationMessage(message);
         } catch (error: any) {
             vscode.window.showErrorMessage(`Failed to convert JSON to YAML: ${error.message}`);
         }
     }
 
-    // New method to clean up rule for export
-    private cleanRuleForExport(rule: any): any {
-        // Create a deep copy to avoid modifying the original
-        const cleanRule = JSON.parse(JSON.stringify(rule));
-        
-        // Remove OData metadata fields only
-        delete cleanRule['@odata.context'];
-        delete cleanRule['@odata.etag'];
-        delete cleanRule['@odata.type'];
-        
-        // Clean up nested OData references in impactedAssets
-        if (cleanRule.detectionAction?.alertTemplate?.impactedAssets) {
-            cleanRule.detectionAction.alertTemplate.impactedAssets = 
-                cleanRule.detectionAction.alertTemplate.impactedAssets.map((asset: any) => {
-                    const cleanAsset = { ...asset };
-                    delete cleanAsset['@odata.type'];
-                    return cleanAsset;
-                });
+    // Accepts a bare rule, a { rule } wrapper, a { rules: [...] } file, or a Graph
+    // { value: [...] } response, and returns the single detection rule object.
+    private extractRule(parsed: any): any {
+        return parsed?.rule
+            ?? (Array.isArray(parsed?.rules) ? parsed.rules[0] : undefined)
+            ?? (Array.isArray(parsed?.value) ? parsed.value[0] : undefined)
+            ?? parsed;
+    }
+
+    // Reshape a Graph detectionRule into the Sentinel-As-Code repo authoring schema.
+    // Keeps only the documented authoring fields, in canonical order, and drops all
+    // runtime/read-only fields (id, createdBy, lastRunDetails, @odata.* metadata, etc.).
+    private formatRuleForRepo(rule: any): Record<string, unknown> {
+        const at = rule?.detectionAction?.alertTemplate ?? {};
+        const alertTemplate: Record<string, unknown> = {};
+        if (at.title !== undefined && at.title !== null) alertTemplate.title = at.title;
+        if (at.description !== undefined && at.description !== null) alertTemplate.description = at.description;
+        if (at.severity !== undefined && at.severity !== null) alertTemplate.severity = String(at.severity).toLowerCase();
+        if (at.category !== undefined && at.category !== null) alertTemplate.category = at.category;
+        if (Array.isArray(at.mitreTechniques) && at.mitreTechniques.length > 0) alertTemplate.mitreTechniques = at.mitreTechniques;
+        if (at.recommendedActions !== undefined && at.recommendedActions !== null) alertTemplate.recommendedActions = at.recommendedActions;
+        if (Array.isArray(at.impactedAssets) && at.impactedAssets.length > 0) alertTemplate.impactedAssets = at.impactedAssets;
+
+        const detectionAction: Record<string, unknown> = { alertTemplate };
+        const responseActions = rule?.detectionAction?.responseActions;
+        if (Array.isArray(responseActions) && responseActions.length > 0) {
+            detectionAction.responseActions = responseActions;
         }
-        
-        // Remove null values that aren't meaningful
-        if (cleanRule.lastRunDetails?.failureReason === null) {
-            delete cleanRule.lastRunDetails.failureReason;
-        }
-        if (cleanRule.lastRunDetails?.errorCode === null) {
-            delete cleanRule.lastRunDetails.errorCode;
-        }
-        if (cleanRule.detectionAction?.organizationalScope === null) {
-            delete cleanRule.detectionAction.organizationalScope;
-        }
-        
-        // Remove empty responseActions array if present
-        if (cleanRule.detectionAction?.responseActions && 
-            Array.isArray(cleanRule.detectionAction.responseActions) && 
-            cleanRule.detectionAction.responseActions.length === 0) {
-            delete cleanRule.detectionAction.responseActions;
-        }
-        
-        return cleanRule;
+
+        return {
+            displayName: rule?.displayName,
+            isEnabled: rule?.isEnabled !== false,
+            queryCondition: { queryText: rule?.queryCondition?.queryText ?? '' },
+            schedule: { period: rule?.schedule?.period ?? '1H' },
+            detectionAction
+        };
+    }
+
+    private dumpRepoYaml(obj: unknown): string {
+        return yaml.dump(obj, {
+            lineWidth: -1,
+            noRefs: true,
+            quotingType: '"',
+            forceQuotes: false
+        });
+    }
+
+    // Convert a display name into a PascalCase filename stem (repo convention).
+    private toPascalCase(name: string): string {
+        const pascal = (name ?? '')
+            .replace(/[^a-zA-Z0-9]+/g, ' ')
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join('');
+        return pascal || 'Detection';
     }
 }

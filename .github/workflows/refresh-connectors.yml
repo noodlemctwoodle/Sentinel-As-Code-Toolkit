@@ -1,0 +1,38 @@
+name: Refresh connector data
+
+# Regenerates data/connectors.json (the Sentinel table -> connector/solution
+# mapping used for requiredDataConnectors auto-population) from the upstream
+# Azure-Sentinel repository on a weekly schedule.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Regenerate connectors.json
+        shell: pwsh
+        working-directory: scripts
+        run: ./Extract-SentinelConnectors.ps1 -OutputPath ../data/connectors.json
+
+      - name: Commit if changed
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain data/connectors.json)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/connectors.json
+            git commit -m "chore(data): weekly refresh of Sentinel connector/table mapping"
+            git push
+          else
+            echo "connectors.json is already up to date."
+          fi

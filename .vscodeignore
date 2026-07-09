@@ -8,6 +8,9 @@ out/**
 .github/**
 *.vsix
 .internal/**
+.claude/**
+.markdownlint.json
+test-path-validation.js
 tsconfig.json
 eslint.config.js
 webpack.config.js

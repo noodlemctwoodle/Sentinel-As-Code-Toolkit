@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Sentinel-as-Code Parser",
+  "description": "Schema for Sentinel-as-Code parsers (saved KQL functions).",
+  "type": "object",
+  "required": ["id", "name", "functionAlias", "query"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier for the parser (commonly matches the function alias)."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Display name of the parser."
+    },
+    "description": {
+      "type": "string",
+      "description": "What the parser normalises and why."
+    },
+    "category": {
+      "type": "string",
+      "description": "Organisational category (e.g. Security)."
+    },
+    "functionAlias": {
+      "type": "string",
+      "minLength": 1,
+      "description": "KQL function name used to call the parser in other queries."
+    },
+    "functionParameters": {
+      "type": "string",
+      "description": "Optional function parameter signature."
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "description": "KQL body of the saved function."
+    },
+    "version": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": true
+}

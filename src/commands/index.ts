@@ -6,6 +6,7 @@ import { ValidationCommands } from './validation/validationCommands';
 import { FormatCommands } from './formatting/formatCommands';
 import { ConversionCommands } from './conversion/conversionCommands';
 import { DefenderCommands } from './defender/defenderCommands';
+import { ContentCommands } from './content/contentCommands';
 
 export class CommandManager {
     private context: vscode.ExtensionContext;
@@ -18,6 +19,7 @@ export class CommandManager {
     private formatCommands: FormatCommands;
     private conversionCommands: ConversionCommands;
     private defenderCommands: DefenderCommands;
+    private contentCommands: ContentCommands;
 
     constructor(context: vscode.ExtensionContext, validator: SentinelRuleValidator) {
         this.context = context;
@@ -29,7 +31,8 @@ export class CommandManager {
         this.validationCommands = new ValidationCommands(context, validator);
         this.formatCommands = new FormatCommands(context, validator);
         this.conversionCommands = new ConversionCommands(context, validator);
-        this.defenderCommands = new DefenderCommands(context);
+        this.defenderCommands = new DefenderCommands();
+        this.contentCommands = new ContentCommands();
     }
 
     public registerCommands(): vscode.Disposable[] {
@@ -42,6 +45,7 @@ export class CommandManager {
         disposables.push(...this.formatCommands.registerCommands());
         disposables.push(...this.conversionCommands.registerCommands());
         disposables.push(...this.defenderCommands.registerCommands());
+        disposables.push(...this.contentCommands.registerCommands());
 
         return disposables;
     }

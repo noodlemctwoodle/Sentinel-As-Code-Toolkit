@@ -29,7 +29,7 @@ export function loadDataFile(filename: string): any {
     try {
         return JSON.parse(fs.readFileSync(dataPath, 'utf8'));
     } catch (error) {
-        throw new Error(`Failed to parse data file ${filename}: ${error}`);
+        throw new Error(`Failed to parse data file ${filename}: ${error}`, { cause: error });
     }
 }
 
@@ -94,4 +94,17 @@ export function isDateWithinDays(dateString: string, days: number): boolean {
     const date = new Date(dateString);
     const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     return date > cutoff;
+}
+
+/**
+ * Read a UTF-8 text file relative to the workspace root
+ * (for example, 'templates/custom-detection.template.yaml').
+ */
+export function readRepoFile(relativePath: string): string {
+    const workspaceRoot = findWorkspaceRoot();
+    const filePath = path.join(workspaceRoot, relativePath);
+    if (!fs.existsSync(filePath)) {
+        throw new Error(`File not found: ${filePath}`);
+    }
+    return fs.readFileSync(filePath, 'utf8');
 }

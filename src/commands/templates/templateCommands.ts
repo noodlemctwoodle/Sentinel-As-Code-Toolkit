@@ -11,38 +11,28 @@ export class TemplateCommands extends BaseCommand {
 
         // Enhanced template creation command (for context menus)
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.createSentinelRule', this.createSentinelRuleWorkflow.bind(this))
+            vscode.commands.registerCommand('sentinelAsCode.createSentinelRule', this.createSentinelRuleWorkflow.bind(this))
         );
 
         // Unified template command for command palette
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateRuleTemplate', this.createSentinelRuleWorkflow.bind(this))
+            vscode.commands.registerCommand('sentinelAsCode.generateRuleTemplate', this.createSentinelRuleWorkflow.bind(this))
         );
 
         // Legacy template commands for backward compatibility
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateTemplate', (uri?: vscode.Uri) => 
+            vscode.commands.registerCommand('sentinelAsCode.generateTemplate', (uri?: vscode.Uri) => 
                 this.generateTemplate('standard-rule', 'standard_sentinel_rule.yaml', uri))
         );
 
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateAdvancedTemplate', (uri?: vscode.Uri) => 
-                this.generateTemplate('advanced-rule', 'advanced_sentinel_rule.yaml', uri))
-        );
-
-        disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateNRTTemplate', (uri?: vscode.Uri) => 
+            vscode.commands.registerCommand('sentinelAsCode.generateNRTTemplate', (uri?: vscode.Uri) => 
                 this.generateTemplate('nrt-rule', 'nrt_sentinel_rule.yaml', uri))
         );
 
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateBehaviorAnalyticsTemplate', (uri?: vscode.Uri) => 
-                this.generateTemplate('behavior-analytics-rule', 'anomaly_sentinel_rule.yaml', uri))
-        );
-
-        disposables.push(
-            vscode.commands.registerCommand('sentinelRules.generateMinimalTemplate', (uri?: vscode.Uri) => 
-                this.generateTemplate('minimal-rule', 'minimal_sentinel_rule.yaml', uri))
+            vscode.commands.registerCommand('defender.generateDetectionTemplate', (uri?: vscode.Uri) => 
+                this.generateTemplate('custom-detection', 'custom_detection.yaml', uri))
         );
 
         return disposables;
@@ -96,56 +86,32 @@ export class TemplateCommands extends BaseCommand {
         const templateOptions: TemplateTypeOption[] = [
             {
                 label: "$(file-code) Standard Rule",
-                description: "General-purpose detection rule with standard fields",
+                description: "General-purpose scheduled Sentinel analytics rule",
                 detail: "Recommended for most detection scenarios",
                 templateKey: "standard-rule",
                 defaultFilename: "standard_sentinel_rule.yaml",
                 displayName: "Standard Rule"
             },
             {
-                label: "$(gear) Advanced Rule",
-                description: "Complex multi-stage detection with advanced fields",
-                detail: "For sophisticated threat detection scenarios",
-                templateKey: "advanced-rule",
-                defaultFilename: "advanced_sentinel_rule.yaml",
-                displayName: "Advanced Rule"
-            },
-            {
                 label: "$(clock) Near Real-Time (NRT) Rule",
-                description: "Low-latency alerting for immediate threats",
-                detail: "For time-sensitive detections (5-minute intervals)",
+                description: "Low-latency Sentinel alerting for immediate threats",
+                detail: "For time-sensitive detections (no scheduling fields)",
                 templateKey: "nrt-rule",
                 defaultFilename: "nrt_sentinel_rule.yaml",
                 displayName: "NRT Rule"
             },
             {
-                label: "$(graph) Behaviour Analytics Rule",
-                description: "Machine learning-based anomaly detection",
-                detail: "For detecting unusual patterns and behaviours",
-                templateKey: "behavior-analytics-rule",
-                defaultFilename: "anomaly_sentinel_rule.yaml",
-                displayName: "Behaviour Analytics Rule"
-            },
-            {
-                label: "$(file) Minimal Rule",
-                description: "Basic template with essential fields only",
-                detail: "Quick start template for simple rules",
-                templateKey: "minimal-rule",
-                defaultFilename: "minimal_sentinel_rule.yaml",
-                displayName: "Minimal Rule"
-            },
-            {
-                label: "$(archive) Fallback Rule",
-                description: "Generic fallback template",
-                detail: "For edge cases and custom scenarios",
-                templateKey: "fallback-rule",
-                defaultFilename: "fallback_sentinel_rule.yaml",
-                displayName: "Fallback Rule"
+                label: "$(shield) Custom Detection",
+                description: "Defender XDR custom detection (Advanced Hunting KQL)",
+                detail: "Graph detectionRule schema for Content/DefenderCustomDetections",
+                templateKey: "custom-detection",
+                defaultFilename: "custom_detection.yaml",
+                displayName: "Custom Detection"
             }
         ];
 
         const selected = await vscode.window.showQuickPick(templateOptions, {
-            placeHolder: "Select a Sentinel rule template type",
+            placeHolder: "Select a Sentinel-as-Code template",
             matchOnDescription: true,
             matchOnDetail: true,
             ignoreFocusOut: false
@@ -182,7 +148,7 @@ export class TemplateCommands extends BaseCommand {
             
             await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(processedTemplate, 'utf8'));
         } catch (error) {
-            throw new Error(`Failed to load or create template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            throw new Error(`Failed to load or create template: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
         }
     }
 

@@ -16,14 +16,19 @@ export class DefenderDetectionValidator {
         'detectionAction'
     ];
 
-    // Optional but recommended fields
-    private readonly recommendedFields = [
-        'detectorId',
-        'id'
+    // Read-only / runtime fields returned by Graph that must NOT be committed to the repo
+    private readonly runtimeFields = [
+        'id', 'detectorId', 'isSystemRule',
+        'createdBy', 'createdDateTime', 'lastModifiedBy', 'lastModifiedDateTime',
+        'lastRunDetails', 'lastRunDateTime',
+        '@odata.context', '@odata.etag', '@odata.type'
     ];
 
     // Valid severity levels for Defender
     private readonly validSeverities = ['informational', 'low', 'medium', 'high'];
+
+    // Valid schedule periods (Advanced Hunting custom detection cadence)
+    private readonly validPeriods = ['0', '1H', '3H', '12H', '24H'];
     
     // Valid MITRE techniques pattern
     private readonly mitreTechniquePattern = /^T\d{4}(\.\d{3})?$/;
@@ -72,14 +77,9 @@ export class DefenderDetectionValidator {
             if (!('period' in content.schedule)) {
                 errors.push('schedule must contain period');
             } else {
-                const period = content.schedule.period;
-                if (typeof period !== 'string' && typeof period !== 'number') {
-                    errors.push('schedule.period must be a string or number');
-                } else {
-                    const periodNum = parseInt(period.toString());
-                    if (isNaN(periodNum) || periodNum < 0) {
-                        errors.push('schedule.period must be a non-negative number');
-                    }
+                const period = String(content.schedule.period);
+                if (!this.validPeriods.includes(period)) {
+                    errors.push(`Invalid schedule.period: ${period}. Must be one of: ${this.validPeriods.join(', ')}`);
                 }
             }
         }
@@ -89,21 +89,28 @@ export class DefenderDetectionValidator {
             const alertTemplate = content.detectionAction.alertTemplate;
             
             if (alertTemplate) {
-                // Validate title
+                // Validate title (required)
                 if (!alertTemplate.title) {
-                    warnings.push('detectionAction.alertTemplate should include a title');
+                    errors.push('detectionAction.alertTemplate.title is required');
                 }
 
-                // Validate description
+                // Validate severity (required)
+                if (!alertTemplate.severity) {
+                    errors.push('detectionAction.alertTemplate.severity is required');
+                } else if (!this.validSeverities.includes(String(alertTemplate.severity).toLowerCase())) {
+                    errors.push(`Invalid severity: ${alertTemplate.severity}. Must be one of: ${this.validSeverities.join(', ')}`);
+                } else if (alertTemplate.severity !== String(alertTemplate.severity).toLowerCase()) {
+                    warnings.push(`severity should be lowercase: "${String(alertTemplate.severity).toLowerCase()}"`);
+                }
+
+                // Description (optional but recommended)
                 if (!alertTemplate.description) {
-                    warnings.push('detectionAction.alertTemplate should include a description');
+                    info.push('detectionAction.alertTemplate.description is recommended');
                 }
 
-                // Validate severity
-                if (alertTemplate.severity) {
-                    if (!this.validSeverities.includes(alertTemplate.severity.toLowerCase())) {
-                        errors.push(`Invalid severity: ${alertTemplate.severity}. Must be one of: ${this.validSeverities.join(', ')}`);
-                    }
+                // MITRE techniques (recommended)
+                if (!alertTemplate.mitreTechniques || (Array.isArray(alertTemplate.mitreTechniques) && alertTemplate.mitreTechniques.length === 0)) {
+                    warnings.push('detectionAction.alertTemplate.mitreTechniques is recommended');
                 }
 
                 // Validate MITRE techniques
@@ -133,8 +140,10 @@ export class DefenderDetectionValidator {
                     }
                 }
 
-                // Validate category
-                if (alertTemplate.category) {
+                // Validate category (required)
+                if (!alertTemplate.category) {
+                    errors.push('detectionAction.alertTemplate.category is required');
+                } else {
                     const validCategories = [
                         'InitialAccess', 'Execution', 'Persistence', 'PrivilegeEscalation',
                         'DefenseEvasion', 'CredentialAccess', 'Discovery', 'LateralMovement',
@@ -149,23 +158,12 @@ export class DefenderDetectionValidator {
             }
         }
 
-        // Check for recommended fields (but don't validate their format)
-        for (const field of this.recommendedFields) {
-            if (!(field in content)) {
-                info.push(`Consider adding recommended field: ${field}`);
+        // Flag runtime / read-only fields that should be stripped before committing to the repo
+        for (const field of this.runtimeFields) {
+            if (field in content) {
+                warnings.push(`Remove runtime field "${field}" before committing to the repo (use Format Custom Detection for Repo)`);
             }
         }
-
-        // Validate detectorId as GUID if present (detectorId should be a GUID)
-        if (content.detectorId) {
-            const detectorIdStr = content.detectorId.toString();
-            if (!this.isValidGuid(detectorIdStr)) {
-                errors.push(`Invalid GUID format for detectorId: ${content.detectorId}`);
-            }
-        }
-
-        // Note: id field can be numeric or string, so we don't validate its format
-        // Microsoft Graph API returns numeric IDs for custom detections
 
         return {
             isValid: errors.length === 0,
@@ -173,10 +171,5 @@ export class DefenderDetectionValidator {
             warnings,
             info
         };
-    }
-
-    private isValidGuid(guid: string): boolean {
-        const guidPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-        return guidPattern.test(guid);
     }
 }

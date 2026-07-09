@@ -37,6 +37,6 @@ export async function run(): Promise<void> {
             }
         });
     } catch (err) {
-        throw new Error(`Failed to find test files: ${err}`);
+        throw new Error(`Failed to find test files: ${err}`, { cause: err });
     }
 }

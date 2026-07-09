@@ -64,44 +64,48 @@ export const VALID_SEVERITIES = [
 export const EXPECTED_ORDER = [
     // Rule Identity
     'id',
-    'name', 
+    'name',
     'description',
-    
-    // Rule Configuration
+
+    // Rule Configuration (queryFrequency/queryPeriod/triggerOperator/triggerThreshold are Scheduled-only)
     'severity',
     'requiredDataConnectors',
     'queryFrequency',
     'queryPeriod',
     'triggerOperator',
     'triggerThreshold',
-    'status',
-    
-    // MITRE ATT&CK Framework
+    'enabled',
+
+    // MITRE ATT&CK Framework (relevantTechniques is canonical; techniques kept for compatibility)
     'tactics',
-    'techniques',
     'relevantTechniques',
-    
-    // Additional Metadata
-    'tags',
-    
-    // Core Logic
+    'techniques',
+
+    // Core Detection Logic
     'query',
-    
-    // Entity & Incident Configuration
+
+    // Entity Mapping
     'entityMappings',
-    'incidentConfiguration',
-    'eventGroupingSettings',
-    'lookbackDuration',
-    
-    // Suppression & Alerts
-    'suppressionDuration',
-    'suppressionEnabled',
+
+    // Alert Customisation
     'alertDetailsOverride',
     'customDetails',
-    
+
+    // Grouping & Incident Configuration
+    'eventGroupingSettings',
+    'incidentConfiguration',
+
+    // Suppression
+    'suppressionDuration',
+    'suppressionEnabled',
+    'lookbackDuration',
+
     // Rule Metadata
     'version',
-    'kind'
+    'kind',
+
+    // Freeform labels (optional; canonical position is last)
+    'tags'
 ];
 
 // ============================================================================
@@ -123,9 +127,6 @@ export const COMMON_REQUIRED_FIELDS = [
     
     // Core Detection Logic
     'query',
-    
-    // Entity Mapping (Required for proper alerting)
-    'entityMappings',
     
     // Rule Metadata (Required)
     'version',
@@ -247,6 +248,7 @@ export const WEEKS_PATTERN = /^(\d+)w$/i;
 export const SENTINEL_RULE_INDICATORS = [
     // Core Sentinel-specific fields
     'tactics',
+    'relevantTechniques',
     'techniques', 
     'queryFrequency',
     'queryPeriod',

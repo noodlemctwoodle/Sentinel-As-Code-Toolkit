@@ -26,7 +26,7 @@ export class SentinelCompletionProvider implements vscode.CompletionItemProvider
         _context: vscode.CompletionContext
     ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
         
-        console.log('🔍 SentinelCodeGuard: Completion requested at', position.line, position.character);
+        console.log('🔍 Sentinel as Code Toolkit: Completion requested at', position.line, position.character);
         
         const lineText = document.lineAt(position).text;
         const beforeCursor = lineText.substring(0, position.character);

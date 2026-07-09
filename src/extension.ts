@@ -4,6 +4,7 @@ import { SentinelRuleFormatter } from './formatting/formatter';
 import { CommandManager } from './commands/index';
 import { createFormattingProvider } from './providers/formatProvider';
 import { DocumentListenerManager } from './listeners/documentListeners';
+import { ContentDiagnosticsManager } from './content/contentDiagnostics';
 import { MitreLoader } from './validation/mitreLoader';
 import { ConnectorLoader } from './validation/connectorLoader';
 import { SentinelCompletionProvider } from './providers/completionProvider';
@@ -25,7 +26,7 @@ function getErrorStack(error: unknown): string | undefined {
 
 export async function activate(context: vscode.ExtensionContext) {
     try {
-        console.log('🚀 SentinelCodeGuard: Starting activation...');
+        console.log('🚀 Sentinel as Code Toolkit: Starting activation...');
 
         // Set extension context for all components that need it
         SentinelRuleFormatter.setExtensionContext(context);
@@ -36,9 +37,9 @@ export async function activate(context: vscode.ExtensionContext) {
         try {
             await MitreLoader.loadMitreData();
             await ConnectorLoader.loadConnectorData();
-            console.log('✅ SentinelCodeGuard: Data loaders initialized');
+            console.log('✅ Sentinel as Code Toolkit: Data loaders initialized');
         } catch (loaderError) {
-            console.error('❌ SentinelCodeGuard: Failed to initialize validation loaders:', getErrorMessage(loaderError));
+            console.error('❌ Sentinel as Code Toolkit: Failed to initialize validation loaders:', getErrorMessage(loaderError));
             // Extension will continue with basic validation
         }
 
@@ -46,18 +47,21 @@ export async function activate(context: vscode.ExtensionContext) {
         const validator = new SentinelRuleValidator();
         const commandManager = new CommandManager(context, validator);
         const documentListenerManager = new DocumentListenerManager(validator);
+        const contentDiagnosticsManager = new ContentDiagnosticsManager();
 
         // Register all components
-        console.log('🔧 SentinelCodeGuard: Registering components...');
+        console.log('🔧 Sentinel as Code Toolkit: Registering components...');
         
         const documentListeners = documentListenerManager.registerListeners();
-        console.log(`📄 SentinelCodeGuard: Registered ${documentListeners.length} document listeners`);
+        console.log(`📄 Sentinel as Code Toolkit: Registered ${documentListeners.length} document listeners`);
+
+        const contentDiagnosticsListeners = contentDiagnosticsManager.registerListeners();
         
         const commands = commandManager.registerCommands();
-        console.log(`⚡ SentinelCodeGuard: Registered ${commands.length} commands`);
+        console.log(`⚡ Sentinel as Code Toolkit: Registered ${commands.length} commands`);
         
         const formatterProvider = createFormattingProvider();
-        console.log('🎨 SentinelCodeGuard: Registered formatting provider');
+        console.log('🎨 Sentinel as Code Toolkit: Registered formatting provider');
 
         const completionProvider = vscode.languages.registerCompletionItemProvider(
             { scheme: 'file', language: 'yaml' },
@@ -76,35 +80,38 @@ export async function activate(context: vscode.ExtensionContext) {
         // Add all disposables to context subscriptions
         context.subscriptions.push(
             validator,
+            contentDiagnosticsManager,
             ...documentListeners,
+            ...contentDiagnosticsListeners,
             ...commands,
             formatterProvider
         );
 
         // Validate open documents on activation
         documentListenerManager.validateOpenDocuments();
+        contentDiagnosticsManager.updateOpenDocuments();
 
-        console.log('✅ SentinelCodeGuard: Extension activation complete!');
+        console.log('✅ Sentinel as Code Toolkit: Extension activation complete!');
         
         // Test command registration
         const allCommands = await vscode.commands.getCommands(true);
-        const sentinelCommands = allCommands.filter((cmd: string) => cmd.startsWith('sentinelRules.'));
-        console.log('🔍 SentinelCodeGuard: Available commands:', sentinelCommands);
+        const sentinelCommands = allCommands.filter((cmd: string) => cmd.startsWith('sentinelAsCode.'));
+        console.log('🔍 Sentinel as Code Toolkit: Available commands:', sentinelCommands);
         
     } catch (error) {
         const errorMessage = getErrorMessage(error);
         const errorStack = getErrorStack(error);
         
-        console.error('❌ SentinelCodeGuard: Extension activation failed:', errorMessage);
+        console.error('❌ Sentinel as Code Toolkit: Extension activation failed:', errorMessage);
         if (errorStack) {
             console.error('Stack trace:', errorStack);
         }
         
-        vscode.window.showErrorMessage(`SentinelCodeGuard activation failed: ${errorMessage}`);
+        vscode.window.showErrorMessage(`Sentinel as Code Toolkit activation failed: ${errorMessage}`);
         throw error;
     }
 }
 
 export function deactivate() {
-    console.log('🛑 SentinelCodeGuard: Extension deactivated');
+    console.log('🛑 Sentinel as Code Toolkit: Extension deactivated');
 }

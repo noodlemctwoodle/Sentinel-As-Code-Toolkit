@@ -5,8 +5,7 @@
   "type": "object",
   "required": [
     "id", "name", "description", "severity", "requiredDataConnectors",
-    "queryFrequency", "queryPeriod", "triggerOperator", "triggerThreshold",
-    "tactics", "query", "entityMappings", "version", "kind"
+    "tactics", "query", "version", "kind"
   ],
   "properties": {
     "id": {
@@ -74,10 +73,10 @@
       "minimum": 0,
       "description": "Threshold value for triggering the rule"
     },
-    "status": {
-      "type": "string",
-      "enum": ["Available", "Disabled"],
-      "description": "Status of the analytics rule"
+    "enabled": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the analytics rule is enabled after deploy. Optional boolean; omit to default to enabled (true)."
     },
     "tactics": {
       "type": "array",
@@ -230,5 +229,16 @@
       "description": "Type of analytics rule that can be created by users"
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "required": ["kind"],
+        "properties": { "kind": { "const": "Scheduled" } }
+      },
+      "then": {
+        "required": ["queryFrequency", "queryPeriod", "triggerOperator", "triggerThreshold"]
+      }
+    }
+  ],
   "additionalProperties": false
 }

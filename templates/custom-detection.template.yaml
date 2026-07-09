@@ -1,0 +1,69 @@
+displayName: New Custom Detection Rule
+isEnabled: true
+queryCondition:
+  queryText: |
+    // Advanced Hunting KQL query.
+    // Return the columns required by your source table
+    // (DeviceProcessEvents requires Timestamp, DeviceId, ReportId).
+    DeviceProcessEvents
+    | where Timestamp > ago(1h)
+    | where FileName =~ "powershell.exe"
+    | project Timestamp, DeviceId, ReportId, DeviceName, AccountUpn, ProcessCommandLine
+schedule:
+  period: "1H"
+detectionAction:
+  alertTemplate:
+    title: New Custom Detection Rule
+    description: Describe what this detection identifies and why it matters.
+    severity: medium
+    category: Execution
+    mitreTechniques:
+      - T1059
+    recommendedActions: Investigate the process, parent process, and user context.
+    impactedAssets:
+      - "@odata.type": "#microsoft.graph.security.impactedDeviceAsset"
+        identifier: deviceId
+  # responseActions run automatically on matching entities. Keep ONLY the actions relevant to the
+  # entities your query returns, and make sure each "identifier" maps to a column the query projects.
+  # Device/file actions require Defender for Endpoint; email actions require Defender for Office 365.
+  responseActions:
+    # Device actions (Defender for Endpoint) -- identifier: deviceId
+    - "@odata.type": "#microsoft.graph.security.isolateDeviceResponseAction"
+      identifier: deviceId
+      isolationType: full          # full | selective
+    - "@odata.type": "#microsoft.graph.security.restrictAppExecutionResponseAction"
+      identifier: deviceId
+    - "@odata.type": "#microsoft.graph.security.runAntivirusScanResponseAction"
+      identifier: deviceId
+    - "@odata.type": "#microsoft.graph.security.collectInvestigationPackageResponseAction"
+      identifier: deviceId
+    - "@odata.type": "#microsoft.graph.security.initiateInvestigationResponseAction"
+      identifier: deviceId
+    # File actions (Defender for Endpoint) -- identifier: sha1 | initiatingProcessSHA1 | sha256 | initiatingProcessSHA256
+    - "@odata.type": "#microsoft.graph.security.stopAndQuarantineFileResponseAction"
+      identifier: sha1             # also accepts deviceId
+    - "@odata.type": "#microsoft.graph.security.blockFileResponseAction"
+      identifier: sha1
+      deviceGroupNames: []         # optional: limit to named device groups
+    - "@odata.type": "#microsoft.graph.security.allowFileResponseAction"
+      identifier: sha1
+      deviceGroupNames: []
+    # User actions -- identifier: accountSid | initiatingProcessAccountSid | requestAccountSid | onPremSid
+    - "@odata.type": "#microsoft.graph.security.disableUserResponseAction"
+      identifier: accountSid
+    - "@odata.type": "#microsoft.graph.security.forceUserPasswordResetResponseAction"
+      identifier: accountSid
+    # markUserAsCompromised uses a Microsoft Entra object id -- identifier: accountObjectId | initiatingProcessAccountObjectId | servicePrincipalId | recipientObjectId
+    - "@odata.type": "#microsoft.graph.security.markUserAsCompromisedResponseAction"
+      identifier: accountObjectId
+    # Email actions (Defender for Office 365) -- identifier: networkMessageId | recipientEmailAddress
+    - "@odata.type": "#microsoft.graph.security.softDeleteResponseAction"
+      identifier: networkMessageId
+    - "@odata.type": "#microsoft.graph.security.hardDeleteResponseAction"
+      identifier: networkMessageId
+    - "@odata.type": "#microsoft.graph.security.moveToInboxResponseAction"
+      identifier: networkMessageId
+    - "@odata.type": "#microsoft.graph.security.moveToJunkResponseAction"
+      identifier: networkMessageId
+    - "@odata.type": "#microsoft.graph.security.moveToDeletedItemsResponseAction"
+      identifier: networkMessageId

@@ -8,9 +8,7 @@ requiredDataConnectors:
   - connectorId: SecurityEvents
     dataTypes:
       - SecurityEvent
-triggerOperator: gt
-triggerThreshold: 0
-status: Available
+enabled: true
 tactics:
   - PrivilegeEscalation
   - Impact
@@ -19,11 +17,6 @@ relevantTechniques:
   - T1078.003
   - T1098
   - T1484
-tags:
-  - NRT
-  - Critical
-  - RealTime
-  - PrivilegeEscalation
 query: |
   SecurityEvent
   | where EventID in (4728, 4732, 4756)  // Admin group modifications
@@ -68,18 +61,34 @@ entityMappings:
     fieldMappings:
       - identifier: ObjectGuid
         columnName: GroupName
-eventGroupingSettings:
-  aggregationKind: SingleAlert
-suppressionDuration: PT1H
-suppressionEnabled: false
 alertDetailsOverride:
   alertDisplayNameFormat: "Critical privilege escalation: {{ModifiedBy}} added to {{GroupName}} on {{SourceComputer}}"
   alertDescriptionFormat: "User {{ModifiedBy}} was added to privileged group {{GroupName}} on computer {{SourceComputer}}. Risk Level: {{RiskLevel}}"
   alertSeverityColumnName: RiskLevel
+  alertTacticsColumnName: ""          # optional: column containing a comma-separated MITRE tactic list
 customDetails:
   PrivilegeAction: Action
   TargetGroup: GroupName
   RiskAssessment: RiskLevel
   EventIdentifier: EventID
+eventGroupingSettings:
+  aggregationKind: SingleAlert
+incidentConfiguration:
+  createIncident: true
+  groupingConfiguration:
+    enabled: false
+    reopenClosedIncident: false
+    lookbackDuration: PT1H
+    matchingMethod: AllEntities
+    groupByEntities:
+      - Account
+      - Host
+suppressionDuration: PT1H
+suppressionEnabled: false
 version: 1.0.0
 kind: NRT
+tags:
+  - NRT
+  - Critical
+  - RealTime
+  - PrivilegeEscalation

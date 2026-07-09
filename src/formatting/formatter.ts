@@ -26,7 +26,7 @@ export class SentinelRuleFormatter {
         'triggerOperator': () => VALID_TRIGGER_OPERATORS[0], // gt
         'triggerThreshold': () => 0,
         'tactics': () => ['YourTactic'],
-        'techniques': () => ['T0000'],
+        'relevantTechniques': () => ['T0000'],
         'query': () => '// Enter your KQL query here\n// Replace this with your actual query',
         'entityMappings': () => [{
             entityType: 'Account',
@@ -92,7 +92,7 @@ triggerOperator: gt
 triggerThreshold: 0
 tactics:
   - YourTactic
-techniques:
+relevantTechniques:
   - T0000
 query: |
   // Enter your KQL query here

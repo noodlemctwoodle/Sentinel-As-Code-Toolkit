@@ -10,12 +10,12 @@ export class GuidCommands extends BaseCommand {
 
         // Individual GUID regeneration
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.regenerateGuid', this.regenerateGuid.bind(this))
+            vscode.commands.registerCommand('sentinelAsCode.regenerateGuid', this.regenerateGuid.bind(this))
         );
 
         // Bulk GUID regeneration
         disposables.push(
-            vscode.commands.registerCommand('sentinelRules.regenerateAllGuids', this.regenerateAllGuids.bind(this))
+            vscode.commands.registerCommand('sentinelAsCode.regenerateAllGuids', this.regenerateAllGuids.bind(this))
         );
 
         return disposables;

@@ -1,236 +1,294 @@
-# SentinelCodeGuard
+# Sentinel as Code Toolkit
 
-![Beta](https://img.shields.io/badge/status-beta-orange) ![Version](https://img.shields.io/badge/version-0.1.0-blue) ![License](https://img.shields.io/badge/license-MIT-green)
+![VS Code](https://img.shields.io/badge/VS%20Code-1.125+-0078D4?logo=visualstudiocode&logoColor=white) ![Version](https://img.shields.io/badge/version-26.07--1-blue) ![License](https://img.shields.io/badge/license-MIT-green)
 
-**Development toolkit for Microsoft Sentinel Analytics Rules**
+**The dedicated VS Code authoring toolkit for the [Sentinel-as-Code](https://github.com/noodlemctwoodle/Sentinel-As-Code) project.**
 
-*Guard your Sentinel rules with precision*
+A complete detection-as-code authoring environment for Microsoft Sentinel and Microsoft Defender XDR content — everything you need to write, validate, and shape repository-ready files without leaving the editor:
 
----
+- **Author** Sentinel analytics rules and hunting queries as YAML, with real-time validation, IntelliSense, and starter templates.
+- **Validate** against the Sentinel and Defender XDR schemas, plus multi-framework MITRE ATT&CK (Enterprise, Mobile, and ICS; v14 to v16).
+- **Format** every Sentinel-as-Code content type into canonical shape — analytics rules, hunting queries, and parsers (YAML), and automation rules, summary rules, watchlists, workbooks, and playbooks (JSON).
+- **Scaffold** new hunting queries, parsers, summary rules, and automation rules from their documented schemas.
+- **Auto-fill** a rule's `requiredDataConnectors` from the KQL tables in its query, using the bundled Content Hub mapping.
+- **Build** deployment-ready watchlists from a CSV or TSV.
+- **Decompile** single or bulk `Microsoft.SecurityInsights/alertRules` ARM templates into clean YAML.
+- **Convert** Microsoft Defender XDR custom detections between repository YAML and deployable Microsoft Graph `detectionRule` JSON, and format portal exports into repository-ready files.
+- **Maintain in bulk** — validate and normalise every rule in the workspace, and regenerate rule IDs.
 
-## 📖 Documentation
-
-**Complete documentation is available in our [Wiki](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki)**
-
-- **[Getting Started Guide](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki#-quick-start)** - Complete feature overview and quick start
-- **[Rule Templates](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki/Rule-Templates)** - Professional templates with best practices
-- **[ARM to YAML Conversion](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki/Decompile-ARM-to-YAML)** - Comprehensive migration guide
-- **[Configuration](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki/Configuration-Guide)** - Detailed setup and customization
-
----
-
-## Beta Notice
-
-**SentinelCodeGuard is currently in beta (v0.1.0).** We're actively developing and improving the extension. Please report any issues or feedback via [GitHub Issues](https://github.com/noodlemctwoodle/SentinelCodeGuard/issues).
+> Feedback and bug reports are welcome on the [issue tracker](https://github.com/noodlemctwoodle/Sentinel-As-Code/issues).
 
 ---
 
-## About
+## Overview
 
-Created by **TobyG** - Visit [sentinel.blog](https://sentinel.blog) for more Microsoft Sentinel resources, tutorials, and insights.
+Sentinel as Code Toolkit turns VS Code into a detection-as-code authoring environment. It understands the Microsoft Sentinel analytics rule schema and the Defender XDR custom detection schema, giving you real-time validation, IntelliSense, formatting, and templates as you write — so the YAML you produce is ready to commit into a Git-based Sentinel deployment such as the [Sentinel-as-Code](https://github.com/noodlemctwoodle/Sentinel-As-Code) pipeline.
 
----
+The toolkit is focused on authoring and repository hygiene. It does **not** deploy content to a tenant; deployment is the job of your pipeline.
 
-## ✨ Key Features
-
-### 🎯 Intelligent Rule Development
-
-- **Content-based detection** - Automatically identifies Sentinel rules by analyzing YAML content
-- **Real-time validation** with instant feedback and error correction
-- **Professional templates** for all rule types (Standard, Advanced, NRT, Behavior Analytics)
-- **Multi-framework MITRE ATT&CK validation** - Enterprise, Mobile, and ICS frameworks
-- **Smart IntelliSense** for all Sentinel fields and values
-
-### 🔄 ARM Template Migration
-
-- **Single and bulk conversion** from ARM templates to YAML
-- **Multiple naming strategies** for organized file management
-- **Comprehensive field mapping** with validation
-- **Configurable conversion options** for enterprise needs
-- **Progress tracking** and detailed conversion summaries
-
-### 🛠️ Development Tools
-
-- **Professional formatting** with field reordering and duration auto-correction
-- **Live validation** in the Problems panel with rule-type-specific checks
-- **Code snippets** and auto-completion
-- **Entity mapping helpers** for all entity types
-- **Workspace integration** for team collaboration
+> ### Supporting this project
+>
+> Sentinel as Code Toolkit and the wider [Sentinel-as-Code](https://github.com/noodlemctwoodle/Sentinel-As-Code) project are built and maintained on my own time. If the toolkit saves your team engineering effort — or your organisation relies on it in production — please consider supporting the work. Contributions fund new features, test infrastructure, and keeping the schemas current with Microsoft's release cadence.
+>
+> Recurring **Organisation** tiers (£125 / £250 / £500 per month), one-off tips at any amount, and annual sponsorships by invoice are all live on [sentinel.blog/support](https://sentinel.blog/support/). All channels are Stripe-backed, all blog content stays free for everyone, and contributions do not create a support contract — see the support page for the full disclaimer.
+>
+> [![Support sentinel.blog](https://img.shields.io/badge/💛%20Support%20—%20sentinel.blog%2Fsupport-orange?style=for-the-badge&logo=heart&logoColor=white)](https://sentinel.blog/support/)
 
 ---
 
-## 📈 Recent Updates
+## Requirements
 
-### v0.1.0 (2025-08-12)
-
-#### ✨ New: Defender XDR Custom Detections
-
-- Export, import, and list Defender XDR custom detections via Microsoft Graph (no PowerShell required).
-- Service principal auth (client credentials) with secure secret storage; last-used clientId remembered.
-- Commands:
-  - Defender XDR: Configure Authentication
-  - Defender XDR: Clear Authentication
-  - Defender XDR: List Custom Detections
-  - Defender XDR: Export Custom Detections
-  - Defender XDR: Import Custom Detections
-  - Defender XDR: Show Auth Status
-
-#### 📊 Data
-
-- Refreshed Microsoft Sentinel connectors dataset (updated counts and timestamp).
-
-
-### v0.0.11 (2025-07-04)
-
-#### ⚡ Performance & Security Enhancements
-
-- **Optimized Validation Engine** - Significantly improved rule validation performance with streamlined data processing
-- **Enhanced Security Framework** - Strengthened dependency management and updated security protocols
-- **Updated Dependencies** - Latest security patches and compatibility improvements for all core libraries
-
-#### 🔧 Infrastructure Improvements
-
-- **Modernized Build Pipeline** - Updated CI/CD workflows for more reliable builds and releases
-- **Enhanced Test Coverage** - Comprehensive test suite improvements ensuring higher code quality
-
-#### 🎯 User Experience Refinements
-
-- **Better Resource Management** - Optimized background processes for seamless development experience
-
-[View Full Changelog](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki/Change-Log)
+- Visual Studio Code 1.125 or later.
+- Familiarity with the Microsoft Sentinel analytics rule schema (KQL, MITRE ATT&CK).
+- Optional, only for pulling existing Defender XDR detections into your repo: a Microsoft Entra application (service principal) granted the `CustomDetection.Read.All` Microsoft Graph permission.
 
 ---
 
-## 🚀 Quick Start
+## Installation
 
-### Installation
-
-1. **From VS Code Marketplace**: Search for "SentinelCodeGuard" in Extensions
-2. **From Visual Studio Marketplace**: [SentinelCodeGuard](https://marketplace.visualstudio.com/items?itemName=noodlemctwoodle.sentinelcodeguard)
-3. **Manual Installation**: Download `.vsix` from [GitHub Releases](https://github.com/noodlemctwoodle/SentinelCodeGuard/releases)
-
-### Create Your First Rule
-
-1. **Open Command Palette** (`Ctrl+Shift+P` / `Cmd+Shift+P`)
-2. **Run**: `Sentinel: Generate Standard Rule Template`
-3. **Edit the template** with real-time validation feedback
-4. **Format automatically** with `Shift+Alt+F`
-
-### Convert ARM Templates
-
-1. **Right-click** any `.json` file containing ARM templates
-2. **Select**: "Decompile ARM to YAML"
-3. **Choose naming strategy** and output location
-4. **Review conversion summary** with any warnings
+- **Marketplace** — search for **Sentinel as Code Toolkit** in the Extensions view, or install from the [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=noodlemctwoodle.sentinelcodeguard).
+- **From VSIX** — obtain the `.vsix`, then run **Extensions: Install from VSIX...** from the Command Palette.
 
 ---
 
-## 🔧 Commands
+## Features
 
-| Command | Description |
-|---------|-------------|
-| `Sentinel Rules: Generate Rule Template` | Interactive template creation workflow with multiple template types |
-| `Sentinel Rules: Generate New Rule ID` | Generate new GUID for current rule |
-| `Sentinel Rules: Generate New IDs for All Rules` | Bulk GUID regeneration for workspace |
-| `Sentinel Rules: Fix Field Order` | Reorder fields according to best practices |
-| `Sentinel Rules: Format Sentinel Rule` | Format and optimise rule structure |
-| `Sentinel Rules: Bulk Maintenance & Validation` | Workspace-wide validation and maintenance |
-| `Sentinel Rules: Decompile ARM to YAML` | Convert ARM templates to YAML |
+### Sentinel analytics rules
 
-### Defender XDR commands
+- **Content-based detection** — any `.yaml`/`.yml` file whose contents resemble a Sentinel analytics rule is recognised automatically; no special filename required.
+- **Real-time validation** — rule-type-aware checks surface in the Problems panel, on save or as you type.
+- **IntelliSense** — completions for Sentinel fields, tactics, techniques, connectors, and enumerations.
+- **Formatting** — canonical field ordering, ISO 8601 duration correction, and structure tidy-up (`Shift+Alt+F`).
+- **Templates** — Standard, Near-Real-Time (NRT), and Defender custom detection starting points.
+- **Multi-framework MITRE ATT&CK** — validate tactics and techniques against the Enterprise, Mobile, and ICS matrices (v14 to v16 selectable).
+- **Required-connector auto-fill** — read the KQL tables in a rule's `query` and populate `requiredDataConnectors` from the bundled Content Hub table-to-connector mapping, in canonical order.
+- **Bulk maintenance** — validate and normalise every rule in the workspace, and regenerate rule IDs in bulk.
 
-| Command | Description |
-|---------|-------------|
-| `Defender XDR: Configure Authentication` | Set up service principal (tenant, client, secret) for Graph access |
-| `Defender XDR: Clear Authentication` | Remove stored credentials |
-| `Defender XDR: List Custom Detections` | Show existing custom detection rules |
-| `Defender XDR: Export Custom Detections` | Export rules to JSON (single file or per-rule) |
-| `Defender XDR: Import Custom Detections` | Import rules from JSON with duplicate handling |
-| `Defender XDR: Show Auth Status` | View current auth configuration summary |
+### Hunting queries
+
+- **Folder- and content-aware detection** — files under `Content/HuntingQueries/`, or any `.yaml` shaped like a hunting query, are recognised automatically.
+- **Real-time validation** — required-field checks (`id`, `name`, `query`), stable-GUID and MITRE technique validation, and `tags` structure checks surface in the Problems panel.
+- **Formatting** — canonical field ordering (`id`, `name`, `description`, `query`, `tactics`, `techniques`, `tags`) matching the documented Log Analytics saved-search schema.
+
+### Other Sentinel-as-Code content
+
+- **Format any repository content** — one command detects the content type from its folder and shape, then applies the correct formatter: analytics rules, hunting queries, and parsers (YAML canonical ordering), and automation rules, summary rules, watchlists, workbooks, and playbooks (JSON pretty-printing with stable key order).
+- **Schema-backed validation** — bundled JSON schemas for analytics rules, hunting queries, parsers, summary rules, automation rules, watchlists, and Defender custom detections drive validation and IntelliSense in the matching repository folders.
+
+### Content scaffolding
+
+- **New content scaffolders** — generate starter files for hunting queries, parsers, summary rules, and automation rules from their documented schemas, or pick a type from a single **New Sentinel-as-Code Content...** command.
+- **Watchlist from CSV** — turn a CSV/TSV into a deployment-ready `watchlist.json` and data file under `Content/Watchlists/<alias>/`, prompting for the alias, display name, and primary-key column.
+
+### ARM to YAML conversion
+
+- Decompile single or bulk `Microsoft.SecurityInsights/alertRules` ARM templates into clean analytics-rule YAML.
+- Configurable file-naming strategies (original filename, display name, or rule ID).
+- MITRE correction, entity-mapping validation, and optional auto-formatting during conversion.
+
+### Defender XDR custom detections (repository formatting)
+
+The toolkit **formats and validates** Defender XDR custom detections for a Sentinel-as-Code repository — it does **not** authenticate to a tenant or deploy them. All detections flow through the Sentinel-as-Code CI/CD pipeline.
+
+- **Format an existing export** — turn a portal JSON export (or a Graph response) in the active editor into a repository-ready YAML file using the clean authoring schema, with a suggested PascalCase filename for `Content/DefenderCustomDetections/`.
+- **Validate** a detection against the repository authoring schema, flagging runtime/read-only fields that should not be committed.
+- **Convert** a detection between repo YAML and the deployable Microsoft Graph `detectionRule` JSON — round-trips cleanly, dropping runtime/read-only fields.
 
 ---
 
-## 📋 Available Templates
+## Getting started
 
-| Template | Complexity | Use Case | Target Audience |
-|----------|------------|----------|-----------------|
-| **[Minimal](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki/Rule-Templates#minimal-template)** | ![Low](https://img.shields.io/badge/complexity-low-green) | Quick prototyping | New users, rapid testing |
-| **[Standard](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki/Rule-Templates#standard-template)** | ![Medium](https://img.shields.io/badge/complexity-medium-yellow) | General detection | SOC analysts, security engineers |
-| **[Advanced](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki/Rule-Templates#advanced-template)** | ![High](https://img.shields.io/badge/complexity-high-orange) | Complex correlation | Senior analysts, threat hunters |
-| **[NRT](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki/Rule-Templates#near-real-time-template)** | ![Medium](https://img.shields.io/badge/complexity-medium-yellow) | Real-time alerts | Critical asset monitoring |
-| **[Anomaly Detection](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki/Rule-Templates#anomaly-detection-template)** | ![High](https://img.shields.io/badge/complexity-high-orange) | Behavioural analysis | Advanced threat hunting |
+### Create and format a rule
+
+1. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`).
+2. Run **Sentinel-As-Code: Generate Standard Rule Template** (or pick another template).
+3. Edit the rule — validation and IntelliSense guide you as you type.
+4. Format with `Shift+Alt+F`, or run **Sentinel-As-Code: Fix Field Order** (`Ctrl+Shift+F` / `Cmd+Shift+F`).
+
+### Decompile an ARM template
+
+1. Right-click a `.json` ARM template, or open it and use the Command Palette.
+2. Run **Sentinel-As-Code: Decompile ARM to YAML**.
+3. Choose a naming strategy and output location, then review the conversion summary.
+
+### Format a Defender detection for the repo
+
+1. Open a Defender XDR custom detection export (portal JSON, or YAML) in the editor.
+2. Run **Defender-As-Code: Format Custom Detection for Repo**.
+3. Save the generated YAML under `Content/DefenderCustomDetections/` using the suggested PascalCase filename.
+
+### Format any Sentinel-as-Code content
+
+1. Open a hunting query, parser, automation rule, summary rule, watchlist, workbook, or playbook.
+2. Run **Sentinel-As-Code: Format Sentinel Content (Auto-detect)**, or press `Shift+Alt+F`.
+3. The toolkit detects the content type and normalises it to the documented schema.
+
+### Build a watchlist from a CSV
+
+1. Open a CSV/TSV of watchlist data (first row = column headers).
+2. Run **Sentinel-As-Code: Create Watchlist from CSV** (or right-click the file).
+3. Provide the alias, display name, and primary-key column; the toolkit writes a deployment-ready `watchlist.json` + data file under `Content/Watchlists/<alias>/`.
+
+### Auto-fill required data connectors
+
+1. Open an analytics rule that has a `query`.
+2. Run **Sentinel-As-Code: Populate Required Data Connectors from Query** (or right-click the file).
+3. The toolkit reads the KQL tables, matches them to connectors using the bundled Content Hub table mapping, and writes `requiredDataConnectors` in canonical order — no manual lookup needed.
 
 ---
 
-## ⚡ Example Usage
+## File conventions
 
-### Content-Based Detection
-
-**No special naming required!** Works with any YAML file containing Sentinel rule fields:
+Rules are plain YAML, and the toolkit auto-detects Sentinel rules by content, so any `.yaml`/`.yml` file works. The dedicated `.sentinel.yaml` / `.sentinel.yml` extensions additionally enable the bundled language mode (syntax highlighting, snippets, and schema validation).
 
 ```text
 detection-rules/
-├── login-anomalies.yaml        # ✅ Auto-detected
-├── data-exfiltration.yml       # ✅ Auto-detected  
-├── rules/
-│   ├── privilege-escalation.yaml  # ✅ Auto-detected
-│   └── malware-detection.yaml     # ✅ Auto-detected
+  login-anomalies.yaml            # auto-detected
+  data-exfiltration.yml           # auto-detected
+  rules/
+    privilege-escalation.yaml     # auto-detected
+    malware-detection.yaml        # auto-detected
 ```
-
-### Bulk ARM Conversion
-
-Convert multiple rules from a single ARM template:
-
-**Input**: `SecurityRules.json` (5 rules) → **Output**: 5 separate YAML files
-
-- `suspicious_login_activity.yaml`
-- `data_exfiltration_alert.yaml`
-- `privilege_escalation.yaml`
-- etc.
 
 ---
 
-## 🎛️ Configuration
+## Templates
 
-### Basic Settings
+| Template | Use case | Audience |
+|----------|----------|----------|
+| Standard Rule | General-purpose scheduled Sentinel analytics rule | SOC analysts, security engineers |
+| NRT Rule | Near-real-time Sentinel alerting on critical assets | Critical asset monitoring |
+| Custom Detection | Defender XDR custom detection (Advanced Hunting KQL) | Defender detection authors |
+
+---
+
+## Commands
+
+### Sentinel rule commands
+
+| Command | Description |
+|---------|-------------|
+| Sentinel-As-Code: Generate Rule Template | Interactive picker: Standard, NRT, or Custom Detection |
+| Sentinel-As-Code: Generate Standard Rule Template / Generate NRT Rule Template | Create a specific Sentinel rule template |
+| Defender-As-Code: Generate Custom Detection Template | Create a Defender custom detection YAML from the template |
+| Sentinel-As-Code: Create Sentinel Rule Template... | Create a rule in a chosen folder (Explorer context menu) |
+| Sentinel-As-Code: Create Watchlist from CSV | Convert the active CSV/TSV into a deployment-ready watchlist (watchlist.json + data file) |
+| Sentinel-As-Code: New Sentinel-as-Code Content... | Pick and scaffold any content type (analytics rule, hunting query, parser, summary rule, automation rule, watchlist) |
+| Sentinel-As-Code: New Hunting Query / New Parser / New Summary Rule / New Automation Rule | Scaffold a specific content type from its documented schema |
+| Sentinel-As-Code: Populate Required Data Connectors from Query | Match the rule's KQL tables to connectors and fill `requiredDataConnectors` automatically |
+| Sentinel-As-Code: Fix Field Order | Reorder fields to the canonical schema order (`Ctrl/Cmd+Shift+F`) |
+| Sentinel-As-Code: Format Sentinel Rule | Format and tidy the rule structure |
+| Sentinel-As-Code: Format Sentinel Content (Auto-detect) | Detect the content type and format it (analytics rules, hunting queries, and JSON content) |
+| Sentinel-As-Code: Generate New Rule ID | Generate a fresh GUID for the current rule |
+| Sentinel-As-Code: Generate New IDs for All Rules | Bulk-regenerate rule IDs across the workspace |
+| Sentinel-As-Code: Bulk Maintenance & Validation | Validate and normalise every rule in the workspace |
+| Sentinel-As-Code: Decompile ARM to YAML | Convert ARM alert-rule templates to YAML |
+| Sentinel-As-Code: Validate as Sentinel Analytics Rule | Force Sentinel-rule validation of the active file |
+| Sentinel-As-Code: Validate Rule (Auto-detect Type) | Validate the active file, auto-detecting Sentinel vs Defender |
+
+### Defender commands
+
+| Command | Description |
+|---------|-------------|
+| Defender-As-Code: Format Custom Detection for Repo | Convert the active portal JSON/YAML detection into repo-ready YAML |
+| Defender-As-Code: Validate as Custom Detection | Validate the active file against the repository authoring schema |
+| Defender-As-Code: Convert Custom Detection YAML to JSON | Reshape repo YAML into deployable Graph detectionRule JSON |
+| Defender-As-Code: Convert Custom Detection JSON to YAML | Reshape a Graph detectionRule JSON export into clean repo YAML |
+
+---
+
+## Configuration
+
+All settings live under the `sentinelAsCode.*` namespace (Settings UI section: **Sentinel as Code Toolkit**).
+
+### Validation and editing
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `sentinelAsCode.validation.enabled` | `true` | Enable rule validation |
+| `sentinelAsCode.validation.onSave` | `true` | Validate on save |
+| `sentinelAsCode.validation.onType` | `false` | Validate while typing |
+| `sentinelAsCode.formatting.enabled` | `true` | Enable formatting |
+| `sentinelAsCode.fieldOrdering.enforceOrder` | `true` | Enforce canonical field order |
+| `sentinelAsCode.fieldOrdering.showOrderHints` | `true` | Show field-order hints in diagnostics |
+| `sentinelAsCode.intellisense.enabled` | `true` | Enable IntelliSense |
+
+### MITRE ATT&CK
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `sentinelAsCode.mitre.version` | `"v16"` | ATT&CK version (`v16`, `v15`, `v14`) |
+| `sentinelAsCode.mitre.frameworks` | `["enterprise","mobile","ics"]` | Frameworks to load and validate against |
+| `sentinelAsCode.mitre.allowUnknownTactics` | `true` | Allow tactics not in the loaded data (info only) |
+| `sentinelAsCode.mitre.allowUnknownTechniques` | `true` | Allow techniques not in the loaded data (info only) |
+| `sentinelAsCode.mitre.strictValidation` | `false` | Treat unknown tactics/techniques as errors |
+
+### Connectors
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `sentinelAsCode.connectors.validationMode` | `"permissive"` | `strict`, `workspace`, or `permissive` |
+| `sentinelAsCode.connectors.customConnectors` | `[]` | Additional connector IDs to recognise |
+
+### Conversion settings
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `sentinelAsCode.conversion.enabled` | `true` | Enable ARM-to-YAML conversion |
+| `sentinelAsCode.conversion.defaultNamingStrategy` | `"displayName"` | `original`, `displayName`, or `ruleId` |
+| `sentinelAsCode.conversion.validateMitreOnConversion` | `true` | Validate and correct MITRE data during conversion |
+| `sentinelAsCode.conversion.autoFormatAfterConversion` | `true` | Format converted files automatically |
+| `sentinelAsCode.conversion.showConversionSummary` | `true` | Show a summary dialog after conversion |
+| `sentinelAsCode.conversion.outputDirectory` | `""` | Output folder (empty = alongside the source) |
+| `sentinelAsCode.conversion.preserveQueryFormatting` | `true` | Preserve original KQL formatting |
+| `sentinelAsCode.conversion.includeOptionalFields` | `true` | Include optional fields with default values |
+| `sentinelAsCode.conversion.validateEntityMappings` | `true` | Validate entity types and identifiers |
+| `sentinelAsCode.conversion.defaultVersion` | `"1.0.0"` | Version for rules missing `templateVersion` |
+
+Example `settings.json`:
 
 ```json
 {
-  "sentinelRules.validation.enabled": true,
-  "sentinelRules.formatting.enabled": true,
-  "sentinelRules.conversion.defaultNamingStrategy": "displayName"
+  "sentinelAsCode.validation.onType": true,
+  "sentinelAsCode.mitre.frameworks": ["enterprise", "mobile"],
+  "sentinelAsCode.conversion.defaultNamingStrategy": "displayName"
 }
 ```
 
-### Advanced Configuration
+---
 
-For comprehensive configuration options, see: **[Configuration Guide](https://github.com/noodlemctwoodle/SentinelCodeGuard/wiki/Configuration-Guide#advanced-conversion-settings)**
+## The Sentinel-as-Code project
+
+This extension is the authoring companion to [Sentinel-as-Code](https://github.com/noodlemctwoodle/Sentinel-As-Code), an end-to-end CI/CD solution for deploying Microsoft Sentinel and Defender XDR content from a single Git repository. Author and validate content here; let the pipeline deploy it.
+
+- Defender custom-detection schema and conventions: [Docs/Content/Defender-Custom-Detections.md](https://github.com/noodlemctwoodle/Sentinel-As-Code/blob/main/Docs/Content/Defender-Custom-Detections.md)
+- Repository documentation index: [Docs](https://github.com/noodlemctwoodle/Sentinel-As-Code/tree/main/Docs)
 
 ---
 
-## 🆘 Support & Troubleshooting
+## Resources
 
-### Resources
-
-- **[Microsoft Sentinel Docs](https://docs.microsoft.com/azure/sentinel/)** - Official documentation
-- **[MITRE ATT&CK](https://attack.mitre.org/)** - Framework reference
-- **[KQL Reference](https://docs.microsoft.com/azure/data-explorer/kusto/query/)** - Query language docs
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+- [Microsoft Sentinel documentation](https://learn.microsoft.com/azure/sentinel/)
+- [MITRE ATT&CK](https://attack.mitre.org/)
+- [Kusto Query Language reference](https://learn.microsoft.com/kusto/query/)
+- Issues and feature requests: [GitHub](https://github.com/noodlemctwoodle/Sentinel-As-Code/issues)
 
 ---
 
-## 📄 License
+## Support the project
 
-MIT License - see [LICENSE](https://github.com/noodlemctwoodle/SentinelCodeGuard/blob/main/LICENSE.txt) for details.
+If you find Sentinel as Code Toolkit useful, subscribe to [sentinel.blog](https://sentinel.blog) for more Microsoft Sentinel and security content.
+
+[![Subscribe to Sentinel Blog](https://img.shields.io/badge/Subscribe-sentinel.blog-blue?style=for-the-badge&logo=ghost&logoColor=white)](https://sentinel.blog/#/portal/signup)
+
+The best way to support this work is by subscribing to the blog, reporting issues, and suggesting improvements. If you are using the toolkit in an organisation, see the [donation callout under Overview](#overview).
 
 ---
 
-**SentinelCodeGuard** - A development toolkit for Microsoft Sentinel Analytics Rules
+## License
+
+The extension is released under the MIT License. The Sentinel-as-Code repository it targets is licensed separately under Apache-2.0.
+
+---
+
+Created by TobyG. Visit [sentinel.blog](https://sentinel.blog) for Microsoft Sentinel resources, tutorials, and insights.

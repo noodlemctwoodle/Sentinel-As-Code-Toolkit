@@ -11,6 +11,7 @@ export class RuleTypeDetector {
     // Sentinel-specific fields
     private static readonly sentinelIndicators = [
         'tactics',
+        'relevantTechniques',
         'techniques',
         'queryFrequency',
         'triggerOperator',

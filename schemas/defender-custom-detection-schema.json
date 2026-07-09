@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Defender XDR Custom Detection",
+  "description": "Schema for Sentinel-as-Code Defender XDR custom detections (Microsoft Graph detectionRule authoring schema).",
+  "type": "object",
+  "required": ["displayName", "queryCondition", "schedule", "detectionAction"],
+  "properties": {
+    "displayName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "description": "Rule display name."
+    },
+    "isEnabled": {
+      "type": "boolean",
+      "description": "Whether the rule is active (default: true)."
+    },
+    "queryCondition": {
+      "type": "object",
+      "required": ["queryText"],
+      "properties": {
+        "queryText": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Advanced Hunting KQL query. Return the columns required by your source table."
+        }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "required": ["period"],
+      "properties": {
+        "period": {
+          "type": "string",
+          "enum": ["0", "1H", "3H", "12H", "24H"],
+          "description": "Run frequency. 0 = near real-time (NRT)."
+        }
+      }
+    },
+    "detectionAction": {
+      "type": "object",
+      "required": ["alertTemplate"],
+      "properties": {
+        "alertTemplate": {
+          "type": "object",
+          "required": ["title", "severity", "category", "mitreTechniques"],
+          "properties": {
+            "title": { "type": "string", "minLength": 1 },
+            "description": { "type": "string" },
+            "severity": {
+              "type": "string",
+              "enum": ["informational", "low", "medium", "high"],
+              "description": "Lowercase severity."
+            },
+            "category": { "type": "string" },
+            "mitreTechniques": {
+              "type": "array",
+              "items": { "type": "string", "pattern": "^T[0-9]{4}(\\.[0-9]{3})?$" }
+            },
+            "recommendedActions": { "type": "string" },
+            "impactedAssets": { "type": "array" }
+          }
+        },
+        "responseActions": { "type": "array" }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -12,14 +12,11 @@ queryFrequency: PT5M
 queryPeriod: PT5M
 triggerOperator: gt
 triggerThreshold: 0
-status: Available
+enabled: true
 tactics:
   - InitialAccess
 relevantTechniques:
   - T1078
-tags:
-  - Detection
-  - Template
 query: |
   // Enter your KQL query here
   // Example: Basic sign-in monitoring for failed logins
@@ -68,3 +65,6 @@ suppressionDuration: PT5H
 suppressionEnabled: false
 version: 1.0.0
 kind: Scheduled
+tags:
+  - Detection
+  - Template
