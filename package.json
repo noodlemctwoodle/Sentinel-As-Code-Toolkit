@@ -350,6 +350,14 @@
           "default": false,
           "description": "Validate rules as you type (may impact performance)"
         },
+        "sentinelAsCode.validation.excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "Glob patterns for files to exclude from validation (for example: **/test/**, **/*.draft.yaml, **/.archive/**). Matching files show no diagnostics. Supports *, **, ?, and {a,b} alternation."
+        },
         "sentinelAsCode.formatting.enabled": {
           "type": "boolean",
           "default": true,

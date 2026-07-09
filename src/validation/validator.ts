@@ -13,6 +13,7 @@ import {
     MIN_SENTINEL_INDICATORS
 } from './constants';
 import { RuleTypeDetector, RuleType } from '../utils/ruleTypeDetector';
+import { isDocumentExcludedFromValidation } from '../utils/validationExclusions';
 
 export class SentinelRuleValidator {
     private diagnosticCollection: vscode.DiagnosticCollection;
@@ -548,6 +549,11 @@ export class SentinelRuleValidator {
     }
 
     private isRelevantDocument(document: vscode.TextDocument): boolean {
+        // Respect user-configured exclusion globs (issue #44)
+        if (isDocumentExcludedFromValidation(document)) {
+            return false;
+        }
+
         // Must be a YAML file
         if (document.languageId !== 'yaml') {
             return false;

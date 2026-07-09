@@ -7,6 +7,7 @@
 import * as vscode from 'vscode';
 import { detectContentType, SentinelContentType } from './contentTypes';
 import { HuntingQueryValidator } from './huntingQueryValidator';
+import { isDocumentExcludedFromValidation } from '../utils/validationExclusions';
 
 /**
  * Provides live diagnostics for Sentinel-as-Code content types that are not
@@ -36,6 +37,11 @@ export class ContentDiagnosticsManager {
 
     private update(document: vscode.TextDocument): void {
         if (document.languageId !== 'yaml') {
+            this.collection.delete(document.uri);
+            return;
+        }
+
+        if (isDocumentExcludedFromValidation(document)) {
             this.collection.delete(document.uri);
             return;
         }

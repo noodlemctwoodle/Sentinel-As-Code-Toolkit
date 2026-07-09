@@ -208,10 +208,30 @@ All settings live under the `sentinelAsCode.*` namespace (Settings UI section: *
 | `sentinelAsCode.validation.enabled` | `true` | Enable rule validation |
 | `sentinelAsCode.validation.onSave` | `true` | Validate on save |
 | `sentinelAsCode.validation.onType` | `false` | Validate while typing |
+| `sentinelAsCode.validation.excludePatterns` | `[]` | Glob patterns for files to skip during validation |
 | `sentinelAsCode.formatting.enabled` | `true` | Enable formatting |
 | `sentinelAsCode.fieldOrdering.enforceOrder` | `true` | Enforce canonical field order |
 | `sentinelAsCode.fieldOrdering.showOrderHints` | `true` | Show field-order hints in diagnostics |
 | `sentinelAsCode.intellisense.enabled` | `true` | Enable IntelliSense |
+
+### Excluding files from validation
+
+Add glob patterns to `sentinelAsCode.validation.excludePatterns` to skip validation for files such as drafts, test fixtures, templates, or archived rules. Matching files produce no diagnostics and stay out of the Problems panel. Patterns are matched against each file's workspace-relative and absolute path (and its filename), support `*`, `**`, `?`, and `{a,b}` alternation, and are case-insensitive on Windows.
+
+```json
+{
+  "sentinelAsCode.validation.excludePatterns": [
+    "**/test/**",
+    "**/tests/**",
+    "**/*.draft.yaml",
+    "**/*.template.yaml",
+    "**/backup/**",
+    "**/.archive/**"
+  ]
+}
+```
+
+Exclusions are additive: with no patterns configured (the default), every candidate file is validated as before.
 
 ### MITRE ATT&CK
 
