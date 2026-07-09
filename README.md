@@ -1,6 +1,6 @@
 # Sentinel as Code Toolkit
 
-![VS Code](https://img.shields.io/badge/VS%20Code-1.125+-0078D4?logo=visualstudiocode&logoColor=white) ![Version](https://img.shields.io/badge/version-26.07--1-blue) ![License](https://img.shields.io/badge/license-MIT-green)
+![VS Code](https://img.shields.io/badge/VS%20Code-1.125+-0078D4?logo=visualstudiocode&logoColor=white) ![Version](https://img.shields.io/badge/version-26.07--1-blue) ![License](https://img.shields.io/badge/license-Apache%202.0-green)
 
 **The dedicated VS Code authoring toolkit for the [Sentinel-as-Code](https://github.com/noodlemctwoodle/Sentinel-As-Code) project.**
 
@@ -324,7 +324,7 @@ The best way to support this work is by subscribing to the blog, reporting issue
 
 ## License
 
-The extension is released under the MIT License. The Sentinel-as-Code repository it targets is licensed separately under Apache-2.0.
+The extension is released under the [Apache License 2.0](LICENSE.txt), matching the [Sentinel-as-Code](https://github.com/noodlemctwoodle/Sentinel-As-Code) repository it targets. See [NOTICE](NOTICE) for copyright and third-party attribution. Releases up to and including `26.7.1` were published under the MIT License and remain available under those terms; Apache-2.0 applies from the next release onward.
 
 ---
 
