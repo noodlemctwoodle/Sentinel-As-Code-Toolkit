@@ -1,0 +1,76 @@
+# Dependabot configuration for SentinelCodeGuard VS Code Extension
+# Professional development toolkit for Microsoft Sentinel Analytics Rules
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # Enable version updates for npm (TypeScript/JavaScript dependencies)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    # Limit number of open pull requests for npm dependencies
+    open-pull-requests-limit: 8
+    # Add reviewers and assignees for pull requests
+    reviewers:
+      - "noodlemctwoodle"
+    # Group dependency updates to reduce PR noise
+    groups:
+      # VS Code extension dependencies
+      vscode-extension-deps:
+        patterns:
+          - "@types/vscode"
+          - "vscode-*"
+        dependency-type: "development"
+      # TypeScript toolchain
+      typescript-toolchain:
+        patterns:
+          - "typescript"
+          - "@typescript-eslint/*"
+          - "ts-*"
+          - "@types/*"
+        dependency-type: "development"
+      # Testing and build tools
+      build-and-test:
+        patterns:
+          - "mocha"
+          - "@vscode/test-*"
+          - "webpack*"
+          - "esbuild"
+          - "eslint*"
+          - "prettier*"
+        dependency-type: "development"
+      # Production dependencies (runtime)
+      production-dependencies:
+        dependency-type: "production"
+    # Ignore major version updates for critical dependencies to avoid breaking changes
+    ignore:
+      - dependency-name: "@types/vscode"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+
+  # Enable version updates for GitHub Actions (CI/CD workflows)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+    open-pull-requests-limit: 3
+    reviewers:
+      - "noodlemctwoodle"
+    # Group all GitHub Actions updates together
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+# Additional configuration notes:
+# - Weekly updates on Mondays to keep dependencies current
+# - Grouped updates reduce PR noise for related dependencies
+# - Major version updates ignored for critical VS Code and TypeScript deps
+# - Separate timing for npm vs GitHub Actions to spread the load
+# - Limited PR counts to prevent overwhelming the maintainer
