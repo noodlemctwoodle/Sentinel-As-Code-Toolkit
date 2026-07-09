@@ -122,9 +122,11 @@ export class RuleTypeDetector {
                 return RuleType.SENTINEL;
             }
 
-            // Check for common patterns in the content
+            // Check for common patterns in the content. The @odata marker is the reliable
+            // Defender/Graph signal (a Graph detectionRule export always carries @odata
+            // metadata); avoid a bare hostname substring check, which is not a safe URL test.
             const contentStr = JSON.stringify(parsedContent).toLowerCase();
-            if (contentStr.includes('graph.microsoft.com') || contentStr.includes('@odata')) {
+            if (contentStr.includes('@odata')) {
                 return RuleType.DEFENDER;
             }
 
