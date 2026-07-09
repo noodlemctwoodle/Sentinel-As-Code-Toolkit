@@ -210,7 +210,7 @@ try {
     # Create the final simplified output structure
     $output = @{
         metadata = @{
-            generatedDate = Get-Date -Format "yyyy-MM-ddTHH:mm:ssZ"
+            generatedDate = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
             totalConnectors = $connectors.Count
             totalTables = $uniqueTables.Count
             sourceRepository = "https://github.com/Azure/Azure-Sentinel"
@@ -233,8 +233,8 @@ try {
     Write-Host ""
     Write-Host "Extraction Complete!" -ForegroundColor Green
     Write-Host "Connector data saved to: $OutputPath"
-    Write-Host "Total connectors found: $($output.connectors.Count)"
-    Write-Host "Total unique tables: $($output.tables.Count)"
+    Write-Host "Total connectors found: $($output.metadata.totalConnectors)"
+    Write-Host "Total unique tables: $($output.metadata.totalTables)"
     
 }
 catch {
