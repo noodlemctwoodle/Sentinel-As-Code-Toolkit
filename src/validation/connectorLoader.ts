@@ -589,6 +589,22 @@ export class ConnectorLoader {
     }
 
     /**
+     * Get every unique data type (Log Analytics table) across all connectors,
+     * sorted alphabetically. Used as the unscoped fallback for dataTypes completion.
+     */
+    public static getAllDataTypes(): string[] {
+        const tables = new Set<string>();
+        for (const connector of this.connectors.values()) {
+            for (const dataType of connector.dataTypes) {
+                if (dataType) {
+                    tables.add(dataType);
+                }
+            }
+        }
+        return Array.from(tables).sort((a, b) => a.localeCompare(b));
+    }
+
+    /**
      * Get connectors by category for better organization
      */
     public static getConnectorsByCategory(): Record<string, ConnectorInfo[]> {
