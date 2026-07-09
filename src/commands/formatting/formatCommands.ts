@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { BaseCommand } from '../base/baseCommand';
 import { SentinelRuleFormatter } from '../../formatting/formatter';
 import { SentinelContentFormatter } from '../../content/contentFormatter';
+import { RuleTypeDetector } from '../../utils/ruleTypeDetector';
 
 export class FormatCommands extends BaseCommand {
     public registerCommands(): vscode.Disposable[] {
@@ -75,7 +76,8 @@ export class FormatCommands extends BaseCommand {
         }
 
         const document = editor.document;
-        if (!document.fileName.includes('sentinel') || !document.fileName.match(/\.(yaml|yml)$/)) {
+        const isYamlFile = /\.(ya?ml)$/i.test(document.fileName);
+        if (!isYamlFile || !RuleTypeDetector.isSentinelRule(document.getText())) {
             vscode.window.showErrorMessage('This command only works on Sentinel YAML files');
             return;
         }

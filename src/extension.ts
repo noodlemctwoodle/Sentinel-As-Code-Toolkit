@@ -66,7 +66,7 @@ export async function activate(context: vscode.ExtensionContext) {
         const completionProvider = vscode.languages.registerCompletionItemProvider(
             { scheme: 'file', language: 'yaml' },
             new SentinelCompletionProvider(),
-            ':', '"', "'", '-'  // Trigger characters
+            ':', '"', "'", '-', ' '  // Trigger characters ('- ' opens the table list)
         );
         
         // Register hover provider for MITRE techniques and tactics

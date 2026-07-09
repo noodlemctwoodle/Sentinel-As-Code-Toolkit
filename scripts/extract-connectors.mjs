@@ -29,6 +29,21 @@ const GITHUB_RAW_BASE =
 const OUTPUT_FILE = fileURLToPath(new URL('../data/connectors.json', import.meta.url));
 
 // ---------------------------------------------------------------------------
+// Authoritative table overrides. Some connectors ship no
+// `event_vendor_product_by_table` mapping (empty cell), so they fall back to the
+// union of every table used anywhere in their solution. For multi-content
+// solutions that over-attributes tables the connector does not ingest (e.g. the
+// "Microsoft 365" solution's rules query SigninLogs/Operation, which are not
+// Office 365 tables). Entries here replace the derived list entirely and are
+// keyed by connector_id. Keep this list small and authoritative.
+// ---------------------------------------------------------------------------
+
+const CONNECTOR_TABLE_OVERRIDES = {
+  // The Office 365 connector streams only the unified OfficeActivity table.
+  Office365: ['OfficeActivity'],
+};
+
+// ---------------------------------------------------------------------------
 // RFC 4180 CSV parser (dependency-free). Handles quoted fields with embedded
 // commas, newlines, and doubled ("") escaped quotes.
 // ---------------------------------------------------------------------------
@@ -312,7 +327,11 @@ async function main() {
   const allTables = new Set();
   const tablesByConnector = [...byId.values()]
     .map((entry) => {
-      const list = [...entry.tables].sort((a, b) => a.localeCompare(b));
+      const override = CONNECTOR_TABLE_OVERRIDES[entry.connectorId];
+      const derived = override ? override : [...entry.tables];
+      const list = [...new Set(derived.map(cleanTable).filter(Boolean))].sort((a, b) =>
+        a.localeCompare(b),
+      );
       for (const table of list) {
         allTables.add(table);
       }

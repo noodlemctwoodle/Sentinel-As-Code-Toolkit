@@ -26,7 +26,9 @@ export class SentinelCompletionProvider implements vscode.CompletionItemProvider
         _context: vscode.CompletionContext
     ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
 
-        const wordRange = document.getWordRangeAtPosition(position, /[A-Za-z0-9_.-]+/);
+        // Identifiers here never contain a hyphen, so keep the leading YAML list
+        // dash ("- ") out of the replacement range.
+        const wordRange = document.getWordRangeAtPosition(position, /[A-Za-z0-9_.]+/);
 
         // requiredDataConnectors -> connectorId: <value>
         if (this.isConnectorIdContext(document, position)) {
@@ -65,27 +67,39 @@ export class SentinelCompletionProvider implements vscode.CompletionItemProvider
         position: vscode.Position
     ): { connectorId?: string } | undefined {
         const line = document.lineAt(position.line).text;
-        const itemMatch = /^(\s*)-\s*/.exec(line);
-        if (!itemMatch) {
+
+        // The cursor must sit inside a block sequence value: either on a
+        // "- <item>" line, or on a blank / partially-typed line where the user
+        // is about to add one (so Ctrl+Space on a fresh list line still works).
+        const dashMatch = /^(\s*)-\s*/.exec(line);
+        const beforeCursor = line.slice(0, position.character);
+        const isBlankOrPartial = /^\s*[A-Za-z0-9_.]*$/.test(beforeCursor);
+        if (!dashMatch && !isBlankOrPartial) {
             return undefined;
         }
-        const itemIndent = itemMatch[1].length;
+        const itemIndent = dashMatch ? dashMatch[1].length : /^\s*/.exec(line)![0].length;
 
-        // The governing key is the nearest non-blank line above with a smaller indent.
+        // Walk upward to the governing mapping key. Skip blank lines, sibling
+        // sequence items, and anything nested deeper than this item. The first
+        // shallower-or-equal bare "key:" line we reach governs the list, which is
+        // tolerant of both indented and compact YAML sequence styles.
         for (let i = position.line - 1; i >= 0 && i >= position.line - 60; i--) {
             const above = document.lineAt(i).text;
             if (above.trim() === '') {
                 continue;
             }
             const indent = /^\s*/.exec(above)![0].length;
-            if (indent >= itemIndent) {
-                continue;
+            if (indent > itemIndent) {
+                continue; // nested content belonging to a sibling item
             }
-            const keyMatch = /^\s*([A-Za-z0-9_]+):/.exec(above);
+            if (/^\s*-/.test(above)) {
+                continue; // a sibling sequence item
+            }
+            const keyMatch = /^\s*([A-Za-z0-9_]+):\s*$/.exec(above);
             if (keyMatch && keyMatch[1] === 'dataTypes') {
                 return { connectorId: this.findEnclosingConnectorId(document, i) };
             }
-            // Governed by some other key -> not a dataTypes list.
+            // Any other key (bare or with an inline value) governs this scope.
             return undefined;
         }
         return undefined;
