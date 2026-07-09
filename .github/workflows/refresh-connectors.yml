@@ -1,8 +1,9 @@
 name: Refresh connector data
 
 # Regenerates data/connectors.json (the Sentinel table -> connector/solution
-# mapping used for requiredDataConnectors auto-population) from the upstream
-# Azure-Sentinel repository on a weekly schedule.
+# mapping used for requiredDataConnectors validation and auto-population) from
+# Microsoft's Solutions Analyzer CSVs in the Azure-Sentinel repository on a
+# weekly schedule.
 
 on:
   schedule:
@@ -19,10 +20,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Regenerate connectors.json
-        shell: pwsh
-        working-directory: scripts
-        run: ./Extract-SentinelConnectors.ps1 -OutputPath ../data/connectors.json
+        run: node scripts/extract-connectors.mjs
 
       - name: Commit if changed
         shell: bash

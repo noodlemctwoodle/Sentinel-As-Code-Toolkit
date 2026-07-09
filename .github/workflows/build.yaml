@@ -104,18 +104,14 @@ jobs:
         echo "✅ ICS ATT&CK downloaded ($(du -h data/mitre-ics.json | cut -f1))"
         
     - name: Extract latest Sentinel connector data
-      shell: pwsh
       run: |
-        echo "🔌 Extracting Azure Sentinel connector data..."
-        Set-Location scripts
-        ./Extract-SentinelConnectors.ps1 -OutputPath "../data/connectors.json"
-        Set-Location ..
-        if (Test-Path "data/connectors.json") {
-            $connectorData = Get-Content "data/connectors.json" | ConvertFrom-Json
-            Write-Host "✅ Connector data extracted successfully"
-            Write-Host "📊 Total connectors: $($connectorData.metadata.totalConnectors)"
-            Write-Host "📊 Total tables: $($connectorData.metadata.totalTables)"
-        }
+        echo "Extracting Azure Sentinel connector data..."
+        node scripts/extract-connectors.mjs
+        if [[ -f "data/connectors.json" ]]; then
+          echo "Connector data extracted successfully"
+          echo "Total connectors: $(jq '.metadata.totalConnectors' data/connectors.json)"
+          echo "Total tables: $(jq '.metadata.totalTables' data/connectors.json)"
+        fi
 
     - name: Validate downloaded data
       run: |
