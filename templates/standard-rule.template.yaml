@@ -1,23 +1,46 @@
+# =============================================================================
+# Microsoft Sentinel analytics rule -- Scheduled (standard)
+# -----------------------------------------------------------------------------
+# On-disk format : YAML  (Content/AnalyticalRules/)
+# Deployed as    : Scheduled analytics rule
+# -----------------------------------------------------------------------------
+# A general-purpose scheduled detection: Sentinel runs the query on a timer and
+# raises an alert when the result count crosses the trigger threshold. Optional
+# blocks below can be deleted if you don't need them.
+# =============================================================================
+
+# REQUIRED. Stable GUID used as the rule resource name. Do not change after first deploy.
 id: {{GUID}}
 name: Microsoft Sentinel Analytics Rule - Standard Template
 description: |
   Identifies suspicious activity that requires investigation.
   This is a standard template with common detection fields for general-purpose security monitoring.
+# REQUIRED. Alert severity: Informational | Low | Medium | High.
 severity: Medium
+# OPTIONAL. Data the rule depends on; drives connector-health hints in the portal.
 requiredDataConnectors:
   - connectorId: AzureActiveDirectory
     dataTypes:
       - SigninLogs
+# REQUIRED (Scheduled). Query cadence and trigger. queryFrequency = how often the
+# rule runs; queryPeriod = how far back each run looks (must be >= queryFrequency);
+# triggerOperator/triggerThreshold = when the result count raises an alert
+# (operators: gt | lt | eq | ge | le). Values are ISO 8601 durations (PT5M, P1D).
 queryFrequency: PT5M
 queryPeriod: P1D
 triggerOperator: gt
 triggerThreshold: 0
+# OPTIONAL. Whether the rule is enabled on deploy (defaults to true).
 enabled: true
+# OPTIONAL. MITRE ATT&CK coverage. tactics = camelCase tactic names;
+# relevantTechniques = technique IDs (sub-techniques T####.### are supported).
 tactics:
   - InitialAccess
 relevantTechniques:
   - T1078
   - T1078.004
+# REQUIRED. The detection KQL. Columns projected here are referenced by the
+# entityMappings, alertDetailsOverride, and customDetails blocks below.
 query: |
   SigninLogs
   | where TimeGenerated >= ago(1d)
@@ -44,6 +67,8 @@ query: |
       FailedAttempts, 
       RiskScore, 
       Countries
+# OPTIONAL. Map query columns to Sentinel entities so alerts correlate into
+# incidents and are investigable. Each identifier must map to a projected column.
 entityMappings:
   - entityType: Account
     fieldMappings:
@@ -53,17 +78,22 @@ entityMappings:
     fieldMappings:
       - identifier: Address
         columnName: IPAddress
+# OPTIONAL. Build the alert title/description/severity per row from query columns
+# using {{ColumnName}} tokens.
 alertDetailsOverride:
   alertDisplayNameFormat: "Suspicious sign-ins for {{UserPrincipalName}} from {{IPAddress}}"
   alertDescriptionFormat: "{{UserPrincipalName}} had {{FailedAttempts}} failed sign-ins from {{UniqueIPs}} distinct IPs. Risk score: {{RiskScore}}."
   alertSeverityColumnName: RiskScore
   alertTacticsColumnName: ""          # optional: column containing a comma-separated MITRE tactic list
+# OPTIONAL. Surface extra query columns on the alert as key/value custom details.
 customDetails:
   FailedAttempts: FailedAttempts
   UniqueIPs: UniqueIPs
   RiskScore: RiskScore
+# OPTIONAL. How matches become alerts: SingleAlert (one per run) | AlertPerResult.
 eventGroupingSettings:
   aggregationKind: SingleAlert
+# OPTIONAL. Whether alerts create incidents, and how they group together.
 incidentConfiguration:
   createIncident: true
   groupingConfiguration:
@@ -74,9 +104,13 @@ incidentConfiguration:
     groupByEntities:
       - Account
       - IP
+# OPTIONAL. After an alert fires, suppress re-firing for this long (when suppressionEnabled is true).
 suppressionDuration: PT5H
 suppressionEnabled: false
+# REQUIRED. Content version (bump on meaningful changes) and rule kind.
+# kind: Scheduled uses the queryFrequency/queryPeriod/trigger fields above.
 version: 1.0.0
 kind: Scheduled
+# OPTIONAL. Free-form tags for organisation and filtering.
 tags:
   - SecurityOps

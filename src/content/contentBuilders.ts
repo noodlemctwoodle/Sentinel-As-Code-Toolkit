@@ -7,6 +7,7 @@
 import * as vscode from 'vscode';
 import * as yaml from 'js-yaml';
 import { v4 as uuidv4 } from 'uuid';
+import { SentinelRuleFormatter } from '../formatting/formatter';
 
 /**
  * Interactive scaffolders that create new Sentinel-as-Code content items from the
@@ -34,14 +35,10 @@ export class ContentBuilders {
             return;
         }
 
-        const draft = {
-            id: uuidv4(),
-            name: name.trim(),
-            description: description.trim() || `Identifies ${name.trim()}.`,
-            query: '// Author the hunting query (Log Analytics KQL) here.\nSigninLogs\n| where TimeGenerated > ago(1d)\n| take 100',
-            tactics: ['InitialAccess'],
-            techniques: ['T1078']
-        };
+        const draft = await this.loadTemplateObject('hunting-query.template.yaml');
+        draft.id = uuidv4();
+        draft.name = name.trim();
+        draft.description = description.trim() || `Identifies ${name.trim()}.`;
         await this.openYaml(draft);
     }
 
@@ -71,14 +68,12 @@ export class ContentBuilders {
             return;
         }
 
-        const draft = {
-            id: this.toIdentifier(name),
-            name: name.trim(),
-            description: description.trim() || `Normalises data for ${name.trim()}.`,
-            category: category.trim() || 'Security',
-            functionAlias: functionAlias.trim(),
-            query: '// Author the parser KQL body here.\nunion isfuzzy=true SigninLogs\n| project TimeGenerated'
-        };
+        const draft = await this.loadTemplateObject('parser.template.yaml');
+        draft.id = this.toIdentifier(name);
+        draft.name = name.trim();
+        draft.description = description.trim() || `Normalises data for ${name.trim()}.`;
+        draft.category = category.trim() || 'Security';
+        draft.functionAlias = functionAlias.trim();
         await this.openYaml(draft);
     }
 
@@ -113,15 +108,12 @@ export class ContentBuilders {
             return;
         }
 
-        const draft = {
-            name: name.trim(),
-            displayName: name.trim(),
-            description: description.trim() || `Aggregation summary for ${name.trim()}.`,
-            query: 'SigninLogs\n| summarize SuccessCount = countif(ResultType == 0), FailureCount = countif(ResultType != 0) by Location = tostring(LocationDetails.countryOrRegion), AppDisplayName',
-            binSize: Number(binSize),
-            destinationTable: destinationTable.trim(),
-            binDelay: 10
-        };
+        const draft = await this.loadTemplateObject('summary-rule.template.yaml');
+        draft.name = name.trim();
+        draft.displayName = name.trim();
+        draft.description = description.trim() || `Aggregation summary for ${name.trim()}.`;
+        draft.binSize = Number(binSize);
+        draft.destinationTable = destinationTable.trim();
         await this.openJson(draft);
     }
 
@@ -155,27 +147,24 @@ export class ContentBuilders {
             return;
         }
 
-        const draft = {
-            automationRuleId: uuidv4(),
-            displayName: displayName.trim(),
-            order: Number(orderInput),
-            triggeringLogic: {
-                isEnabled: true,
-                triggersOn,
-                triggersWhen,
-                conditions: []
-            },
-            actions: [
-                {
-                    actionType: 'ModifyProperties',
-                    order: 1,
-                    actionConfiguration: {
-                        severity: 'Medium'
-                    }
-                }
-            ]
-        };
+        const draft = await this.loadTemplateObject('automation-rule.template.yaml');
+        draft.automationRuleId = uuidv4();
+        draft.displayName = displayName.trim();
+        draft.order = Number(orderInput);
+        const triggeringLogic = draft.triggeringLogic as Record<string, unknown>;
+        triggeringLogic.triggersOn = triggersOn;
+        triggeringLogic.triggersWhen = triggersWhen;
         await this.openJson(draft);
+    }
+
+    /**
+     * Loads a YAML content template and parses it into an editable draft object.
+     * The {{GUID}} placeholder is replaced with a fresh id before parsing (since
+     * "{{...}}" is not a legal YAML plain scalar); callers may override the id.
+     */
+    private static async loadTemplateObject(fileName: string): Promise<Record<string, any>> {
+        const raw = (await SentinelRuleFormatter.loadContentTemplate(fileName)).replace(/\{\{GUID\}\}/g, uuidv4());
+        return (yaml.load(raw) ?? {}) as Record<string, any>;
     }
 
     private static async openYaml(draft: unknown): Promise<void> {

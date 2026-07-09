@@ -1,3 +1,14 @@
+# =============================================================================
+# Defender XDR custom detection rule
+# -----------------------------------------------------------------------------
+# On-disk format : YAML  (Content/DefenderCustomDetections/)
+# Deployed via   : Microsoft Graph Security API (detectionRule)
+# -----------------------------------------------------------------------------
+# Runs an Advanced Hunting KQL query in Defender XDR and, on a match, raises an
+# alert and optionally runs response actions. The responseActions catalogue
+# below documents every supported action -- keep ONLY the ones whose identifier
+# maps to a column your query projects.
+# =============================================================================
 displayName: New Custom Detection Rule
 isEnabled: true
 queryCondition:

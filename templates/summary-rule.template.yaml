@@ -1,0 +1,47 @@
+# =============================================================================
+# Sentinel-as-Code summary rule
+# -----------------------------------------------------------------------------
+# Authored as    : YAML  (this file, for readable comments)
+# Deployed as    : JSON  (Content/SummaryRules/) -- the plugin converts on export
+# Deployed to    : Log Analytics scheduled aggregation
+# -----------------------------------------------------------------------------
+# A summary rule runs a scheduled KQL aggregation and writes the results to a
+# custom (_CL) table, turning verbose logs into cheap, fast summary data. Every
+# schema-allowed field is shown below; delete the optional ones you don't need.
+# =============================================================================
+
+# REQUIRED. Resource name. Alphanumeric characters and hyphens only.
+name: Example-Summary-Rule
+
+# OPTIONAL. Friendly name shown in the portal. Defaults to `name`.
+displayName: Example Summary Rule
+
+# OPTIONAL. Describe what the rule aggregates and why.
+description: Aggregates sign-in outcomes per country and application for dashboards and long-term trend analysis.
+
+# REQUIRED. The KQL aggregation.
+# IMPORTANT: do NOT add an explicit time filter (no `ago()` and no
+# `TimeGenerated >` predicate). Each run is implicitly scoped to one bin window.
+query: |
+  SigninLogs
+  | summarize
+      SuccessCount = countif(ResultType == 0),
+      FailureCount = countif(ResultType != 0),
+      UniqueUsers  = dcount(UserPrincipalName)
+    by Location = tostring(LocationDetails.countryOrRegion), AppDisplayName
+
+# REQUIRED. Bin (aggregation window) size in minutes.
+# Allowed values: 20, 30, 60, 120, 180, 360, 720, 1440.
+binSize: 60
+
+# REQUIRED. Destination custom table. Must end with the _CL suffix; it is
+# created automatically on the first run.
+destinationTable: ExampleSummary_CL
+
+# OPTIONAL. Minutes to wait before executing each bin, to allow for ingestion
+# latency. Integer between 0 and 1440.
+binDelay: 10
+
+# OPTIONAL. ISO 8601 timestamp for the first bin, on a whole-hour boundary.
+# Omit this field to let Sentinel schedule from the activation time.
+binStartTime: "2026-01-01T00:00:00Z"

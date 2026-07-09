@@ -6,6 +6,8 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as yaml from 'js-yaml';
+import { SentinelRuleFormatter } from '../formatting/formatter';
 
 /**
  * Converts a raw CSV/TSV into a deployment-ready Sentinel-as-Code watchlist:
@@ -71,13 +73,12 @@ export class WatchlistBuilder {
             return;
         }
 
-        const metadata = {
-            watchlistAlias: alias.trim(),
-            displayName: (displayName || alias).trim(),
-            description: (description || '').trim(),
-            provider: 'Custom',
-            itemsSearchKey
-        };
+        const metadata = yaml.load(await SentinelRuleFormatter.loadContentTemplate('watchlist.template.yaml')) as Record<string, any>;
+        metadata.watchlistAlias = alias.trim();
+        metadata.displayName = (displayName || alias).trim();
+        metadata.description = (description || '').trim();
+        metadata.provider = 'Custom';
+        metadata.itemsSearchKey = itemsSearchKey;
         const dataFileName = isTsv ? 'data.tsv' : 'data.csv';
 
         try {

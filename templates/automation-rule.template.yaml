@@ -1,0 +1,68 @@
+# =============================================================================
+# Sentinel-as-Code automation rule
+# -----------------------------------------------------------------------------
+# Authored as    : YAML  (this file, for readable comments)
+# Deployed as    : JSON  (Content/AutomationRules/) -- the plugin converts on export
+# -----------------------------------------------------------------------------
+# Automation rules run when incidents or alerts are created/updated, match an
+# optional set of conditions, then execute an ordered list of actions. Every
+# schema-allowed field is shown below. Keep only the actions you need (at least
+# one is required).
+# =============================================================================
+
+# REQUIRED. Stable GUID used as the resource name. Do not change after creation.
+automationRuleId: {{GUID}}
+
+# REQUIRED. Display name shown in the Sentinel Automation blade.
+displayName: Example Automation Rule
+
+# REQUIRED. Execution priority, 1-1000. Lower numbers run first.
+order: 100
+
+# REQUIRED. When the rule fires and any pre-conditions it must satisfy.
+triggeringLogic:
+  # Whether the rule is active.
+  isEnabled: true
+  # What the rule triggers on: Incidents | Alerts.
+  triggersOn: Incidents
+  # When it triggers: Created | Updated.
+  triggersWhen: Created
+  # OPTIONAL. UTC time after which the rule stops running. Omit for no expiry.
+  expirationTimeUtc: "2027-01-01T00:00:00Z"
+  # OPTIONAL. Only run the actions when EVERY condition matches. Use an empty
+  # list ([]) to always run. Repeat the block to add more conditions.
+  conditions:
+    - conditionType: Property
+      conditionProperties:
+        propertyName: IncidentSeverity
+        operator: Equals
+        propertyValues:
+          - High
+          - Medium
+
+# REQUIRED. Ordered list of actions (at least one). All three action types are
+# shown as a reference -- delete the ones you don't need. `order` sets the run
+# sequence within the rule.
+actions:
+  # 1) ModifyProperties -- set incident fields (severity, status, owner, labels).
+  - actionType: ModifyProperties
+    order: 1
+    actionConfiguration:
+      severity: High
+      status: Active
+      labels:
+        - labelName: Automated
+
+  # 2) RunPlaybook -- trigger a Logic App. Supply the target resource and tenant.
+  - actionType: RunPlaybook
+    order: 2
+    actionConfiguration:
+      logicAppResourceId: /subscriptions/<subscriptionId>/resourceGroups/<resourceGroup>/providers/Microsoft.Logic/workflows/<playbookName>
+      tenantId: <tenantId>
+
+  # 3) AddIncidentTask -- add a checklist task for an analyst to complete.
+  - actionType: AddIncidentTask
+    order: 3
+    actionConfiguration:
+      title: Triage the automated detection
+      description: Review the enriched entities and confirm true or false positive.

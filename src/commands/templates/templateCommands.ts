@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import * as yaml from 'js-yaml';
 import { BaseCommand } from '../base/baseCommand';
 import { TemplateTypeOption } from './templateTypes';
 import { SentinelRuleFormatter } from '../../formatting/formatter';
@@ -64,11 +65,11 @@ export class TemplateCommands extends BaseCommand {
             }
 
             // Step 4: Generate template
-            await this.generateTemplateAtLocation(templateType.templateKey, saveLocation);
+            await this.generateTemplateAtLocation(templateType, saveLocation);
 
             // Step 5: Open the created file
             const document = await vscode.workspace.openTextDocument(saveLocation);
-            await vscode.languages.setTextDocumentLanguage(document, 'yaml');
+            await vscode.languages.setTextDocumentLanguage(document, templateType.language ?? 'yaml');
             await vscode.window.showTextDocument(document);
 
             vscode.window.showInformationMessage(`${templateType.displayName} template created successfully!`);
@@ -107,11 +108,61 @@ export class TemplateCommands extends BaseCommand {
                 templateKey: "custom-detection",
                 defaultFilename: "custom_detection.yaml",
                 displayName: "Custom Detection"
+            },
+            {
+                label: "$(search) Hunting Query",
+                description: "Log Analytics saved search for the Sentinel Hunting blade",
+                detail: "YAML for Content/HuntingQueries (no schedule or threshold)",
+                templateKey: "hunting-query",
+                templateFile: "hunting-query.template.yaml",
+                language: "yaml",
+                defaultFilename: "hunting_query.yaml",
+                displayName: "Hunting Query"
+            },
+            {
+                label: "$(symbol-function) Parser",
+                description: "Saved KQL function that normalises a source",
+                detail: "YAML for Content/Parsers, called by its functionAlias",
+                templateKey: "parser",
+                templateFile: "parser.template.yaml",
+                language: "yaml",
+                defaultFilename: "parser.yaml",
+                displayName: "Parser"
+            },
+            {
+                label: "$(graph) Summary Rule",
+                description: "Log Analytics scheduled aggregation into a _CL table",
+                detail: "JSON for Content/SummaryRules",
+                templateKey: "summary-rule",
+                templateFile: "summary-rule.template.yaml",
+                language: "json",
+                defaultFilename: "summary_rule.json",
+                displayName: "Summary Rule"
+            },
+            {
+                label: "$(zap) Automation Rule",
+                description: "Incident/alert automation (modify, run playbook, add task)",
+                detail: "JSON for Content/AutomationRules",
+                templateKey: "automation-rule",
+                templateFile: "automation-rule.template.yaml",
+                language: "json",
+                defaultFilename: "automation_rule.json",
+                displayName: "Automation Rule"
+            },
+            {
+                label: "$(list-flat) Watchlist",
+                description: "Watchlist metadata (pairs with a data.csv/data.tsv)",
+                detail: "JSON for Content/Watchlists/<alias>/watchlist.json",
+                templateKey: "watchlist",
+                templateFile: "watchlist.template.yaml",
+                language: "json",
+                defaultFilename: "watchlist.json",
+                displayName: "Watchlist"
             }
         ];
 
         const selected = await vscode.window.showQuickPick(templateOptions, {
-            placeHolder: "Select a Sentinel-as-Code template",
+            placeHolder: "Select a Sentinel-as-Code content template",
             matchOnDescription: true,
             matchOnDetail: true,
             ignoreFocusOut: false
@@ -128,6 +179,7 @@ export class TemplateCommands extends BaseCommand {
             defaultUri: defaultPath ? vscode.Uri.file(path.join(defaultPath, defaultFilename || 'sentinel_rule.yaml')) : undefined,
             filters: {
                 'YAML Files': ['yaml', 'yml'],
+                'JSON Files': ['json'],
                 'All Files': ['*']
             },
             title: "Save Sentinel Rule Template"
@@ -139,14 +191,23 @@ export class TemplateCommands extends BaseCommand {
     /**
      * Generate template at specific location with GUID replacement
      */
-    private async generateTemplateAtLocation(templateKey: string, filePath: string): Promise<void> {
+    private async generateTemplateAtLocation(templateType: TemplateTypeOption, filePath: string): Promise<void> {
         try {
-            const template = await SentinelRuleFormatter.loadTemplate(templateKey);
-            
-            // Replace {{GUID}} placeholder with actual GUID
-            const processedTemplate = template.replace(/\{\{GUID\}\}/g, uuidv4());
-            
-            await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(processedTemplate, 'utf8'));
+            const template = templateType.templateFile
+                ? await SentinelRuleFormatter.loadContentTemplate(templateType.templateFile)
+                : await SentinelRuleFormatter.loadTemplate(templateType.templateKey);
+
+            // Replace {{GUID}} placeholder with an actual GUID.
+            let output = template.replace(/\{\{GUID\}\}/g, uuidv4());
+
+            // Content templates are authored in YAML for readable comments. The
+            // Sentinel-as-Code project stores automation rules, summary rules, and
+            // watchlists as JSON, so convert the parsed YAML on export.
+            if (templateType.language === 'json') {
+                output = JSON.stringify(yaml.load(output), null, 2) + '\n';
+            }
+
+            await vscode.workspace.fs.writeFile(vscode.Uri.file(filePath), Buffer.from(output, 'utf8'));
         } catch (error) {
             throw new Error(`Failed to load or create template: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error });
         }

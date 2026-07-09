@@ -60,20 +60,26 @@ export class SentinelRuleFormatter {
             return template.replace('{{GUID}}', newId);
         } catch (error) {
             console.error(`Template file not found: ${templateName}`, error);
-            
-            // Try to load fallback template
-            try {
-                const fallbackPath = path.join(this.extensionContext.extensionPath, 'templates', 'fallback-rule.template.yaml');
-                const fallbackContent = await vscode.workspace.fs.readFile(vscode.Uri.file(fallbackPath));
-                const fallbackTemplate = Buffer.from(fallbackContent).toString('utf8');
-                const newId = uuidv4();
-                return fallbackTemplate.replace('{{GUID}}', newId);
-            } catch (fallbackError) {
-                console.error('Fallback template also not found', fallbackError);
-                // Return minimal template as last resort
-                return this.getMinimalTemplate();
-            }
+            // Last resort: return the in-memory minimal template. It is
+            // filesystem-independent, so it cannot fail the way a file read can.
+            return this.getMinimalTemplate();
         }
+    }
+
+    /**
+     * Loads a content template by its full filename (e.g. 'parser.template.yaml'
+     * or 'summary-rule.template.yaml') without the analytics-rule fallback used by
+     * loadTemplate. Content templates are the single source of truth for the
+     * interactive scaffolders and the content-type picker. Throws if not found.
+     */
+    public static async loadContentTemplate(fileName: string): Promise<string> {
+        if (!this.extensionContext) {
+            throw new Error('Extension context not set');
+        }
+
+        const templatePath = path.join(this.extensionContext.extensionPath, 'templates', fileName);
+        const templateContent = await vscode.workspace.fs.readFile(vscode.Uri.file(templatePath));
+        return Buffer.from(templateContent).toString('utf8');
     }
 
     private static getMinimalTemplate(): string {
