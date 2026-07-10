@@ -9,14 +9,9 @@ out/
 
 # VS Code extension files
 *.vsix
-.vscode
+.vscode/
 .vscode-test/
 .vscode-test-web/
-
-
-# VS Code workspace settings (but keep launch.json and tasks.json for development)
-.vscode/settings.json
-# Keep .vscode/launch.json and .vscode/tasks.json for debugging
 
 # Development and testing
 coverage/
