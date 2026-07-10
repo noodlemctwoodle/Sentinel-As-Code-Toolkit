@@ -1,5 +1,11 @@
 # Sentinel as Code Toolkit
 
+<p align="center">
+  <img src="./images/icon.png" alt="Sentinel-As-Code" width="512" />
+</p>
+
+
+
 ![VS Code](https://img.shields.io/badge/VS%20Code-1.125+-0078D4?logo=visualstudiocode&logoColor=white) ![Version](https://img.shields.io/badge/version-26.07--1-blue) ![License](https://img.shields.io/badge/license-Apache%202.0-green)
 
 **The dedicated VS Code authoring toolkit for the [Sentinel-as-Code](https://github.com/noodlemctwoodle/Sentinel-As-Code) project.**
