@@ -50,28 +50,6 @@ export class SentinelRuleValidator {
                 return diagnostics;
             }
             
-            // Validate ID field - should be a GUID for Sentinel rules
-            if ('id' in parsedContent) {
-                const id = parsedContent.id?.toString();
-                if (id) {  // Only validate if id exists and is not undefined
-                    const guidPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
-                    if (!guidPattern.test(id)) {
-                        diagnostics.push(new vscode.Diagnostic(
-                            new vscode.Range(0, 0, 0, 0),
-                            `Invalid GUID format for id field: ${id}`,
-                            vscode.DiagnosticSeverity.Error
-                        ));
-                    }
-                } else {
-                    // ID field exists but has no value
-                    diagnostics.push(new vscode.Diagnostic(
-                        new vscode.Range(0, 0, 0, 0),
-                        'ID field exists but has no value',
-                        vscode.DiagnosticSeverity.Error
-                    ));
-                }
-            }
-            
             // Continue with rest of Sentinel validation...
             const lines = content.split('\n');
             

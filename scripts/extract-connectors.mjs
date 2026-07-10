@@ -41,7 +41,65 @@ const OUTPUT_FILE = fileURLToPath(new URL('../data/connectors.json', import.meta
 const CONNECTOR_TABLE_OVERRIDES = {
   // The Office 365 connector streams only the unified OfficeActivity table.
   Office365: ['OfficeActivity'],
+  // The Microsoft Entra ID connector's authoritative data types, as listed on the
+  // connector page. The solution-level union both misses the sign-in/audit streams
+  // (e.g. MicrosoftGraphActivityLogs, AADProvisioningLogs) and over-attributes
+  // UEBA/Defender tables (Anomalies, BehaviorAnalytics, DeviceInfo, IdentityInfo)
+  // that are ingested by their own connectors.
+  AzureActiveDirectory: [
+    'AADManagedIdentitySignInLogs',
+    'AADNonInteractiveUserSignInLogs',
+    'AADProvisioningLogs',
+    'AADRiskyServicePrincipals',
+    'AADRiskyUsers',
+    'AADServicePrincipalRiskEvents',
+    'AADServicePrincipalSignInLogs',
+    'AADUserRiskEvents',
+    'ADFSSignInLogs',
+    'AuditLogs',
+    'EnrichedOffice365AuditLogs',
+    'MicrosoftGraphActivityLogs',
+    'NetworkAccessTraffic',
+    'RemoteNetworkHealthLogs',
+    'SigninLogs',
+  ],
 };
+
+// ---------------------------------------------------------------------------
+// Synthetic connectors for tables the Content Hub Solutions Analyzer does not
+// model. Core Log Analytics / Azure Monitor workspace tables (Usage, Operation,
+// Heartbeat, LAQueryLogs) are always present and belong to no data connector, so
+// they are grouped under a platform pseudo-connector rather than being left
+// unmatched or falsely attributed to an unrelated solution. These are ADDED to
+// the connector map as full entries (they do not replace CSV-derived data).
+// ---------------------------------------------------------------------------
+
+const EXTRA_CONNECTORS = [
+  {
+    connectorId: 'AzureMonitor',
+    connectorTitle: 'Azure Monitor / Log Analytics platform',
+    publisher: 'Microsoft',
+    source: 'Platform',
+    descriptionMarkdown:
+      'Core Log Analytics / Azure Monitor workspace tables that are always available and require no data connector.',
+    tables: ['Heartbeat', 'LAQueryLogs', 'Operation', 'Usage'],
+  },
+  {
+    connectorId: 'MicrosoftSentinelUEBA',
+    connectorTitle: 'Microsoft Sentinel UEBA',
+    publisher: 'Microsoft',
+    source: 'Platform',
+    descriptionMarkdown:
+      'User and Entity Behavior Analytics (UEBA) tables, populated when UEBA is enabled on the workspace. UEBA is a Microsoft Sentinel feature rather than a Content Hub data connector, so the Solutions Analyzer does not model it.',
+    tables: [
+      'Anomalies',
+      'BehaviorAnalytics',
+      'IdentityInfo',
+      'UserAccessAnalytics',
+      'UserPeerAnalytics',
+    ],
+  },
+];
 
 // ---------------------------------------------------------------------------
 // RFC 4180 CSV parser (dependency-free). Handles quoted fields with embedded
@@ -321,6 +379,19 @@ async function main() {
     }
   }
   console.log(`  Enriched from existing data: filled ${filled}, preserved ${preserved}`);
+
+  // Inject synthetic platform connectors (core Log Analytics tables that are
+  // always present and belong to no Content Hub data connector).
+  for (const extra of EXTRA_CONNECTORS) {
+    byId.set(extra.connectorId, {
+      connectorId: extra.connectorId,
+      connectorTitle: extra.connectorTitle,
+      descriptionMarkdown: extra.descriptionMarkdown || '',
+      publisher: extra.publisher || '',
+      source: extra.source || 'Platform',
+      tables: new Set(extra.tables),
+    });
+  }
 
   // Finalise: sort tables, collapse single-table lists to a string (matching the
   // existing connectors.json shape consumed by ConnectorLoader), collect counts.
