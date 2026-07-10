@@ -2,7 +2,7 @@
   "name": "sentinelcodeguard",
   "displayName": "Sentinel as Code Toolkit",
   "description": "The dedicated VS Code toolkit for the Sentinel-as-Code project: intelligent validation, formatting, templates, and ARM-to-YAML conversion for Microsoft Sentinel Analytics Rules",
-  "version": "26.7.1",
+  "version": "26.7.2",
   "publisher": "noodlemctwoodle",
   "icon": "images/icon.png",
   "engines": {
