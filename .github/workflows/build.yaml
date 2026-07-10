@@ -7,8 +7,9 @@ on:
   workflow_dispatch: # Allow manual triggering
   push:
     branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
+  # Pull-request validation lives in pr-validation.yml (PR Validation Gate).
+  # This workflow is scoped to scheduled/main data refresh only, so it does
+  # not duplicate the per-PR build/test matrix.
 
 # Default permissions for the workflow (most restrictive)
 permissions:
@@ -151,21 +152,12 @@ jobs:
       run: |
         git diff --quiet data/ || echo "changes=true" >> $GITHUB_OUTPUT
 
-    - name: Commit updated data directly to main
-      if: steps.changes.outputs.changes == 'true' && (github.event_name == 'push' && github.ref == 'refs/heads/main')
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add data/
-        git commit -m "chore: update MITRE ATT&CK and Sentinel connector data
-
-        Auto-generated data update including:
-        - MITRE Enterprise, Mobile, and ICS ATT&CK frameworks  
-        - Azure Sentinel connector data from Content Hub
-
-        Updated after merge to main to ensure latest threat intelligence data."
-        git push
-        
+    # A "commit directly to main" step previously ran here on push-to-main, but
+    # main is a protected branch that requires changes to go through a pull
+    # request, so the direct `git push` always failed (GH006: protected branch
+    # update failed). Data refresh now flows exclusively through the
+    # create-pull-request step below (weekly schedule and manual dispatch),
+    # which is compatible with branch protection.
     - name: Create Pull Request with updated data (scheduled/manual runs)
       if: steps.changes.outputs.changes == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
       uses: peter-evans/create-pull-request@v7
