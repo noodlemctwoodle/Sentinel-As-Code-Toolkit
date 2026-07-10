@@ -22,8 +22,22 @@ export class WatchlistBuilder {
             return;
         }
 
+        // Only convert genuine CSV/TSV data. Without this guard the command writes
+        // the active editor's contents verbatim into data.csv, so running it while a
+        // rule or JSON tab is focused produced a watchlist whose data file held an
+        // analytics rule instead of tabular rows.
+        const fsPath = editor.document.uri.fsPath;
+        const languageId = editor.document.languageId;
+        const isTsv = /\.tsv$/i.test(fsPath) || languageId === 'tsv';
+        const isCsvOrTsv = isTsv || /\.csv$/i.test(fsPath) || languageId === 'csv';
+        if (!isCsvOrTsv) {
+            vscode.window.showErrorMessage(
+                'The active editor is not a CSV or TSV file. Open the CSV/TSV data file you want to convert into a watchlist, then run this command again.'
+            );
+            return;
+        }
+
         const dataText = editor.document.getText();
-        const isTsv = /\.tsv$/i.test(editor.document.uri.fsPath);
         const headers = this.parseHeaders(dataText, isTsv);
         if (headers.length === 0) {
             vscode.window.showErrorMessage('Could not read a header row. The first line must contain the column names.');
