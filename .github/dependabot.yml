@@ -54,6 +54,12 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "typescript"
         update-types: ["version-update:semver-major"]
+      # js-yaml 5.x is a breaking API rewrite that removed the dump() options this
+      # extension relies on (quotingType, condenseFlow and styles), so it fails to
+      # compile. It is a dual CommonJS/ESM package, so the module format is fine;
+      # the blocker is the API. Stay on 4.x until the dump calls are migrated.
+      - dependency-name: "js-yaml"
+        update-types: ["version-update:semver-major"]
 
   # Enable version updates for GitHub Actions (CI/CD workflows)
   - package-ecosystem: "github-actions"
