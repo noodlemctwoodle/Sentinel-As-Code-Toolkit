@@ -31,7 +31,8 @@ export class ContentCommands {
             vscode.commands.registerCommand('sentinelAsCode.createAutomationRule', () => ContentBuilders.createAutomationRule()),
             vscode.commands.registerCommand('sentinelAsCode.createWatchlistFromCsv', () => WatchlistBuilder.createFromActiveCsv()),
             vscode.commands.registerCommand('sentinelAsCode.populateDataConnectors', () => this.populateDataConnectors()),
-            vscode.commands.registerCommand('sentinelAsCode.convertContentToJson', (uri?: vscode.Uri) => this.convertContentToJson(uri))
+            vscode.commands.registerCommand('sentinelAsCode.convertContentToJson', (uri?: vscode.Uri) => this.convertContentToJson(uri)),
+            vscode.commands.registerCommand('sentinelAsCode.convertContentToYaml', (uri?: vscode.Uri) => this.convertContentToYaml(uri))
         ];
     }
 
@@ -180,6 +181,74 @@ export class ContentCommands {
         const jsonDoc = await vscode.workspace.openTextDocument(targetUri);
         await vscode.window.showTextDocument(jsonDoc, { preview: false });
         vscode.window.showInformationMessage(`Converted to JSON: ${path.basename(targetUri.fsPath)}`);
+    }
+
+    /**
+     * Converts the active (or right-clicked) Sentinel content JSON file to YAML,
+     * writing <name>.yaml next to it. The inverse of convertContentToJson, used to
+     * re-author a summary rule, automation rule, or watchlist as readable YAML
+     * from its JSON form.
+     */
+    private async convertContentToYaml(uri?: vscode.Uri): Promise<void> {
+        let doc: vscode.TextDocument;
+        try {
+            if (uri && uri.fsPath) {
+                doc = await vscode.workspace.openTextDocument(uri);
+            } else if (vscode.window.activeTextEditor) {
+                doc = vscode.window.activeTextEditor.document;
+            } else {
+                vscode.window.showErrorMessage('Open a Sentinel content JSON file to convert to YAML.');
+                return;
+            }
+        } catch (error) {
+            vscode.window.showErrorMessage(`Could not open the file: ${error instanceof Error ? error.message : 'unknown error'}`);
+            return;
+        }
+
+        if (doc.languageId !== 'json' && !/\.json$/i.test(doc.uri.fsPath)) {
+            vscode.window.showErrorMessage('The active file is not JSON. Open the JSON content you want to convert to YAML.');
+            return;
+        }
+
+        let parsed: unknown;
+        try {
+            parsed = JSON.parse(doc.getText());
+        } catch (error) {
+            vscode.window.showErrorMessage(`Could not parse the JSON: ${error instanceof Error ? error.message : 'invalid JSON'}`);
+            return;
+        }
+        if (!parsed || typeof parsed !== 'object') {
+            vscode.window.showErrorMessage('The JSON did not parse to an object, so there is nothing to convert.');
+            return;
+        }
+
+        const yamlText = yaml.dump(parsed, { indent: 2, lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false });
+
+        let targetUri: vscode.Uri | undefined;
+        if (doc.uri.scheme === 'file') {
+            const dir = path.dirname(doc.uri.fsPath);
+            const base = path.basename(doc.uri.fsPath).replace(/\.json$/i, '');
+            targetUri = vscode.Uri.file(path.join(dir, `${base}.yaml`));
+        } else {
+            targetUri = await vscode.window.showSaveDialog({
+                filters: { 'YAML Files': ['yaml', 'yml'], 'All Files': ['*'] },
+                title: 'Save converted YAML'
+            });
+        }
+        if (!targetUri) {
+            return;
+        }
+
+        try {
+            await vscode.workspace.fs.writeFile(targetUri, Buffer.from(yamlText, 'utf8'));
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to write YAML: ${error instanceof Error ? error.message : 'unknown error'}`);
+            return;
+        }
+
+        const yamlDoc = await vscode.workspace.openTextDocument(targetUri);
+        await vscode.window.showTextDocument(yamlDoc, { preview: false });
+        vscode.window.showInformationMessage(`Converted to YAML: ${path.basename(targetUri.fsPath)}`);
     }
 
     private async populateDataConnectors(): Promise<void> {

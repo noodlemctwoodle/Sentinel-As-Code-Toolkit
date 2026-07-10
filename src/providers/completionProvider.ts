@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { ConnectorLoader } from '../validation/connectorLoader';
 import { MitreLoader, MITRE_TACTIC_FIELDS, MITRE_TECHNIQUE_FIELDS } from '../validation/mitreLoader';
+import { RuleTypeDetector, RuleType } from '../utils/ruleTypeDetector';
+import { VALID_SEVERITIES } from '../validation/constants';
 
 // Export the interfaces so they can be used by the completion provider
 export interface MitreTactic {
@@ -47,6 +49,15 @@ export class SentinelCompletionProvider implements vscode.CompletionItemProvider
 
         if (this.isTechniquesContext(document, position)) {
             return this.getTechniquesCompletions();
+        }
+
+        if (this.isSeverityContext(document, position)) {
+            return this.getSeverityCompletions(document, wordRange);
+        }
+
+        const durationField = this.getDurationField(document, position);
+        if (durationField) {
+            return this.getDurationCompletions(durationField, wordRange);
         }
 
         return [];
@@ -306,5 +317,111 @@ export class SentinelCompletionProvider implements vscode.CompletionItemProvider
             item.sortText = `technique_${technique}`;
             return item;
         });
+    }
+
+    // Human-readable notes per severity level, keyed by the canonical capitalised
+    // form. Defender custom detections reuse these with lowercase values.
+    private static readonly SEVERITY_DESCRIPTIONS: Record<string, string> = {
+        High: 'Highest priority. Significant or immediate threat.',
+        Medium: 'Notable activity that should be reviewed.',
+        Low: 'Lower-priority signal, often benign.',
+        Informational: 'No direct impact; contextual awareness only.'
+    };
+
+    // Common ISO 8601 durations with human-readable labels, ordered shortest to
+    // longest so the completion list reads naturally.
+    private static readonly DURATION_OPTIONS: { value: string; label: string; minutes: number }[] = [
+        { value: 'PT5M', label: '5 minutes', minutes: 5 },
+        { value: 'PT10M', label: '10 minutes', minutes: 10 },
+        { value: 'PT15M', label: '15 minutes', minutes: 15 },
+        { value: 'PT30M', label: '30 minutes', minutes: 30 },
+        { value: 'PT1H', label: '1 hour', minutes: 60 },
+        { value: 'PT2H', label: '2 hours', minutes: 120 },
+        { value: 'PT3H', label: '3 hours', minutes: 180 },
+        { value: 'PT4H', label: '4 hours', minutes: 240 },
+        { value: 'PT5H', label: '5 hours', minutes: 300 },
+        { value: 'PT6H', label: '6 hours', minutes: 360 },
+        { value: 'PT8H', label: '8 hours', minutes: 480 },
+        { value: 'PT12H', label: '12 hours', minutes: 720 },
+        { value: 'PT24H', label: '24 hours', minutes: 1440 },
+        { value: 'P1D', label: '1 day', minutes: 1440 },
+        { value: 'P2D', label: '2 days', minutes: 2880 },
+        { value: 'P3D', label: '3 days', minutes: 4320 },
+        { value: 'P7D', label: '7 days', minutes: 10080 },
+        { value: 'P14D', label: '14 days', minutes: 20160 }
+    ];
+
+    private isSeverityContext(document: vscode.TextDocument, position: vscode.Position): boolean {
+        return this.isScalarValueContext(document, position, ['severity']);
+    }
+
+    // Sentinel analytics/NRT rules use capitalised severities; Defender custom
+    // detections use the lowercase form. Detect the rule type so the suggested
+    // casing is always valid for the file being edited.
+    private getSeverityCompletions(document: vscode.TextDocument, range?: vscode.Range): vscode.CompletionItem[] {
+        const isDefender = RuleTypeDetector.detectType(document.getText()) === RuleType.DEFENDER;
+        // VALID_SEVERITIES is ordered Informational -> High; present most severe first.
+        const ordered = [...VALID_SEVERITIES].reverse();
+        return ordered.map((severity, index) => {
+            const value = isDefender ? severity.toLowerCase() : severity;
+            const item = new vscode.CompletionItem(value, vscode.CompletionItemKind.EnumMember);
+            item.detail = isDefender ? 'Defender custom detection severity' : 'Sentinel rule severity';
+            const description = SentinelCompletionProvider.SEVERITY_DESCRIPTIONS[severity];
+            if (description) {
+                item.documentation = new vscode.MarkdownString(`**${value}** — ${description}`);
+            }
+            item.insertText = value;
+            if (range) {
+                item.range = range;
+            }
+            item.sortText = `severity_${index}`;
+            item.filterText = value;
+            return item;
+        });
+    }
+
+    private getDurationField(document: vscode.TextDocument, position: vscode.Position): 'schedule' | 'suppression' | undefined {
+        if (this.isScalarValueContext(document, position, ['queryFrequency', 'queryPeriod'])) {
+            return 'schedule';
+        }
+        if (this.isScalarValueContext(document, position, ['suppressionDuration'])) {
+            return 'suppression';
+        }
+        return undefined;
+    }
+
+    // Scheduled cadence fields accept 5 minutes to 14 days; suppressionDuration is
+    // capped at 24 hours, so the longer options are filtered out for it.
+    private getDurationCompletions(field: 'schedule' | 'suppression', range?: vscode.Range): vscode.CompletionItem[] {
+        const maxMinutes = field === 'suppression' ? 1440 : Number.MAX_SAFE_INTEGER;
+        return SentinelCompletionProvider.DURATION_OPTIONS
+            .filter(option => option.minutes <= maxMinutes)
+            .map((option, index) => {
+                const item = new vscode.CompletionItem(
+                    { label: option.value, description: option.label },
+                    vscode.CompletionItemKind.Value
+                );
+                item.detail = option.label;
+                item.documentation = new vscode.MarkdownString(`\`${option.value}\` — ${option.label} (ISO 8601 duration)`);
+                item.insertText = option.value;
+                if (range) {
+                    item.range = range;
+                }
+                item.sortText = `duration_${String(index).padStart(2, '0')}`;
+                item.filterText = `${option.value} ${option.label}`;
+                return item;
+            });
+    }
+
+    // A scalar (inline) value context: the cursor sits in the value position of a
+    // "<key>: <value>" line for one of the given keys. Used for single-value fields
+    // (severity, durations) rather than the block-sequence lists above.
+    private isScalarValueContext(document: vscode.TextDocument, position: vscode.Position, keys: string[]): boolean {
+        const line = document.lineAt(position.line).text;
+        const match = /^\s*([A-Za-z0-9_]+):\s*/.exec(line);
+        if (!match || !keys.includes(match[1])) {
+            return false;
+        }
+        return position.character >= match[0].length;
     }
 }
