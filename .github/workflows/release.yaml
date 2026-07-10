@@ -283,7 +283,7 @@ jobs:
           echo "release-notes-file=release_notes.md" >> $GITHUB_OUTPUT
           
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
         with:
           tag_name: ${{ needs.check-release.outputs.tag-name }}
           name: "Sentinel as Code Toolkit v${{ needs.check-release.outputs.version }}"
