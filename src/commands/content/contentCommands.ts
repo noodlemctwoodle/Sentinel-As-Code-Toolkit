@@ -5,6 +5,7 @@
 //
 
 import * as vscode from 'vscode';
+import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { ContentBuilders } from '../../content/contentBuilders';
 import { WatchlistBuilder } from '../../content/watchlistBuilder';
@@ -29,7 +30,8 @@ export class ContentCommands {
             vscode.commands.registerCommand('sentinelAsCode.createSummaryRule', () => ContentBuilders.createSummaryRule()),
             vscode.commands.registerCommand('sentinelAsCode.createAutomationRule', () => ContentBuilders.createAutomationRule()),
             vscode.commands.registerCommand('sentinelAsCode.createWatchlistFromCsv', () => WatchlistBuilder.createFromActiveCsv()),
-            vscode.commands.registerCommand('sentinelAsCode.populateDataConnectors', () => this.populateDataConnectors())
+            vscode.commands.registerCommand('sentinelAsCode.populateDataConnectors', () => this.populateDataConnectors()),
+            vscode.commands.registerCommand('sentinelAsCode.convertContentToJson', (uri?: vscode.Uri) => this.convertContentToJson(uri))
         ];
     }
 
@@ -96,8 +98,8 @@ export class ContentCommands {
      */
     private async newWatchlist(): Promise<void> {
         const picks: ContentPick[] = [
-            { key: 'template', label: '$(list-flat) Blank template', detail: 'Scaffold a watchlist.json to fill in by hand' },
-            { key: 'csv', label: '$(table) From active CSV/TSV', detail: 'Build watchlist.json + data.csv from the active file' }
+            { key: 'template', label: '$(list-flat) Blank template', detail: 'Scaffold a watchlist.yaml to fill in by hand' },
+            { key: 'csv', label: '$(table) From active CSV/TSV', detail: 'Build watchlist.yaml + data.csv from the active file' }
         ];
         const selected = await vscode.window.showQuickPick(picks, {
             title: 'New watchlist',
@@ -111,6 +113,73 @@ export class ContentCommands {
             case 'template': await WatchlistBuilder.createTemplate(); break;
             case 'csv': await WatchlistBuilder.createFromActiveCsv(); break;
         }
+    }
+
+    /**
+     * Converts the active (or right-clicked) Sentinel content YAML file to JSON,
+     * writing <name>.json next to it. Used when the repo needs the JSON form of a
+     * summary rule, automation rule, or watchlist authored in YAML.
+     */
+    private async convertContentToJson(uri?: vscode.Uri): Promise<void> {
+        let doc: vscode.TextDocument;
+        try {
+            if (uri && uri.fsPath) {
+                doc = await vscode.workspace.openTextDocument(uri);
+            } else if (vscode.window.activeTextEditor) {
+                doc = vscode.window.activeTextEditor.document;
+            } else {
+                vscode.window.showErrorMessage('Open a Sentinel content YAML file to convert to JSON.');
+                return;
+            }
+        } catch (error) {
+            vscode.window.showErrorMessage(`Could not open the file: ${error instanceof Error ? error.message : 'unknown error'}`);
+            return;
+        }
+
+        if (doc.languageId !== 'yaml' && !/\.ya?ml$/i.test(doc.uri.fsPath)) {
+            vscode.window.showErrorMessage('The active file is not YAML. Open the YAML content you want to convert to JSON.');
+            return;
+        }
+
+        let parsed: unknown;
+        try {
+            parsed = yaml.load(doc.getText());
+        } catch (error) {
+            vscode.window.showErrorMessage(`Could not parse the YAML: ${error instanceof Error ? error.message : 'invalid YAML'}`);
+            return;
+        }
+        if (!parsed || typeof parsed !== 'object') {
+            vscode.window.showErrorMessage('The YAML did not parse to an object, so there is nothing to convert.');
+            return;
+        }
+
+        const json = JSON.stringify(parsed, null, 2) + '\n';
+
+        let targetUri: vscode.Uri | undefined;
+        if (doc.uri.scheme === 'file') {
+            const dir = path.dirname(doc.uri.fsPath);
+            const base = path.basename(doc.uri.fsPath).replace(/\.ya?ml$/i, '');
+            targetUri = vscode.Uri.file(path.join(dir, `${base}.json`));
+        } else {
+            targetUri = await vscode.window.showSaveDialog({
+                filters: { 'JSON Files': ['json'], 'All Files': ['*'] },
+                title: 'Save converted JSON'
+            });
+        }
+        if (!targetUri) {
+            return;
+        }
+
+        try {
+            await vscode.workspace.fs.writeFile(targetUri, Buffer.from(json, 'utf8'));
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to write JSON: ${error instanceof Error ? error.message : 'unknown error'}`);
+            return;
+        }
+
+        const jsonDoc = await vscode.workspace.openTextDocument(targetUri);
+        await vscode.window.showTextDocument(jsonDoc, { preview: false });
+        vscode.window.showInformationMessage(`Converted to JSON: ${path.basename(targetUri.fsPath)}`);
     }
 
     private async populateDataConnectors(): Promise<void> {

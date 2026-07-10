@@ -5,6 +5,7 @@ import * as yaml from 'js-yaml';
 import { BaseCommand } from '../base/baseCommand';
 import { TemplateTypeOption } from './templateTypes';
 import { SentinelRuleFormatter } from '../../formatting/formatter';
+import { promptSaveAndOpen } from '../../content/contentFiles';
 
 export class TemplateCommands extends BaseCommand {
     public registerCommands(): vscode.Disposable[] {
@@ -214,30 +215,26 @@ export class TemplateCommands extends BaseCommand {
     }
 
     private async createTemplateFile(template: string, defaultFilename: string, uri?: vscode.Uri): Promise<void> {
-        let targetUri: vscode.Uri;
-        if (uri && uri.fsPath) {
-            targetUri = vscode.Uri.file(path.join(uri.fsPath, defaultFilename));
-        } else {
-            const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-            if (!workspaceFolder) {
-                vscode.window.showErrorMessage('No workspace folder found');
-                return;
-            }
-            targetUri = vscode.Uri.file(path.join(workspaceFolder.uri.fsPath, defaultFilename));
-        }
-
         try {
             // Replace {{GUID}} placeholder with actual GUID
             const processedTemplate = template.replace(/\{\{GUID\}\}/g, uuidv4());
-            
-            await vscode.workspace.fs.writeFile(targetUri, Buffer.from(processedTemplate, 'utf8'));
-            const document = await vscode.workspace.openTextDocument(targetUri);
-            
-            // Explicitly set language to YAML to prevent auto-detection of custom language
-            await vscode.languages.setTextDocumentLanguage(document, 'yaml');
-            
-            await vscode.window.showTextDocument(document);
-            vscode.window.showInformationMessage(`New ${defaultFilename} template created with unique GUID!`);
+
+            // From a folder right-click, write into that folder; otherwise ask where to
+            // save so new content is never dropped in the workspace root.
+            if (uri && uri.fsPath) {
+                const targetUri = vscode.Uri.file(path.join(uri.fsPath, defaultFilename));
+                await vscode.workspace.fs.writeFile(targetUri, Buffer.from(processedTemplate, 'utf8'));
+                const document = await vscode.workspace.openTextDocument(targetUri);
+                await vscode.languages.setTextDocumentLanguage(document, 'yaml');
+                await vscode.window.showTextDocument(document);
+                vscode.window.showInformationMessage(`New ${defaultFilename} template created with unique GUID!`);
+                return;
+            }
+
+            const saved = await promptSaveAndOpen(defaultFilename, processedTemplate, 'yaml');
+            if (saved) {
+                vscode.window.showInformationMessage(`New ${defaultFilename} template created with unique GUID!`);
+            }
         } catch (error) {
             vscode.window.showErrorMessage(`Failed to create template: ${error}`);
         }

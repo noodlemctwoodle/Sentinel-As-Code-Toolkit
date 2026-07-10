@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import * as yaml from 'js-yaml';
 import { v4 as uuidv4 } from 'uuid';
 import { SentinelRuleFormatter } from '../formatting/formatter';
+import { promptSaveAndOpen } from './contentFiles';
 
 /**
  * Interactive scaffolders that create new Sentinel-as-Code content items from the
@@ -39,7 +40,7 @@ export class ContentBuilders {
         draft.id = uuidv4();
         draft.name = name.trim();
         draft.description = description.trim() || `Identifies ${name.trim()}.`;
-        await this.openYaml(draft);
+        await this.saveDraft(draft, 'hunting_query.yaml');
     }
 
     /** Parser (saved KQL function). Schema derived from Content/Parsers examples. */
@@ -74,7 +75,7 @@ export class ContentBuilders {
         draft.description = description.trim() || `Normalises data for ${name.trim()}.`;
         draft.category = category.trim() || 'Security';
         draft.functionAlias = functionAlias.trim();
-        await this.openYaml(draft);
+        await this.saveDraft(draft, 'parser.yaml');
     }
 
     /** Summary rule (Log Analytics). Schema: Docs/Content/Summary-Rules.md */
@@ -114,7 +115,7 @@ export class ContentBuilders {
         draft.description = description.trim() || `Aggregation summary for ${name.trim()}.`;
         draft.binSize = Number(binSize);
         draft.destinationTable = destinationTable.trim();
-        await this.openJson(draft);
+        await this.saveDraft(draft, 'summary_rule.yaml');
     }
 
     /** Automation rule. Schema: Docs/Content/Automation-Rules.md */
@@ -154,7 +155,7 @@ export class ContentBuilders {
         const triggeringLogic = draft.triggeringLogic as Record<string, unknown>;
         triggeringLogic.triggersOn = triggersOn;
         triggeringLogic.triggersWhen = triggersWhen;
-        await this.openJson(draft);
+        await this.saveDraft(draft, 'automation_rule.yaml');
     }
 
     /**
@@ -167,16 +168,14 @@ export class ContentBuilders {
         return (yaml.load(raw) ?? {}) as Record<string, any>;
     }
 
-    private static async openYaml(draft: unknown): Promise<void> {
+    /**
+     * Serialises the draft as YAML and asks where to save it. Every content type is
+     * authored as YAML; convert to JSON with "Convert Content YAML to JSON" when the
+     * repo requires JSON (summary rules, automation rules, watchlists).
+     */
+    private static async saveDraft(draft: unknown, defaultFilename: string): Promise<void> {
         const content = yaml.dump(draft, { indent: 2, lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false });
-        const doc = await vscode.workspace.openTextDocument({ content, language: 'yaml' });
-        await vscode.window.showTextDocument(doc, { preview: false });
-    }
-
-    private static async openJson(draft: unknown): Promise<void> {
-        const content = JSON.stringify(draft, null, 2) + '\n';
-        const doc = await vscode.workspace.openTextDocument({ content, language: 'json' });
-        await vscode.window.showTextDocument(doc, { preview: false });
+        await promptSaveAndOpen(defaultFilename, content, 'yaml');
     }
 
     private static toIdentifier(name: string): string {

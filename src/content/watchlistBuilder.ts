@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { SentinelRuleFormatter } from '../formatting/formatter';
+import { promptSaveAndOpen } from './contentFiles';
 
 /**
  * Converts a raw CSV/TSV into a deployment-ready Sentinel-as-Code watchlist:
@@ -94,12 +95,13 @@ export class WatchlistBuilder {
         metadata.provider = 'Custom';
         metadata.itemsSearchKey = itemsSearchKey;
         const dataFileName = isTsv ? 'data.tsv' : 'data.csv';
+        const metadataYaml = yaml.dump(metadata, { indent: 2, lineWidth: -1, noRefs: true, quotingType: '"', forceQuotes: false });
 
         try {
             await vscode.workspace.fs.createDirectory(targetFolder);
             await vscode.workspace.fs.writeFile(
-                vscode.Uri.joinPath(targetFolder, 'watchlist.json'),
-                Buffer.from(JSON.stringify(metadata, null, 2) + '\n', 'utf8')
+                vscode.Uri.joinPath(targetFolder, 'watchlist.yaml'),
+                Buffer.from(metadataYaml, 'utf8')
             );
             await vscode.workspace.fs.writeFile(
                 vscode.Uri.joinPath(targetFolder, dataFileName),
@@ -110,39 +112,29 @@ export class WatchlistBuilder {
             return;
         }
 
-        const metaDoc = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(targetFolder, 'watchlist.json'));
+        const metaDoc = await vscode.workspace.openTextDocument(vscode.Uri.joinPath(targetFolder, 'watchlist.yaml'));
         await vscode.window.showTextDocument(metaDoc, { preview: false });
-        vscode.window.showInformationMessage(`Watchlist "${alias.trim()}" is deployment-ready (watchlist.json + ${dataFileName}).`);
+        vscode.window.showInformationMessage(`Watchlist "${alias.trim()}" created (watchlist.yaml + ${dataFileName}). Convert to JSON when ready to deploy.`);
     }
 
     /**
-     * Scaffolds a blank watchlist.json metadata file from the bundled template for
-     * hand-editing. The author pairs it with a data.csv/data.tsv in the same folder.
+     * Scaffolds a blank watchlist metadata file (YAML) from the bundled template for
+     * hand-editing. The author pairs it with a data.csv/data.tsv in the same folder,
+     * then converts to JSON with "Convert Content YAML to JSON" before deploying.
      */
     public static async createTemplate(): Promise<void> {
-        const defaultFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
-        const saveUri = await vscode.window.showSaveDialog({
-            defaultUri: defaultFolder ? vscode.Uri.file(path.join(defaultFolder, 'watchlist.json')) : undefined,
-            filters: { 'JSON Files': ['json'], 'All Files': ['*'] },
-            title: 'Save watchlist metadata'
-        });
-        if (!saveUri) {
-            return;
-        }
-
+        let content: string;
         try {
-            const templateYaml = await SentinelRuleFormatter.loadContentTemplate('watchlist.template.yaml');
-            const metadata = yaml.load(templateYaml);
-            await vscode.workspace.fs.writeFile(saveUri, Buffer.from(JSON.stringify(metadata, null, 2) + '\n', 'utf8'));
+            content = await SentinelRuleFormatter.loadContentTemplate('watchlist.template.yaml');
         } catch (error) {
-            vscode.window.showErrorMessage(`Failed to create watchlist template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            vscode.window.showErrorMessage(`Failed to load watchlist template: ${error instanceof Error ? error.message : 'Unknown error'}`);
             return;
         }
 
-        const doc = await vscode.workspace.openTextDocument(saveUri);
-        await vscode.languages.setTextDocumentLanguage(doc, 'json');
-        await vscode.window.showTextDocument(doc, { preview: false });
-        vscode.window.showInformationMessage('Watchlist template created. Add a data.csv/data.tsv alongside it, then set watchlistAlias and itemsSearchKey.');
+        const saved = await promptSaveAndOpen('watchlist.yaml', content, 'yaml');
+        if (saved) {
+            vscode.window.showInformationMessage('Watchlist template created. Add a data.csv/data.tsv alongside it, set watchlistAlias and itemsSearchKey, then convert to JSON when ready to deploy.');
+        }
     }
 
     private static parseHeaders(text: string, isTsv: boolean): string[] {
