@@ -532,8 +532,9 @@ export class SentinelRuleValidator {
             return false;
         }
 
-        // Must be a YAML file
-        if (document.languageId !== 'yaml') {
+        // Must be YAML content: plain YAML, or the custom `sentinel-rule`
+        // language bound to *.sentinel.yaml files.
+        if (document.languageId !== 'yaml' && document.languageId !== 'sentinel-rule') {
             return false;
         }
 

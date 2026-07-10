@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { MitreLoader } from '../validation/mitreLoader';
+import { MitreLoader, MITRE_TACTIC_FIELDS, MITRE_TECHNIQUE_FIELDS } from '../validation/mitreLoader';
 import { ConnectorLoader } from '../validation/connectorLoader';
 
 export class SentinelRuleHoverProvider implements vscode.HoverProvider {
@@ -48,23 +48,26 @@ export class SentinelRuleHoverProvider implements vscode.HoverProvider {
      * Determines if the current position is within a MITRE-related YAML section
      * Returns 'tactics', 'techniques', or null
      */
-    private getMitreContext(document: vscode.TextDocument, position: vscode.Position): string | null {
-        // Look backwards from current position to find the relevant YAML section
-        for (let i = position.line; i >= 0; i--) {
-            const line = document.lineAt(i).text;
-            const trimmedLine = line.trim();
-            
-            // If we hit another top-level field (not indented), we're outside the MITRE context
-            if (i < position.line && /^[a-zA-Z]/.test(trimmedLine) && !trimmedLine.startsWith('tactics:') && !trimmedLine.startsWith('techniques:')) {
-                break;
+    private getMitreContext(document: vscode.TextDocument, position: vscode.Position): 'tactics' | 'techniques' | null {
+        // Walk up to the nearest governing YAML key. Matching is anchored to the
+        // key name so tactic-name hovers fire for `tactics`, while every
+        // technique-list field (relevantTechniques / techniques / mitreTechniques)
+        // is recognised regardless of content type.
+        for (let i = position.line; i >= 0 && i >= position.line - 20; i--) {
+            const keyMatch = /^(\s*)([A-Za-z0-9_]+):/.exec(document.lineAt(i).text);
+            if (!keyMatch) {
+                continue;
             }
-            
-            // Check for MITRE section headers
-            if (trimmedLine === 'tactics:' || trimmedLine.startsWith('tactics:')) {
+            const key = keyMatch[2];
+            if (MITRE_TACTIC_FIELDS.includes(key)) {
                 return 'tactics';
             }
-            if (trimmedLine === 'techniques:' || trimmedLine.startsWith('techniques:')) {
+            if (MITRE_TECHNIQUE_FIELDS.includes(key)) {
                 return 'techniques';
+            }
+            // A different top-level key means we've left the MITRE block.
+            if (keyMatch[1].length === 0) {
+                return null;
             }
         }
         

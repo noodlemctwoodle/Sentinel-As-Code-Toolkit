@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { ConnectorLoader } from '../validation/connectorLoader';
-import { MitreLoader } from '../validation/mitreLoader';
+import { MitreLoader, MITRE_TACTIC_FIELDS, MITRE_TECHNIQUE_FIELDS } from '../validation/mitreLoader';
 
 // Export the interfaces so they can be used by the completion provider
 export interface MitreTactic {
@@ -120,56 +120,50 @@ export class SentinelCompletionProvider implements vscode.CompletionItemProvider
     }
     
     private isTacticsContext(document: vscode.TextDocument, position: vscode.Position): boolean {
-        const lineText = document.lineAt(position).text;
-        
-        // Direct line detection
-        if (lineText.includes('tactics:') || lineText.includes('tactics')) {
-            return true;
-        }
-        
-        // Array item detection
-        if (lineText.trim().startsWith('-') && this.isInSection(document, position, 'tactics')) {
-            return true;
-        }
-        
-        return false;
+        return this.isInMitreSection(document, position, MITRE_TACTIC_FIELDS);
     }
     
     private isTechniquesContext(document: vscode.TextDocument, position: vscode.Position): boolean {
-        const lineText = document.lineAt(position).text;
-        
-        // Direct line detection
-        if (lineText.includes('techniques:') || lineText.includes('techniques')) {
-            return true;
-        }
-        
-        // Array item detection
-        if (lineText.trim().startsWith('-') && this.isInSection(document, position, 'techniques')) {
-            return true;
-        }
-        
-        // Value position detection (after colon)
-        const beforeCursor = lineText.substring(0, position.character);
-        if (beforeCursor.includes('techniques:')) {
-            return true;
-        }
-        
-        return false;
+        return this.isInMitreSection(document, position, MITRE_TECHNIQUE_FIELDS);
     }
     
-    private isInSection(document: vscode.TextDocument, position: vscode.Position, sectionName: string): boolean {
-        // Look backwards to find the section header
-        for (let i = position.line; i >= Math.max(0, position.line - 20); i--) {
-            const line = document.lineAt(i).text;
-            
-            // Found our section
-            if (line.includes(`${sectionName}:`)) {
-                return true;
+    // Determines whether the cursor sits inside a MITRE list governed by one of
+    // the given field keys. Matching is anchored to the YAML key (start-of-key,
+    // case-sensitive) so `relevantTechniques` and `techniques` are told apart and
+    // the word never matches inside a description or comment.
+    private isInMitreSection(document: vscode.TextDocument, position: vscode.Position, keys: string[]): boolean {
+        const line = document.lineAt(position.line).text;
+
+        // On the field's own key line (e.g. "tactics:" or "relevantTechniques:"),
+        // including when the cursor sits in the inline value position.
+        const keyOnLine = /^\s*([A-Za-z0-9_]+):/.exec(line);
+        if (keyOnLine && keys.includes(keyOnLine[1])) {
+            return true;
+        }
+
+        // On a block-sequence item ("- value") or a blank/partial line where the
+        // user is about to add one: walk up to the governing mapping key.
+        const beforeCursor = line.slice(0, position.character);
+        const onListItem = /^\s*-\s*/.test(line);
+        const onBlankOrPartial = /^\s*[A-Za-z0-9_.]*$/.test(beforeCursor);
+        if (!onListItem && !onBlankOrPartial) {
+            return false;
+        }
+
+        for (let i = position.line - 1; i >= 0 && i >= position.line - 20; i--) {
+            const above = document.lineAt(i).text;
+            if (above.trim() === '') {
+                continue;
             }
-            
-            // Found a different top-level section (stop searching)
-            if (line.trim() && !line.startsWith(' ') && !line.startsWith('-') && line.includes(':') && !line.includes(`${sectionName}:`)) {
-                break;
+            const keyMatch = /^(\s*)([A-Za-z0-9_]+):/.exec(above);
+            if (keyMatch) {
+                if (keys.includes(keyMatch[2])) {
+                    return true;
+                }
+                // A top-level key that isn't ours ends this block.
+                if (keyMatch[1].length === 0) {
+                    return false;
+                }
             }
         }
         return false;
@@ -271,7 +265,7 @@ export class SentinelCompletionProvider implements vscode.CompletionItemProvider
             const techniquesData = (MitreLoader as any).getAllTechniques?.();
             if (techniquesData && Array.isArray(techniquesData)) {
                 console.log(`Found ${techniquesData.length} techniques with details`);
-                return techniquesData.slice(0, 50).map((technique: MitreTechnique) => { // Limit to 50 for performance
+                return techniquesData.map((technique: MitreTechnique) => {
                     const item = new vscode.CompletionItem(technique.id, vscode.CompletionItemKind.EnumMember);
                     item.detail = `${technique.name} (${technique.tactics.join(', ')})`;
                     

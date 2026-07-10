@@ -63,15 +63,23 @@ export async function activate(context: vscode.ExtensionContext) {
         const formatterProvider = createFormattingProvider();
         console.log('🎨 Sentinel as Code Toolkit: Registered formatting provider');
 
-        const completionProvider = vscode.languages.registerCompletionItemProvider(
+        // Sentinel-as-Code YAML content is served either as plain YAML or under
+        // the custom `sentinel-rule` language (bound to *.sentinel.yaml). Register
+        // language services for both so MITRE IntelliSense/hover works regardless.
+        const sentinelYamlSelector: vscode.DocumentSelector = [
             { scheme: 'file', language: 'yaml' },
+            { scheme: 'file', language: 'sentinel-rule' }
+        ];
+
+        const completionProvider = vscode.languages.registerCompletionItemProvider(
+            sentinelYamlSelector,
             new SentinelCompletionProvider(),
             ':', '"', "'", '-', ' '  // Trigger characters ('- ' opens the table list)
         );
         
         // Register hover provider for MITRE techniques and tactics
         const hoverProvider = vscode.languages.registerHoverProvider(
-            { scheme: 'file', language: 'yaml' },
+            sentinelYamlSelector,
             new SentinelRuleHoverProvider()
         );
         

@@ -1,6 +1,15 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 
+/**
+ * MITRE ATT&CK metadata field names as they appear across the Sentinel-as-Code
+ * content types. `tactics` is shared; the technique-list key differs by type:
+ * analytics rules use `relevantTechniques`, hunting queries use `techniques`,
+ * and Defender custom detections use `mitreTechniques`.
+ */
+export const MITRE_TACTIC_FIELDS: string[] = ['tactics'];
+export const MITRE_TECHNIQUE_FIELDS: string[] = ['relevantTechniques', 'techniques', 'mitreTechniques'];
+
 interface MitreTechnique {
     id: string;
     name: string;
