@@ -1,7 +1,7 @@
 # Sentinel as Code Toolkit
 
 <p align="center">
-  <img src="./images/icon.png" alt="Sentinel-As-Code" width="512" />
+  <img src="https://raw.githubusercontent.com/noodlemctwoodle/Sentinel-As-Code-Toolkit/main/images/icon.png" alt="Sentinel-As-Code" width="512" />
 </p>
 
 
