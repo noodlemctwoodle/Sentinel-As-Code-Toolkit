@@ -13,6 +13,12 @@ updates:
       time: "09:00"
     # Limit number of open pull requests for npm dependencies
     open-pull-requests-limit: 8
+    # Use conventional-commit prefixes so Dependabot PR titles satisfy the
+    # repository commit convention: chore(deps) for runtime dependencies and
+    # chore(deps-dev) for development dependencies.
+    commit-message:
+      prefix: "chore"
+      include: "scope"
     # Add reviewers and assignees for pull requests
     reviewers:
       - "noodlemctwoodle"
@@ -60,6 +66,10 @@ updates:
       day: "monday"
       time: "10:00"
     open-pull-requests-limit: 3
+    # Conventional-commit prefix for GitHub Actions version bumps: chore(deps).
+    commit-message:
+      prefix: "chore"
+      include: "scope"
     reviewers:
       - "noodlemctwoodle"
     # Group all GitHub Actions updates together
