@@ -19,9 +19,6 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
-    # Add reviewers and assignees for pull requests
-    reviewers:
-      - "noodlemctwoodle"
     # Group dependency updates to reduce PR noise
     groups:
       # VS Code extension dependencies
@@ -70,8 +67,6 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
-    reviewers:
-      - "noodlemctwoodle"
     # Group all GitHub Actions updates together
     groups:
       github-actions:
