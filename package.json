@@ -142,6 +142,11 @@
         "category": "Sentinel-As-Code"
       },
       {
+        "command": "sentinelAsCode.convertContentToJson",
+        "title": "Convert Content YAML to JSON",
+        "category": "Sentinel-As-Code"
+      },
+      {
         "command": "defender.formatForRepo",
         "title": "Format Custom Detection for Repo",
         "category": "Defender-As-Code"
@@ -235,12 +240,17 @@
           "when": "resourceExtname == .yaml || resourceExtname == .yml",
           "command": "sentinelAsCode.populateDataConnectors",
           "group": "sentinel@7"
+        },
+        {
+          "when": "resourceExtname == .yaml || resourceExtname == .yml",
+          "command": "sentinelAsCode.convertContentToJson",
+          "group": "sentinel@8"
         }
       ],
       "explorer/context": [
         {
           "when": "explorerResourceIsFolder",
-          "command": "sentinelAsCode.createSentinelRule",
+          "command": "sentinelAsCode.newContent",
           "group": "sentinel@1"
         },
         {
@@ -252,6 +262,11 @@
           "when": "resourceExtname == .json && config.sentinelAsCode.conversion.enabled",
           "command": "sentinelAsCode.convertArmToYaml",
           "group": "sentinel@3"
+        },
+        {
+          "when": "resourceExtname == .yaml || resourceExtname == .yml",
+          "command": "sentinelAsCode.convertContentToJson",
+          "group": "sentinel@4"
         }
       ],
       "commandPalette": [
@@ -287,6 +302,9 @@
         {
           "command": "sentinelAsCode.convertArmToYaml",
           "when": "config.sentinelAsCode.conversion.enabled"
+        },
+        {
+          "command": "sentinelAsCode.convertContentToJson"
         },
         {
           "command": "sentinelAsCode.generateTemplate",
