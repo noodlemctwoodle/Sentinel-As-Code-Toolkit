@@ -36,7 +36,7 @@ export class ContentDiagnosticsManager {
     }
 
     private update(document: vscode.TextDocument): void {
-        if (document.languageId !== 'yaml') {
+        if (document.languageId !== 'yaml' && document.languageId !== 'sentinel-rule') {
             this.collection.delete(document.uri);
             return;
         }

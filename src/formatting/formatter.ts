@@ -16,7 +16,7 @@ export class SentinelRuleFormatter {
         'id': () => uuidv4(),
         'name': () => 'New Detection Rule',
         'description': () => 'Enter rule description here',
-        'severity': () => VALID_SEVERITIES[1], // Medium
+        'severity': () => VALID_SEVERITIES[2], // Medium
         'requiredDataConnectors': () => [{
             connectorId: 'YourConnectorId',
             dataTypes: ['YourDataType']

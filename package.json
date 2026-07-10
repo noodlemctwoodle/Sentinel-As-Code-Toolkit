@@ -2,7 +2,7 @@
   "name": "sentinelcodeguard",
   "displayName": "Sentinel as Code Toolkit",
   "description": "The dedicated VS Code toolkit for the Sentinel-as-Code project: intelligent validation, formatting, templates, and ARM-to-YAML conversion for Microsoft Sentinel Analytics Rules",
-  "version": "26.7.2",
+  "version": "26.7.3",
   "publisher": "noodlemctwoodle",
   "icon": "images/icon.png",
   "engines": {
@@ -147,6 +147,11 @@
         "category": "Sentinel-As-Code"
       },
       {
+        "command": "sentinelAsCode.convertContentToYaml",
+        "title": "Convert Content JSON to YAML",
+        "category": "Sentinel-As-Code"
+      },
+      {
         "command": "defender.formatForRepo",
         "title": "Format Custom Detection for Repo",
         "category": "Defender-As-Code"
@@ -245,6 +250,11 @@
           "when": "resourceExtname == .yaml || resourceExtname == .yml",
           "command": "sentinelAsCode.convertContentToJson",
           "group": "sentinel@8"
+        },
+        {
+          "when": "resourceExtname == .json",
+          "command": "sentinelAsCode.convertContentToYaml",
+          "group": "sentinel@9"
         }
       ],
       "explorer/context": [
@@ -267,6 +277,11 @@
           "when": "resourceExtname == .yaml || resourceExtname == .yml",
           "command": "sentinelAsCode.convertContentToJson",
           "group": "sentinel@4"
+        },
+        {
+          "when": "resourceExtname == .json",
+          "command": "sentinelAsCode.convertContentToYaml",
+          "group": "sentinel@5"
         }
       ],
       "commandPalette": [
@@ -279,7 +294,8 @@
           "when": "false"
         },
         {
-          "command": "sentinelAsCode.generateRuleTemplate"
+          "command": "sentinelAsCode.generateRuleTemplate",
+          "when": "false"
         },
         {
           "command": "sentinelAsCode.regenerateGuid",
@@ -307,6 +323,9 @@
           "command": "sentinelAsCode.convertContentToJson"
         },
         {
+          "command": "sentinelAsCode.convertContentToYaml"
+        },
+        {
           "command": "sentinelAsCode.generateTemplate",
           "when": "false"
         },
@@ -315,7 +334,8 @@
           "when": "false"
         },
         {
-          "command": "defender.generateDetectionTemplate"
+          "command": "defender.generateDetectionTemplate",
+          "when": "false"
         },
         {
           "command": "sentinelAsCode.createWatchlistFromCsv",
@@ -325,16 +345,20 @@
           "command": "sentinelAsCode.newContent"
         },
         {
-          "command": "sentinelAsCode.createHuntingQuery"
+          "command": "sentinelAsCode.createHuntingQuery",
+          "when": "false"
         },
         {
-          "command": "sentinelAsCode.createParser"
+          "command": "sentinelAsCode.createParser",
+          "when": "false"
         },
         {
-          "command": "sentinelAsCode.createSummaryRule"
+          "command": "sentinelAsCode.createSummaryRule",
+          "when": "false"
         },
         {
-          "command": "sentinelAsCode.createAutomationRule"
+          "command": "sentinelAsCode.createAutomationRule",
+          "when": "false"
         },
         {
           "command": "sentinelAsCode.populateDataConnectors",
