@@ -1,0 +1,12 @@
+# CODEOWNERS for the Sentinel as Code Toolkit
+# https://docs.github.com/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# Code owners are automatically requested for review on pull requests that
+# change matching files. This is the recommended replacement for the
+# deprecated Dependabot `reviewers` option (see .github/dependabot.yml).
+#
+# Note: "Require review from Code Owners" is not enabled in branch protection,
+# so these entries request review without blocking merges.
+
+# Default owner for everything in the repository.
+* @noodlemctwoodle
