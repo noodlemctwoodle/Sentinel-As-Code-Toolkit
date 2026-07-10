@@ -33,7 +33,6 @@ jobs:
     outputs:
       should-release: ${{ steps.check.outputs.should-release }}
       version: ${{ steps.check.outputs.version }}
-      is-beta: ${{ steps.check.outputs.is-beta }}
       tag-name: ${{ steps.check.outputs.tag-name }}
       is-manual-trigger: ${{ steps.check.outputs.is-manual-trigger }}
       
@@ -57,33 +56,9 @@ jobs:
             echo "Manual trigger detected"
           fi
           
-          # Check if this is a beta version - multiple detection methods
-          IS_BETA="false"
+          # Set tag name (releases are always stable)
+          TAG_NAME="v${CURRENT_VERSION}"
           
-          # Method 1: Check commit message for [beta] flag
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          echo "Commit message: $COMMIT_MSG"
-          if [[ "$COMMIT_MSG" == *"[beta]"* ]] || [[ "$COMMIT_MSG" == *"beta"* ]]; then
-            IS_BETA="true"
-            echo "Beta detected from commit message"
-          fi
-          
-          # Method 2: Check if displayName in package.json contains "Beta"
-          DISPLAY_NAME=$(node -p "require('./package.json').displayName || ''")
-          echo "Display name: $DISPLAY_NAME"
-          if [[ "$DISPLAY_NAME" == *"Beta"* ]]; then
-            IS_BETA="true"
-            echo "Beta detected from displayName"
-          fi
-          
-          # Set tag name
-          if [ "$IS_BETA" = "true" ]; then
-            TAG_NAME="v${CURRENT_VERSION}-beta"
-          else
-            TAG_NAME="v${CURRENT_VERSION}"
-          fi
-          
-          echo "Is Beta: $IS_BETA"
           echo "Tag Name: $TAG_NAME"
           echo "Is Manual Trigger: $IS_MANUAL_TRIGGER"
           
@@ -138,7 +113,6 @@ jobs:
           # Set outputs
           echo "should-release=$SHOULD_RELEASE" >> $GITHUB_OUTPUT
           echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-          echo "is-beta=$IS_BETA" >> $GITHUB_OUTPUT
           echo "tag-name=$TAG_NAME" >> $GITHUB_OUTPUT
           echo "is-manual-trigger=$IS_MANUAL_TRIGGER" >> $GITHUB_OUTPUT
 
@@ -224,16 +198,9 @@ jobs:
         id: release-notes
         run: |
           VERSION="${{ needs.check-release.outputs.version }}"
-          IS_BETA="${{ needs.check-release.outputs.is-beta }}"
           IS_MANUAL="${{ needs.check-release.outputs.is-manual-trigger }}"
           
-          if [ "$IS_BETA" = "true" ]; then
-            RELEASE_TYPE="Beta Release"
-            STABILITY_NOTE="**This is a beta release** - Please report any issues via [GitHub Issues](https://github.com/noodlemctwoodle/Sentinel-As-Code/issues)."
-          else
-            RELEASE_TYPE="Stable Release"
-            STABILITY_NOTE="**Stable release** - Ready for production use."
-          fi
+          STABILITY_NOTE="**Stable release** - Ready for production use."
           
           # Add manual trigger notice if applicable
           MANUAL_NOTICE=""
@@ -287,9 +254,9 @@ jobs:
           name: "Sentinel as Code Toolkit v${{ needs.check-release.outputs.version }}"
           body_path: ${{ steps.release-notes.outputs.release-notes-file }}
           draft: false
-          prerelease: ${{ needs.check-release.outputs.is-beta == 'true' }}
+          prerelease: false
           generate_release_notes: true  # This adds automatic changelog
-          make_latest: ${{ needs.check-release.outputs.is-beta == 'false' }}
+          make_latest: true
           files: |
             sentinel-as-code-toolkit-*.vsix
         env:
@@ -299,7 +266,6 @@ jobs:
         run: |
           echo "Successfully created release v${{ needs.check-release.outputs.version }}"
           echo "Tag: ${{ needs.check-release.outputs.tag-name }}"
-          echo "Beta: ${{ needs.check-release.outputs.is-beta }}"
           echo "Manual: ${{ needs.check-release.outputs.is-manual-trigger }}"
           echo "VSIX: sentinel-as-code-toolkit-${{ needs.check-release.outputs.version }}.vsix"
           echo "Release URL: https://github.com/${{ github.repository }}/releases/tag/${{ needs.check-release.outputs.tag-name }}"
