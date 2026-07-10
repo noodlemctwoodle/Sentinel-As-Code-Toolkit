@@ -115,6 +115,36 @@ export class WatchlistBuilder {
         vscode.window.showInformationMessage(`Watchlist "${alias.trim()}" is deployment-ready (watchlist.json + ${dataFileName}).`);
     }
 
+    /**
+     * Scaffolds a blank watchlist.json metadata file from the bundled template for
+     * hand-editing. The author pairs it with a data.csv/data.tsv in the same folder.
+     */
+    public static async createTemplate(): Promise<void> {
+        const defaultFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        const saveUri = await vscode.window.showSaveDialog({
+            defaultUri: defaultFolder ? vscode.Uri.file(path.join(defaultFolder, 'watchlist.json')) : undefined,
+            filters: { 'JSON Files': ['json'], 'All Files': ['*'] },
+            title: 'Save watchlist metadata'
+        });
+        if (!saveUri) {
+            return;
+        }
+
+        try {
+            const templateYaml = await SentinelRuleFormatter.loadContentTemplate('watchlist.template.yaml');
+            const metadata = yaml.load(templateYaml);
+            await vscode.workspace.fs.writeFile(saveUri, Buffer.from(JSON.stringify(metadata, null, 2) + '\n', 'utf8'));
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to create watchlist template: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            return;
+        }
+
+        const doc = await vscode.workspace.openTextDocument(saveUri);
+        await vscode.languages.setTextDocumentLanguage(doc, 'json');
+        await vscode.window.showTextDocument(doc, { preview: false });
+        vscode.window.showInformationMessage('Watchlist template created. Add a data.csv/data.tsv alongside it, then set watchlistAlias and itemsSearchKey.');
+    }
+
     private static parseHeaders(text: string, isTsv: boolean): string[] {
         const firstLine = text.split(/\r?\n/).find(line => line.trim().length > 0);
         if (!firstLine) {

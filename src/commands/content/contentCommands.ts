@@ -35,14 +35,13 @@ export class ContentCommands {
 
     private async newContent(): Promise<void> {
         const picks: ContentPick[] = [
-            { key: 'standard', label: '$(file-code) Analytics Rule (Standard)', detail: 'Scheduled Sentinel analytics rule' },
-            { key: 'nrt', label: '$(clock) Analytics Rule (NRT)', detail: 'Near-real-time Sentinel analytics rule' },
+            { key: 'analytics', label: '$(file-code) Analytics Rule', detail: 'Blank Standard/NRT template, or decompile from ARM' },
             { key: 'detection', label: '$(shield) Custom Detection', detail: 'Defender XDR custom detection' },
             { key: 'hunting', label: '$(search) Hunting Query', detail: 'Log Analytics saved search' },
             { key: 'parser', label: '$(symbol-function) Parser', detail: 'Saved KQL function' },
             { key: 'summary', label: '$(graph) Summary Rule', detail: 'Log Analytics aggregation into a _CL table' },
             { key: 'automation', label: '$(zap) Automation Rule', detail: 'Incident/alert automation' },
-            { key: 'watchlist', label: '$(list-flat) Watchlist from CSV', detail: 'Build a watchlist package from the active CSV/TSV' }
+            { key: 'watchlist', label: '$(list-flat) Watchlist', detail: 'Blank template, or build from the active CSV/TSV' }
         ];
 
         const selected = await vscode.window.showQuickPick(picks, {
@@ -55,14 +54,62 @@ export class ContentCommands {
         }
 
         switch (selected.key) {
-            case 'standard': await vscode.commands.executeCommand('sentinelAsCode.generateTemplate'); break;
-            case 'nrt': await vscode.commands.executeCommand('sentinelAsCode.generateNRTTemplate'); break;
+            case 'analytics': await this.newAnalyticsRule(); break;
             case 'detection': await vscode.commands.executeCommand('defender.generateDetectionTemplate'); break;
             case 'hunting': await ContentBuilders.createHuntingQuery(); break;
             case 'parser': await ContentBuilders.createParser(); break;
             case 'summary': await ContentBuilders.createSummaryRule(); break;
             case 'automation': await ContentBuilders.createAutomationRule(); break;
-            case 'watchlist': await WatchlistBuilder.createFromActiveCsv(); break;
+            case 'watchlist': await this.newWatchlist(); break;
+        }
+    }
+
+    /**
+     * Second-level picker for analytics rules: blank Standard/NRT templates, or the
+     * existing ARM decompiler. The decompiler is reached via its command so the
+     * right-click "Decompile ARM to YAML" menu entry keeps working unchanged.
+     */
+    private async newAnalyticsRule(): Promise<void> {
+        const picks: ContentPick[] = [
+            { key: 'standard', label: '$(file-code) Standard rule (blank template)', detail: 'Scheduled analytics rule' },
+            { key: 'nrt', label: '$(clock) NRT rule (blank template)', detail: 'Near-real-time analytics rule (no scheduling fields)' },
+            { key: 'arm', label: '$(file-symlink-file) Decompile from ARM template', detail: 'Convert an exported ARM template to rule YAML' }
+        ];
+        const selected = await vscode.window.showQuickPick(picks, {
+            title: 'New analytics rule',
+            placeHolder: 'Choose how to create the analytics rule',
+            matchOnDetail: true
+        });
+        if (!selected) {
+            return;
+        }
+        switch (selected.key) {
+            case 'standard': await vscode.commands.executeCommand('sentinelAsCode.generateTemplate'); break;
+            case 'nrt': await vscode.commands.executeCommand('sentinelAsCode.generateNRTTemplate'); break;
+            case 'arm': await vscode.commands.executeCommand('sentinelAsCode.convertArmToYaml'); break;
+        }
+    }
+
+    /**
+     * Second-level picker for watchlists: scaffold a blank metadata template, or build
+     * a full package from the active CSV/TSV.
+     */
+    private async newWatchlist(): Promise<void> {
+        const picks: ContentPick[] = [
+            { key: 'template', label: '$(list-flat) Blank template', detail: 'Scaffold a watchlist.json to fill in by hand' },
+            { key: 'csv', label: '$(table) From active CSV/TSV', detail: 'Build watchlist.json + data.csv from the active file' }
+        ];
+        const selected = await vscode.window.showQuickPick(picks, {
+            title: 'New watchlist',
+            placeHolder: 'Choose how to create the watchlist',
+            matchOnDetail: true
+        });
+        if (!selected) {
+            return;
+        }
+        switch (selected.key) {
+            case 'template': await WatchlistBuilder.createTemplate(); break;
+            case 'csv': await WatchlistBuilder.createFromActiveCsv(); break;
         }
     }
 
