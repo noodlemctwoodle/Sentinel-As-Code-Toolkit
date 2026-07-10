@@ -9,6 +9,33 @@
   },
   "tablesByConnector": [
     {
+      "connectorId": "AzureMonitor",
+      "connectorTitle": "Azure Monitor / Log Analytics platform",
+      "descriptionMarkdown": "Core Log Analytics / Azure Monitor workspace tables that are always available and require no data connector.",
+      "publisher": "Microsoft",
+      "source": "Platform",
+      "tables": [
+        "Heartbeat",
+        "LAQueryLogs",
+        "Operation",
+        "Usage"
+      ]
+    },
+    {
+      "connectorId": "MicrosoftSentinelUEBA",
+      "connectorTitle": "Microsoft Sentinel UEBA",
+      "descriptionMarkdown": "User and Entity Behavior Analytics (UEBA) tables, populated when UEBA is enabled on the workspace. UEBA is a Microsoft Sentinel feature rather than a Content Hub data connector.",
+      "publisher": "Microsoft",
+      "source": "Platform",
+      "tables": [
+        "Anomalies",
+        "BehaviorAnalytics",
+        "IdentityInfo",
+        "UserAccessAnalytics",
+        "UserPeerAnalytics"
+      ]
+    },
+    {
       "connectorId": "DarktraceAma",
       "connectorTitle": "[Deprecated] AI Analyst Darktrace via AMA",
       "descriptionMarkdown": "The Darktrace connector lets users connect Darktrace Model Breaches in real-time with Microsoft Sentinel, allowing creation of custom Dashboards, Workbooks, Notebooks and Custom Alerts to improve investigation.  Microsoft Sentinel's enhanced visibility into Darktrace logs enables monitoring and mitigation of security threats.",
@@ -4437,16 +4464,20 @@
       "publisher": "Microsoft",
       "source": "Solutions/Microsoft Entra ID",
       "tables": [
+        "AADManagedIdentitySignInLogs",
         "AADNonInteractiveUserSignInLogs",
+        "AADProvisioningLogs",
         "AADRiskyServicePrincipals",
+        "AADRiskyUsers",
         "AADServicePrincipalRiskEvents",
         "AADServicePrincipalSignInLogs",
+        "AADUserRiskEvents",
         "ADFSSignInLogs",
-        "Anomalies",
         "AuditLogs",
-        "BehaviorAnalytics",
-        "DeviceInfo",
-        "IdentityInfo",
+        "EnrichedOffice365AuditLogs",
+        "MicrosoftGraphActivityLogs",
+        "NetworkAccessTraffic",
+        "RemoteNetworkHealthLogs",
         "SigninLogs"
       ]
     },

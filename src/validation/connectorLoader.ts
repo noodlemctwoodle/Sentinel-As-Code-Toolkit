@@ -403,11 +403,46 @@ export class ConnectorLoader {
     }
 
     /**
-     * Extracts the Log Analytics tables referenced by a KQL query (identifiers that
-     * match a known connector table) and maps them to their best-fit data connectors,
-     * grouped as ready-to-use requiredDataConnectors entries.
+     * For each known Log Analytics table referenced by a KQL query, returns the data
+     * connectors that provide it, ranked best-first (non-deprecated and Microsoft
+     * first). Tables appear once, in order of first use. Callers can prompt the user
+     * to choose when a table is provided by more than one connector.
      */
-    public static suggestRequiredDataConnectorsForQuery(query: string): Array<{ connectorId: string; dataTypes: string[] }> {
+    public static getQueryTableConnectorChoices(query: string): Array<{
+        table: string;
+        connectors: Array<{ id: string; displayName: string; deprecated: boolean }>;
+    }> {
+        const index = this.getTableConnectorIndex();
+        const seen = new Set<string>();
+        const choices: Array<{ table: string; connectors: Array<{ id: string; displayName: string; deprecated: boolean }> }> = [];
+
+        const tokenRegex = /[A-Za-z_][A-Za-z0-9_]*/g;
+        let match: RegExpExecArray | null;
+        while ((match = tokenRegex.exec(query)) !== null) {
+            const key = this.normalizeDataType(match[0]);
+            if (!index.has(key) || seen.has(key)) {
+                continue;
+            }
+            seen.add(key);
+            const ranked = this.rankConnectorsForTable(match[0]);
+            if (ranked.length === 0) {
+                continue;
+            }
+            choices.push({
+                table: match[0],
+                connectors: ranked.map(c => ({ id: c.id, displayName: c.displayName, deprecated: !!c.deprecated }))
+            });
+        }
+
+        return choices;
+    }
+
+    /**
+     * Returns the custom (_CL) Log Analytics tables referenced by a KQL query that are
+     * not provided by any known connector, in order of first use. Used to offer
+     * registering them in a workspace .sentinel-connectors.json.
+     */
+    public static getUnmatchedCustomTablesForQuery(query: string): string[] {
         const index = this.getTableConnectorIndex();
         const seen = new Set<string>();
         const tables: string[] = [];
@@ -415,22 +450,33 @@ export class ConnectorLoader {
         const tokenRegex = /[A-Za-z_][A-Za-z0-9_]*/g;
         let match: RegExpExecArray | null;
         while ((match = tokenRegex.exec(query)) !== null) {
-            const key = this.normalizeDataType(match[0]);
-            if (index.has(key) && !seen.has(key)) {
-                seen.add(key);
-                tables.push(match[0]);
-            }
-        }
-
-        const byConnector = new Map<string, string[]>();
-        for (const table of tables) {
-            const ranked = this.rankConnectorsForTable(table);
-            if (ranked.length === 0) {
+            const token = match[0];
+            if (!token.endsWith('_CL')) {
                 continue;
             }
-            const bestConnectorId = ranked[0].id;
+            const key = this.normalizeDataType(token);
+            if (index.has(key) || seen.has(key)) {
+                continue;
+            }
+            seen.add(key);
+            tables.push(token);
+        }
+
+        return tables;
+    }
+
+    /**
+     * Extracts the Log Analytics tables referenced by a KQL query and maps each to its
+     * best-fit data connector (the top-ranked candidate), grouped as ready-to-use
+     * requiredDataConnectors entries. For interactive selection when a table maps to
+     * multiple connectors, use getQueryTableConnectorChoices instead.
+     */
+    public static suggestRequiredDataConnectorsForQuery(query: string): Array<{ connectorId: string; dataTypes: string[] }> {
+        const byConnector = new Map<string, string[]>();
+        for (const choice of this.getQueryTableConnectorChoices(query)) {
+            const bestConnectorId = choice.connectors[0].id;
             const list = byConnector.get(bestConnectorId) ?? [];
-            list.push(table);
+            list.push(choice.table);
             byConnector.set(bestConnectorId, list);
         }
 

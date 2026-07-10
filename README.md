@@ -10,7 +10,7 @@ A complete detection-as-code authoring environment for Microsoft Sentinel and Mi
 - **Validate** against the Sentinel and Defender XDR schemas, plus multi-framework MITRE ATT&CK (Enterprise, Mobile, and ICS; v14 to v16).
 - **Format** every Sentinel-as-Code content type into canonical shape — analytics rules, hunting queries, and parsers (YAML), and automation rules, summary rules, watchlists, workbooks, and playbooks (JSON).
 - **Scaffold** new hunting queries, parsers, summary rules, and automation rules from their documented schemas.
-- **Auto-fill** a rule's `requiredDataConnectors` from the KQL tables in its query, using the bundled Content Hub mapping.
+- **Auto-fill** a rule's `requiredDataConnectors` from the KQL tables in its query, using the bundled Content Hub mapping — and register your own custom `_CL` tables in a workspace `.sentinel-connectors.json` when they aren't in the catalogue.
 - **Build** deployment-ready watchlists from a CSV or TSV.
 - **Decompile** single or bulk `Microsoft.SecurityInsights/alertRules` ARM templates into clean YAML.
 - **Convert** Microsoft Defender XDR custom detections between repository YAML and deployable Microsoft Graph `detectionRule` JSON, and format portal exports into repository-ready files.
@@ -60,7 +60,7 @@ The toolkit is focused on authoring and repository hygiene. It does **not** depl
 - **Formatting** — canonical field ordering, ISO 8601 duration correction, and structure tidy-up (`Shift+Alt+F`).
 - **Templates** — Standard and Near-Real-Time (NRT) analytics-rule starting points, plus hunting query, parser, summary rule, automation rule, watchlist, and Defender detection templates. See [Templates](#templates).
 - **Multi-framework MITRE ATT&CK** — validate tactics and techniques against the Enterprise, Mobile, and ICS matrices (v14 to v16 selectable).
-- **Required-connector auto-fill** — read the KQL tables in a rule's `query` and populate `requiredDataConnectors` from the bundled Content Hub table-to-connector mapping, in canonical order.
+- **Required-connector auto-fill** — read the KQL tables in a rule's `query` and populate `requiredDataConnectors` from the bundled Content Hub table-to-connector mapping (including Azure Monitor platform tables, UEBA, and Microsoft Entra ID tables), in canonical order. Unknown custom (`_CL`) tables can be registered on the spot in a workspace-local `.sentinel-connectors.json`, so they resolve automatically on future runs.
 - **Bulk maintenance** — validate and normalise every rule in the workspace, and regenerate rule IDs in bulk.
 
 ### Hunting queries
@@ -133,6 +133,7 @@ The toolkit **formats and validates** Defender XDR custom detections for a Senti
 1. Open an analytics rule that has a `query`.
 2. Run **Sentinel-As-Code: Populate Required Data Connectors from Query** (or right-click the file).
 3. The toolkit reads the KQL tables, matches them to connectors using the bundled Content Hub table mapping, and writes `requiredDataConnectors` in canonical order — no manual lookup needed.
+4. If a table isn't in the catalogue — typically a custom `_CL` table such as `TailscaleAudit_CL` — the toolkit offers to register it inline: accept the derived connector id (or type your own), and it's added to a workspace-local `.sentinel-connectors.json` and included in the rule. Registered connectors are picked up automatically on later runs. See [Custom connectors](#custom-connectors-sentinel-connectorsjson).
 
 ---
 
@@ -191,7 +192,7 @@ Every other template — Standard Rule, NRT Rule, Custom Detection, Hunting Quer
 | Sentinel-As-Code: Create Watchlist from CSV | Convert the active CSV/TSV into a deployment-ready watchlist (watchlist.json + data file) |
 | Sentinel-As-Code: New Sentinel-as-Code Content... | Pick and scaffold any content type (analytics rule, hunting query, parser, summary rule, automation rule, watchlist) |
 | Sentinel-As-Code: New Hunting Query / New Parser / New Summary Rule / New Automation Rule | Scaffold a specific content type from its documented schema |
-| Sentinel-As-Code: Populate Required Data Connectors from Query | Match the rule's KQL tables to connectors and fill `requiredDataConnectors` automatically |
+| Sentinel-As-Code: Populate Required Data Connectors from Query | Match the rule's KQL tables to connectors and fill `requiredDataConnectors`; optionally register unknown `_CL` tables in `.sentinel-connectors.json` |
 | Sentinel-As-Code: Fix Field Order | Reorder fields to the canonical schema order (`Ctrl/Cmd+Shift+F`) |
 | Sentinel-As-Code: Format Sentinel Rule | Format and tidy the rule structure |
 | Sentinel-As-Code: Format Sentinel Content (Auto-detect) | Detect the content type and format it (analytics rules, hunting queries, and JSON content) |
@@ -240,7 +241,6 @@ Add glob patterns to `sentinelAsCode.validation.excludePatterns` to skip validat
     "**/test/**",
     "**/tests/**",
     "**/*.draft.yaml",
-    "**/*.template.yaml",
     "**/backup/**",
     "**/.archive/**"
   ]
@@ -248,6 +248,8 @@ Add glob patterns to `sentinelAsCode.validation.excludePatterns` to skip validat
 ```
 
 Exclusions are additive: with no patterns configured (the default), every candidate file is validated as before.
+
+Scaffolding templates (`*.template.yaml`) are always skipped automatically — they contain `{{PLACEHOLDER}}` tokens (such as `id: {{GUID}}`) and are not deployable rules, so they never surface in the Problems panel regardless of your `excludePatterns`.
 
 ### MITRE ATT&CK
 
@@ -265,6 +267,29 @@ Exclusions are additive: with no patterns configured (the default), every candid
 |---------|---------|-------------|
 | `sentinelAsCode.connectors.validationMode` | `"permissive"` | `strict`, `workspace`, or `permissive` |
 | `sentinelAsCode.connectors.customConnectors` | `[]` | Additional connector IDs to recognise |
+
+#### Custom connectors (`.sentinel-connectors.json`)
+
+Place a `.sentinel-connectors.json` file at a workspace-folder root to teach the toolkit about connectors and tables that aren't in the bundled Content Hub catalogue — most commonly your own custom (`_CL`) tables from a Codeless Connector or Logs Ingestion pipeline. **Populate Required Data Connectors from Query** reads this file alongside the bundled catalogue, and writes to it when you register an unknown table inline.
+
+Each entry mirrors the bundled catalogue shape:
+
+```json
+{
+  "connectors": [
+    {
+      "connectorId": "TailscaleAudit",
+      "connectorTitle": "TailscaleAudit",
+      "descriptionMarkdown": "",
+      "publisher": "Custom",
+      "source": "",
+      "tables": ["TailscaleAudit_CL"]
+    }
+  ]
+}
+```
+
+Custom connectors are loaded per workspace folder and take part in the same table-to-connector matching as the built-in catalogue.
 
 ### Conversion settings
 
