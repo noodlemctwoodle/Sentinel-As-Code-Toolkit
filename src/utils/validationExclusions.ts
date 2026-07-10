@@ -8,11 +8,19 @@ import * as vscode from 'vscode';
 import { matchesAnyGlob } from './globMatcher';
 
 /**
- * True when the document path matches any glob in the
- * sentinelAsCode.validation.excludePatterns setting. Patterns are tested against
- * the workspace-relative path and the absolute path, case-insensitively on Windows.
+ * True when the document should be skipped by the live validators: scaffolding
+ * templates (`*.template.yaml`), which contain {{PLACEHOLDER}} tokens such as
+ * `id: {{GUID}}` and are not deployable rules, plus any path matching a glob in the
+ * sentinelAsCode.validation.excludePatterns setting. Glob patterns are tested
+ * against the workspace-relative path and the absolute path, case-insensitively on
+ * Windows.
  */
 export function isDocumentExcludedFromValidation(document: vscode.TextDocument): boolean {
+    // Scaffolding templates use {{PLACEHOLDER}} tokens and are never live rules.
+    if (/\.template\.ya?ml$/i.test(document.uri.fsPath)) {
+        return true;
+    }
+
     const patterns = vscode.workspace
         .getConfiguration('sentinelAsCode')
         .get<string[]>('validation.excludePatterns', []);
