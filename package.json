@@ -250,7 +250,7 @@
       "explorer/context": [
         {
           "when": "explorerResourceIsFolder",
-          "command": "sentinelAsCode.createSentinelRule",
+          "command": "sentinelAsCode.newContent",
           "group": "sentinel@1"
         },
         {
