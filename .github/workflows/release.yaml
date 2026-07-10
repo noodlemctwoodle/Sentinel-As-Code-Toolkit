@@ -93,19 +93,19 @@ jobs:
           # Check for manual trigger first
           if [ "$IS_MANUAL_TRIGGER" = "true" ] && [ "${{ github.event.inputs.force_release }}" = "true" ]; then
             SHOULD_RELEASE="true"
-            echo "✅ Manual release triggered - forcing release creation"
+            echo "Manual release triggered - forcing release creation"
             
             # Check if overwrite is enabled and tag exists
             if [ "${{ github.event.inputs.overwrite_existing }}" = "true" ]; then
               if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-                echo "🔄 Tag $TAG_NAME exists and overwrite is enabled - will recreate"
+                echo "Tag $TAG_NAME exists and overwrite is enabled - will recreate"
               else
-                echo "🆕 Tag $TAG_NAME doesn't exist - will create new"
+                echo "Tag $TAG_NAME doesn't exist - will create new"
               fi
             else
               # Check if tag exists and fail if overwrite is not enabled
               if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-                echo "❌ Tag $TAG_NAME already exists and overwrite is disabled"
+                echo "Tag $TAG_NAME already exists and overwrite is disabled"
                 SHOULD_RELEASE="false"
               fi
             fi
@@ -118,11 +118,11 @@ jobs:
               if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
                 # Check if tag already exists for automatic releases
                 if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-                  echo "❌ Tag $TAG_NAME already exists - skipping automatic release (use manual trigger to overwrite)"
+                  echo "Tag $TAG_NAME already exists - skipping automatic release (use manual trigger to overwrite)"
                   SHOULD_RELEASE="false"
                 else
                   SHOULD_RELEASE="true"
-                  echo "✅ Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION - will create release"
+                  echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION - will create release"
                 fi
               else
                 SHOULD_RELEASE="false"
@@ -131,7 +131,7 @@ jobs:
             else
               # First commit or package.json didn't exist before
               SHOULD_RELEASE="true"
-              echo "✅ Initial version $CURRENT_VERSION - will create release"
+              echo "Initial version $CURRENT_VERSION - will create release"
             fi
           fi
           
@@ -184,23 +184,23 @@ jobs:
         run: |
           TAG_NAME="${{ needs.check-release.outputs.tag-name }}"
           
-          echo "🔄 Manual trigger with overwrite enabled - cleaning up existing release"
+          echo "Manual trigger with overwrite enabled - cleaning up existing release"
           
           # Delete existing release if it exists
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
-            echo "🗑️ Deleting existing release $TAG_NAME"
+            echo "Deleting existing release $TAG_NAME"
             gh release delete "$TAG_NAME" --yes --cleanup-tag
           else
-            echo "ℹ️ No existing release found for $TAG_NAME"
+            echo "No existing release found for $TAG_NAME"
           fi
           
           # Delete existing tag if it exists (both locally and remotely)
           if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-            echo "🗑️ Deleting existing tag $TAG_NAME"
+            echo "Deleting existing tag $TAG_NAME"
             git tag -d "$TAG_NAME" 2>/dev/null || true
             git push origin --delete "$TAG_NAME" 2>/dev/null || true
           else
-            echo "ℹ️ No existing tag found for $TAG_NAME"
+            echo "No existing tag found for $TAG_NAME"
           fi
           
           # Wait a moment to ensure GitHub processes the deletion
@@ -216,7 +216,7 @@ jobs:
           TAG_NAME="${{ needs.check-release.outputs.tag-name }}"
           
           # Create new tag
-          echo "🏷️ Creating tag $TAG_NAME"
+          echo "Creating tag $TAG_NAME"
           git tag $TAG_NAME
           git push origin $TAG_NAME
           
@@ -228,20 +228,20 @@ jobs:
           IS_MANUAL="${{ needs.check-release.outputs.is-manual-trigger }}"
           
           if [ "$IS_BETA" = "true" ]; then
-            RELEASE_TYPE="🧪 Beta Release"
-            STABILITY_NOTE="⚠️ **This is a beta release** - Please report any issues via [GitHub Issues](https://github.com/${{ github.repository }}/issues)."
+            RELEASE_TYPE="Beta Release"
+            STABILITY_NOTE="**This is a beta release** - Please report any issues via [GitHub Issues](https://github.com/noodlemctwoodle/Sentinel-As-Code/issues)."
           else
-            RELEASE_TYPE="🚀 Stable Release"
-            STABILITY_NOTE="✅ **Stable release** - Ready for production use."
+            RELEASE_TYPE="Stable Release"
+            STABILITY_NOTE="**Stable release** - Ready for production use."
           fi
           
           # Add manual trigger notice if applicable
           MANUAL_NOTICE=""
           if [ "$IS_MANUAL" = "true" ]; then
             if [ "${{ github.event.inputs.overwrite_existing }}" = "true" ]; then
-              MANUAL_NOTICE="🔄 **This release was manually triggered and overwrote an existing release.**"
+              MANUAL_NOTICE="**This release was manually triggered and overwrote an existing release.**"
             else
-              MANUAL_NOTICE="⚡ **This release was manually triggered.**"
+              MANUAL_NOTICE="**This release was manually triggered.**"
             fi
           fi
           
@@ -252,7 +252,7 @@ jobs:
           
           ${MANUAL_NOTICE}
           
-          ## 📦 Installation
+          ## Installation
           
           ### From VS Code Marketplace
           1. Open VS Code Extensions (Ctrl+Shift+X)
@@ -264,20 +264,18 @@ jobs:
           2. In VS Code: Extensions → "..." → "Install from VSIX"
           3. Select the downloaded file
           
-          ## 🔗 Resources
-          - [Documentation](https://github.com/${{ github.repository }}#readme)
-          - [Report Issues](https://github.com/${{ github.repository }}/issues)
+          ## Resources
+          - [Documentation](https://github.com/noodlemctwoodle/Sentinel-As-Code/tree/main/Docs/Toolkit)
+          - [Report Issues](https://github.com/noodlemctwoodle/Sentinel-As-Code/issues)
           - [Sentinel Blog](https://sentinel.blog)
           
-          ## 📋 What's Included
-          - ✅ Content-based Sentinel rule detection
-          - ✅ Real-time validation with MITRE ATT&CK v16
-          - ✅ Professional formatting and field ordering
-          - ✅ Comprehensive rule templates
-          - ✅ Configurable connector validation
+          ## What's Included
+          - Content-based Sentinel rule detection
+          - Real-time validation with MITRE ATT&CK v16
+          - Professional formatting and field ordering
+          - Comprehensive rule templates
+          - Configurable connector validation
           
-          ---
-          *Built with ❤️ for the Microsoft Sentinel community*
           EOF
           
           echo "release-notes-file=release_notes.md" >> $GITHUB_OUTPUT
@@ -299,13 +297,13 @@ jobs:
           
       - name: Release Summary
         run: |
-          echo "🎉 Successfully created release v${{ needs.check-release.outputs.version }}"
-          echo "🏷️ Tag: ${{ needs.check-release.outputs.tag-name }}"
-          echo "🧪 Beta: ${{ needs.check-release.outputs.is-beta }}"
-          echo "⚡ Manual: ${{ needs.check-release.outputs.is-manual-trigger }}"
-          echo "📦 VSIX: sentinel-as-code-toolkit-${{ needs.check-release.outputs.version }}.vsix"
-          echo "🔗 Release URL: https://github.com/${{ github.repository }}/releases/tag/${{ needs.check-release.outputs.tag-name }}"
+          echo "Successfully created release v${{ needs.check-release.outputs.version }}"
+          echo "Tag: ${{ needs.check-release.outputs.tag-name }}"
+          echo "Beta: ${{ needs.check-release.outputs.is-beta }}"
+          echo "Manual: ${{ needs.check-release.outputs.is-manual-trigger }}"
+          echo "VSIX: sentinel-as-code-toolkit-${{ needs.check-release.outputs.version }}.vsix"
+          echo "Release URL: https://github.com/${{ github.repository }}/releases/tag/${{ needs.check-release.outputs.tag-name }}"
           
           if [ "${{ needs.check-release.outputs.is-manual-trigger }}" = "true" ] && [ "${{ github.event.inputs.overwrite_existing }}" = "true" ]; then
-            echo "🔄 This was a manual overwrite of an existing release"
+            echo "This was a manual overwrite of an existing release"
           fi
