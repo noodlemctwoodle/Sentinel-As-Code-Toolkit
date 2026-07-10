@@ -9,10 +9,11 @@ A complete detection-as-code authoring environment for Microsoft Sentinel and Mi
 - **Author** Sentinel analytics rules and hunting queries as YAML, with real-time validation, IntelliSense, and starter templates.
 - **Validate** against the Sentinel and Defender XDR schemas, plus multi-framework MITRE ATT&CK (Enterprise, Mobile, and ICS; v14 to v16).
 - **Format** every Sentinel-as-Code content type into canonical shape — analytics rules, hunting queries, and parsers (YAML), and automation rules, summary rules, watchlists, workbooks, and playbooks (JSON).
-- **Scaffold** new hunting queries, parsers, summary rules, and automation rules from their documented schemas.
+- **Scaffold** new content — analytics rules, hunting queries, parsers, summary rules, automation rules, and watchlists — as commented YAML, choosing where each file is saved.
 - **Auto-fill** a rule's `requiredDataConnectors` from the KQL tables in its query, using the bundled Content Hub mapping — and register your own custom `_CL` tables in a workspace `.sentinel-connectors.json` when they aren't in the catalogue.
-- **Build** deployment-ready watchlists from a CSV or TSV.
+- **Build** watchlists from a CSV or TSV — a `watchlist.yaml` metadata file plus its data file.
 - **Decompile** single or bulk `Microsoft.SecurityInsights/alertRules` ARM templates into clean YAML.
+- **Convert** an authored content YAML to the JSON the pipeline stores — summary rules, automation rules, and watchlists — with a single command.
 - **Convert** Microsoft Defender XDR custom detections between repository YAML and deployable Microsoft Graph `detectionRule` JSON, and format portal exports into repository-ready files.
 - **Maintain in bulk** — validate and normalise every rule in the workspace, and regenerate rule IDs.
 
@@ -76,8 +77,10 @@ The toolkit is focused on authoring and repository hygiene. It does **not** depl
 
 ### Content scaffolding
 
-- **New content scaffolders** — generate starter files for hunting queries, parsers, summary rules, and automation rules from their documented schemas, or pick a type from a single **New Sentinel-as-Code Content...** command.
-- **Watchlist from CSV** — turn a CSV/TSV into a deployment-ready `watchlist.json` and data file under `Content/Watchlists/<alias>/`, prompting for the alias, display name, and primary-key column.
+- **One entry point** — **New Sentinel-as-Code Content...** is the single starting command, available from the Command Palette and by right-clicking a folder in the Explorer. Pick a content type; the two types with more than one source add a second step — Analytics Rule (Standard, NRT, or Decompile from an ARM template) and Watchlist (blank template, or from the active CSV/TSV).
+- **Fields go in the file, not in prompts** — every scaffolder writes its commented YAML template and asks where to save it. You fill the values in the YAML (guided by the inline comments) instead of answering a chain of Command Palette questions.
+- **Everything is authored as YAML** — including the summary rules, automation rules, and watchlists that the pipeline stores as JSON. Run **Convert Content YAML to JSON** to produce the JSON when you are ready to deploy.
+- **Watchlist from CSV** — with a CSV/TSV active, the toolkit writes a `watchlist.yaml` metadata template plus its `data.csv` / `data.tsv` beside the location you choose; set `watchlistAlias` and `itemsSearchKey` in the YAML.
 
 ### ARM to YAML conversion
 
@@ -125,8 +128,15 @@ The toolkit **formats and validates** Defender XDR custom detections for a Senti
 ### Build a watchlist from a CSV
 
 1. Open a CSV/TSV of watchlist data (first row = column headers).
-2. Run **Sentinel-As-Code: Create Watchlist from CSV** (or right-click the file).
-3. Provide the alias, display name, and primary-key column; the toolkit writes a deployment-ready `watchlist.json` + data file under `Content/Watchlists/<alias>/`.
+2. Run **New Sentinel-as-Code Content...** and choose **Watchlist → From active CSV/TSV** (or run **Create Watchlist from CSV**, or right-click the CSV).
+3. Choose where to save it; the toolkit writes a `watchlist.yaml` template and the `data.csv` / `data.tsv` beside it.
+4. Set `watchlistAlias` and `itemsSearchKey` in the YAML, then run **Convert Content YAML to JSON** to produce the `watchlist.json` the pipeline deploys.
+
+### Convert authored content to JSON
+
+1. Open (or right-click) a summary rule, automation rule, or watchlist YAML you authored.
+2. Run **Sentinel-As-Code: Convert Content YAML to JSON**.
+3. The toolkit writes `<name>.json` next to it. Analytics rules, hunting queries, parsers, and Defender detections deploy as YAML, so they do not need converting.
 
 ### Auto-fill required data connectors
 
@@ -154,22 +164,22 @@ detection-rules/
 
 ## Templates
 
-Every template is authored as **commented YAML** so each option is documented inline. When you scaffold one — via **New Sentinel-as-Code Content...**, a per-type command, or **Create Watchlist from CSV** — the toolkit writes it in the format the [Sentinel-as-Code](https://github.com/noodlemctwoodle/Sentinel-As-Code) pipeline expects: YAML content is written as-is, and the JSON content types are **converted from YAML to JSON automatically** on generation.
+Every template is authored as **commented YAML** so each option is documented inline. When you scaffold one — via **New Sentinel-as-Code Content...**, a per-type command, or **Create Watchlist from CSV** — the toolkit asks where to save it and writes the YAML there. The three content types the [Sentinel-as-Code](https://github.com/noodlemctwoodle/Sentinel-As-Code) pipeline stores as JSON (summary rules, automation rules, and watchlists) are also authored as YAML; run **Convert Content YAML to JSON** to produce the JSON you commit.
 
-| Template | Content type — repository folder | On-disk format | Pipeline conversion |
-|----------|----------------------------------|----------------|---------------------|
-| Standard Rule | Analytics rule — `Content/AnalyticalRules/` | YAML | Not required |
-| NRT Rule | Analytics rule — `Content/AnalyticalRules/` | YAML | Not required |
-| Custom Detection | Defender XDR detection — `Content/DefenderCustomDetections/` | YAML | Not required |
-| Hunting Query | Hunting query — `Content/HuntingQueries/` | YAML | Not required |
-| Parser | KQL parser/function — `Content/Parsers/` | YAML | Not required |
-| Summary Rule | Summary rule — `Content/SummaryRules/` | **JSON** | **Converted to JSON** |
-| Automation Rule | Automation rule — `Content/AutomationRules/` | **JSON** | **Converted to JSON** |
-| Watchlist | Watchlist metadata — `Content/Watchlists/<alias>/watchlist.json` | **JSON** | **Converted to JSON** |
+| Template | Content type — repository folder | Authored as | Deployed as |
+|----------|----------------------------------|-------------|-------------|
+| Standard Rule | Analytics rule — `Content/AnalyticalRules/` | YAML | YAML |
+| NRT Rule | Analytics rule — `Content/AnalyticalRules/` | YAML | YAML |
+| Custom Detection | Defender XDR detection — `Content/DefenderCustomDetections/` | YAML | YAML |
+| Hunting Query | Hunting query — `Content/HuntingQueries/` | YAML | YAML |
+| Parser | KQL parser/function — `Content/Parsers/` | YAML | YAML |
+| Summary Rule | Summary rule — `Content/SummaryRules/` | YAML | **JSON** (via Convert Content YAML to JSON) |
+| Automation Rule | Automation rule — `Content/AutomationRules/` | YAML | **JSON** (via Convert Content YAML to JSON) |
+| Watchlist | Watchlist metadata — `Content/Watchlists/<alias>/` | YAML (`watchlist.yaml`) | **JSON** (`watchlist.json`, via Convert Content YAML to JSON) |
 
-### Templates converted to JSON for the pipeline
+### Content types the pipeline stores as JSON
 
-The Sentinel-as-Code pipeline stores analytics rules, hunting queries, parsers, and Defender detections as YAML, but **three** content types must be **JSON** on disk. The toolkit authors these as commented YAML for readability and converts them to JSON automatically when you scaffold them — you commit the generated JSON to the repo. **Exactly these three need converting:**
+The Sentinel-as-Code pipeline stores analytics rules, hunting queries, parsers, and Defender detections as YAML, but **three** content types must be **JSON** on disk. The toolkit authors these as commented YAML for readability; run **Convert Content YAML to JSON** on the file to produce the JSON you commit. **Exactly these three need converting:**
 
 - **Summary Rule** → `Content/SummaryRules/<name>.json`
 - **Automation Rule** → `Content/AutomationRules/<name>.json`
@@ -188,9 +198,9 @@ Every other template — Standard Rule, NRT Rule, Custom Detection, Hunting Quer
 | Sentinel-As-Code: Generate Rule Template | Interactive picker: Standard, NRT, or Custom Detection |
 | Sentinel-As-Code: Generate Standard Rule Template / Generate NRT Rule Template | Create a specific Sentinel rule template |
 | Defender-As-Code: Generate Custom Detection Template | Create a Defender custom detection YAML from the template |
-| Sentinel-As-Code: Create Sentinel Rule Template... | Create a rule in a chosen folder (Explorer context menu) |
-| Sentinel-As-Code: Create Watchlist from CSV | Convert the active CSV/TSV into a deployment-ready watchlist (watchlist.json + data file) |
-| Sentinel-As-Code: New Sentinel-as-Code Content... | Pick and scaffold any content type (analytics rule, hunting query, parser, summary rule, automation rule, watchlist) |
+| Sentinel-As-Code: New Sentinel-as-Code Content... | Pick and scaffold any content type as YAML, asking where to save (Command Palette, or right-click a folder in the Explorer). Analytics Rule offers Standard, NRT, or Decompile from ARM; Watchlist offers a blank template or from the active CSV/TSV |
+| Sentinel-As-Code: Create Watchlist from CSV | Write a `watchlist.yaml` template plus the active CSV/TSV as its data file |
+| Sentinel-As-Code: Convert Content YAML to JSON | Convert an authored summary rule, automation rule, or watchlist YAML to the JSON the pipeline stores (writes `<name>.json` beside it) |
 | Sentinel-As-Code: New Hunting Query / New Parser / New Summary Rule / New Automation Rule | Scaffold a specific content type from its documented schema |
 | Sentinel-As-Code: Populate Required Data Connectors from Query | Match the rule's KQL tables to connectors and fill `requiredDataConnectors`; optionally register unknown `_CL` tables in `.sentinel-connectors.json` |
 | Sentinel-As-Code: Fix Field Order | Reorder fields to the canonical schema order (`Ctrl/Cmd+Shift+F`) |
