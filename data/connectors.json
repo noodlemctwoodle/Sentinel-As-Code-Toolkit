@@ -1,40 +1,13 @@
 {
   "metadata": {
-    "generatedDate": "2026-07-09T15:25:28Z",
-    "totalConnectors": 631,
-    "totalTables": 744,
+    "generatedDate": "2026-07-19T02:59:42Z",
+    "totalConnectors": 633,
+    "totalTables": 752,
     "sourceRepository": "https://github.com/Azure/Azure-Sentinel",
     "extractionVersion": "2.0.0",
     "extractionMethod": "Solutions Analyzer CSV"
   },
   "tablesByConnector": [
-    {
-      "connectorId": "AzureMonitor",
-      "connectorTitle": "Azure Monitor / Log Analytics platform",
-      "descriptionMarkdown": "Core Log Analytics / Azure Monitor workspace tables that are always available and require no data connector.",
-      "publisher": "Microsoft",
-      "source": "Platform",
-      "tables": [
-        "Heartbeat",
-        "LAQueryLogs",
-        "Operation",
-        "Usage"
-      ]
-    },
-    {
-      "connectorId": "MicrosoftSentinelUEBA",
-      "connectorTitle": "Microsoft Sentinel UEBA",
-      "descriptionMarkdown": "User and Entity Behavior Analytics (UEBA) tables, populated when UEBA is enabled on the workspace. UEBA is a Microsoft Sentinel feature rather than a Content Hub data connector.",
-      "publisher": "Microsoft",
-      "source": "Platform",
-      "tables": [
-        "Anomalies",
-        "BehaviorAnalytics",
-        "IdentityInfo",
-        "UserAccessAnalytics",
-        "UserPeerAnalytics"
-      ]
-    },
     {
       "connectorId": "DarktraceAma",
       "connectorTitle": "[Deprecated] AI Analyst Darktrace via AMA",
@@ -1894,6 +1867,19 @@
       "publisher": "Microsoft",
       "source": "Solutions/Azure Logic Apps",
       "tables": "AzureDiagnostics"
+    },
+    {
+      "connectorId": "AzureMonitor",
+      "connectorTitle": "Azure Monitor / Log Analytics platform",
+      "descriptionMarkdown": "Core Log Analytics / Azure Monitor workspace tables that are always available and require no data connector.",
+      "publisher": "Microsoft",
+      "source": "Platform",
+      "tables": [
+        "Heartbeat",
+        "LAQueryLogs",
+        "Operation",
+        "Usage"
+      ]
     },
     {
       "connectorId": "AzureResourceGraph",
@@ -4647,6 +4633,20 @@
       "publisher": "Microsoft",
       "source": "Solutions/SAP",
       "tables": []
+    },
+    {
+      "connectorId": "MicrosoftSentinelUEBA",
+      "connectorTitle": "Microsoft Sentinel UEBA",
+      "descriptionMarkdown": "User and Entity Behavior Analytics (UEBA) tables, populated when UEBA is enabled on the workspace. UEBA is a Microsoft Sentinel feature rather than a Content Hub data connector, so the Solutions Analyzer does not model it.",
+      "publisher": "Microsoft",
+      "source": "Platform",
+      "tables": [
+        "Anomalies",
+        "BehaviorAnalytics",
+        "IdentityInfo",
+        "UserAccessAnalytics",
+        "UserPeerAnalytics"
+      ]
     },
     {
       "connectorId": "MimecastAuditAPI",
