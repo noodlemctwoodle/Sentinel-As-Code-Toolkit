@@ -1,40 +1,13 @@
 {
   "metadata": {
-    "generatedDate": "2026-07-09T15:25:28Z",
-    "totalConnectors": 631,
-    "totalTables": 744,
+    "generatedDate": "2026-09-06T06:33:48Z",
+    "totalConnectors": 687,
+    "totalTables": 800,
     "sourceRepository": "https://github.com/Azure/Azure-Sentinel",
     "extractionVersion": "2.0.0",
     "extractionMethod": "Solutions Analyzer CSV"
   },
   "tablesByConnector": [
-    {
-      "connectorId": "AzureMonitor",
-      "connectorTitle": "Azure Monitor / Log Analytics platform",
-      "descriptionMarkdown": "Core Log Analytics / Azure Monitor workspace tables that are always available and require no data connector.",
-      "publisher": "Microsoft",
-      "source": "Platform",
-      "tables": [
-        "Heartbeat",
-        "LAQueryLogs",
-        "Operation",
-        "Usage"
-      ]
-    },
-    {
-      "connectorId": "MicrosoftSentinelUEBA",
-      "connectorTitle": "Microsoft Sentinel UEBA",
-      "descriptionMarkdown": "User and Entity Behavior Analytics (UEBA) tables, populated when UEBA is enabled on the workspace. UEBA is a Microsoft Sentinel feature rather than a Content Hub data connector.",
-      "publisher": "Microsoft",
-      "source": "Platform",
-      "tables": [
-        "Anomalies",
-        "BehaviorAnalytics",
-        "IdentityInfo",
-        "UserAccessAnalytics",
-        "UserPeerAnalytics"
-      ]
-    },
     {
       "connectorId": "DarktraceAma",
       "connectorTitle": "[Deprecated] AI Analyst Darktrace via AMA",
@@ -566,6 +539,7 @@
         "GitHubAdvancedSecurityAlerts_CL",
         "GitHubAuditLogPolling_CL",
         "GitHubAuditLogsV2_CL",
+        "GitHubAuditLogsV3_CL",
         "GitHubRepoLogs_CL",
         "githubscanaudit_CL"
       ]
@@ -649,6 +623,17 @@
         "GWorkspace_ReportsAPI_saml_CL",
         "GWorkspace_ReportsAPI_token_CL",
         "GWorkspace_ReportsAPI_user_accounts_CL"
+      ]
+    },
+    {
+      "connectorId": "HolmSecurityAssets",
+      "connectorTitle": "[DEPRECATED] Holm Security Asset Data (using Azure Function)",
+      "descriptionMarkdown": "The connector provides the capability to poll data from Holm Security Center into Microsoft Sentinel.",
+      "publisher": "Holm Security",
+      "source": "Solutions/HolmSecurity",
+      "tables": [
+        "net_assets_CL",
+        "web_assets_CL"
       ]
     },
     {
@@ -1114,6 +1099,7 @@
         "SentinelOneActivities_CL",
         "SentinelOneAgents_CL",
         "SentinelOneAlerts_CL",
+        "SentinelOneAlertsV2_CL",
         "SentinelOneGroups_CL",
         "SentinelOneThreats_CL"
       ]
@@ -1139,15 +1125,25 @@
       "tables": [
         "Snowflake_CL",
         "SnowflakeLoad_CL",
+        "SnowflakeLoadV2_CL",
         "SnowflakeLogin_CL",
+        "SnowflakeLoginV2_CL",
         "SnowflakeMaterializedView_CL",
+        "SnowflakeMaterializedViewV2_CL",
         "SnowflakeQuery_CL",
+        "SnowflakeQueryV2_CL",
         "SnowflakeRoleGrant_CL",
+        "SnowflakeRoleGrantV2_CL",
         "SnowflakeRoles_CL",
+        "SnowflakeRolesV2_CL",
         "SnowflakeTables_CL",
         "SnowflakeTableStorageMetrics_CL",
+        "SnowflakeTableStorageMetricsV2_CL",
+        "SnowflakeTablesV2_CL",
         "SnowflakeUserGrant_CL",
-        "SnowflakeUsers_CL"
+        "SnowflakeUserGrantV2_CL",
+        "SnowflakeUsers_CL",
+        "SnowflakeUsersV2_CL"
       ]
     },
     {
@@ -1274,6 +1270,14 @@
       "tables": "CommonSecurityLog"
     },
     {
+      "connectorId": "VaronisSaaS",
+      "connectorTitle": "[Deprecated] Varonis SaaS",
+      "descriptionMarkdown": "Varonis SaaS provides the capability to ingest [Varonis Alerts](https://www.varonis.com/products/datalert) into Microsoft Sentinel.<br><br>Varonis prioritizes deep data visibility, classification capabilities, and automated remediation for data access. Varonis builds a single prioritized view of risk for your data, so you can proactively and systematically eliminate risk from insider threats and cyberattacks.",
+      "publisher": "Varonis",
+      "source": "Solutions/VaronisSaaS",
+      "tables": "VaronisAlerts_CL"
+    },
+    {
       "connectorId": "AIVectraDetectAma",
       "connectorTitle": "[Deprecated] Vectra AI Detect via AMA",
       "descriptionMarkdown": "The AI Vectra Detect connector allows users to connect Vectra Detect logs with Microsoft Sentinel, to view dashboards, create custom alerts, and improve investigation. This gives users more insight into their organization's network and improves their security operation capabilities.",
@@ -1357,6 +1361,17 @@
       "tables": "CommonSecurityLog"
     },
     {
+      "connectorId": "Zoom",
+      "connectorTitle": "[DEPRECATED] Zoom Reports",
+      "descriptionMarkdown": "The [Zoom](https://zoom.us/) Reports data connector provides the capability to ingest [Zoom Reports](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#tag/Reports) events into Microsoft Sentinel through the REST API. Refer to [API documentation](https://developers.zoom.us/docs/api/) for more information. The connector provides ability to get events which helps to examine potential security risks, analyze your team's use of collaboration, diagnose configuration problems and more.",
+      "publisher": "Zoom",
+      "source": "Solutions/ZoomReports",
+      "tables": [
+        "Zoom_CL",
+        "ZoomV2_CL"
+      ]
+    },
+    {
       "connectorId": "ZscalerPrivateAccess",
       "connectorTitle": "[Deprecated] Zscaler Private Access",
       "descriptionMarkdown": "The [Zscaler Private Access (ZPA)](https://help.zscaler.com/zpa/what-zscaler-private-access) data connector provides the capability to ingest [Zscaler Private Access events](https://help.zscaler.com/zpa/log-streaming-service) into Microsoft Sentinel. Refer to [Zscaler Private Access documentation](https://help.zscaler.com/zpa) for more information.",
@@ -1374,8 +1389,8 @@
     },
     {
       "connectorId": "InfobloxSOCInsightsDataConnector_AMA",
-      "connectorTitle": "[Recommended] Infoblox SOC Insight Data Connector via AMA",
-      "descriptionMarkdown": "The Infoblox SOC Insight Data Connector allows you to easily connect your Infoblox BloxOne SOC Insight data with Microsoft Sentinel. By connecting your logs to Microsoft Sentinel, you can take advantage of search & correlation, alerting, and threat intelligence enrichment for each log. <br><br>This data connector ingests Infoblox SOC Insight CDC logs into your Log Analytics Workspace using the new Azure Monitor Agent. Learn more about ingesting using the new Azure Monitor Agent [here](https://learn.microsoft.com/azure/sentinel/connect-cef-ama). **Microsoft recommends using this Data Connector.**",
+      "connectorTitle": "[Recommended] Infoblox IQ for Threat Defense Insight Data Connector via AMA",
+      "descriptionMarkdown": "The Infoblox IQ for Threat Defense Insight Data Connector allows you to easily connect your Infoblox IQ for Threat Defense Insight data with Microsoft Sentinel. By connecting your logs to Microsoft Sentinel, you can take advantage of search & correlation, alerting, and threat intelligence enrichment for each log. <br><br>This data connector ingests Infoblox IQ for Threat Defense Insight CDC logs into your Log Analytics Workspace using the new Azure Monitor Agent. Learn more about ingesting using the new Azure Monitor Agent [here](https://learn.microsoft.com/azure/sentinel/connect-cef-ama). **Microsoft recommends using this Data Connector.**",
       "publisher": "Infoblox",
       "source": "Solutions/Infoblox",
       "tables": "CommonSecurityLog"
@@ -1445,7 +1460,12 @@
       "descriptionMarkdown": "The [Abnormal Security](https://abnormalsecurity.com) connector pushes real-time security events (threats, cases, audit logs, abuse mailbox reports, posture changes, ATO cases, remediations, and vendor cases) from Abnormal's cloud email security platform into Microsoft Sentinel using the Codeless Connector Framework (CCF) Push pattern. Events are routed to per-event-type tables matching the legacy connector naming convention, enabling seamless migration.",
       "publisher": "Abnormal Security",
       "source": "Solutions/AbnormalSecurity",
-      "tables": []
+      "tables": [
+        "ABNORMAL_SECURITY_ABUSE_MAILBOX_CL",
+        "ABNORMAL_SECURITY_ATO_CASE_CL",
+        "ABNORMAL_SECURITY_THREAT_LOG_CL",
+        "ABNORMAL_SECURITY_VENDOR_CASE_CL"
+      ]
     },
     {
       "connectorId": "AbnormalSecurity",
@@ -1454,8 +1474,10 @@
       "publisher": "AbnormalSecurity",
       "source": "Solutions/AbnormalSecurity",
       "tables": [
-        "ABNORMAL_CASES_CL",
-        "ABNORMAL_THREAT_MESSAGES_CL"
+        "ABNORMAL_SECURITY_ABUSE_MAILBOX_CL",
+        "ABNORMAL_SECURITY_ATO_CASE_CL",
+        "ABNORMAL_SECURITY_THREAT_LOG_CL",
+        "ABNORMAL_SECURITY_VENDOR_CASE_CL"
       ]
     },
     {
@@ -1504,6 +1526,28 @@
         "AIShield_CL",
         "Guardian_CL"
       ]
+    },
+    {
+      "connectorId": "AkamaiGuardicore",
+      "connectorTitle": "Akamai Guardicore",
+      "descriptionMarkdown": "The Akamai Guardicore connector uses the Codeless Connector Framework (CCF) to import Agents, Assets, Applications, and Policy Rules from a Guardicore Centra instance into Microsoft Sentinel via Data Collection Rule (DCR) ingestion. The connector polls every 10 minutes via Microsoft Sentinel's CCF runtime; no Azure Function App is deployed.",
+      "publisher": "Akamai",
+      "source": "Solutions/Akamai Guardicore",
+      "tables": [
+        "GuardicoreAgents_CL",
+        "GuardicoreApplications_CL",
+        "GuardicoreEnrichingConnections_CL",
+        "GuardicorePolicyRules_CL",
+        "GuardicoreProcessedIncidents_CL"
+      ]
+    },
+    {
+      "connectorId": "AkamaiSIEMConnector",
+      "connectorTitle": "Akamai Security Events (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The [Akamai SIEM Connector](https://techdocs.akamai.com/siem-integration/docs) ingests web application firewall (WAF) security events from the [Akamai SIEM Integration API](https://techdocs.akamai.com/siem-integration/reference/get-config) into Microsoft Sentinel. The connector collects detailed security event data including attack information, geographic context, and HTTP request/response metadata. Authentication uses Akamai EdgeGrid - provide your three EdgeGrid credentials (client_token, access_token, client_secret) plus the API hostname from your .edgerc file. The platform runtime computes a fresh HMAC-SHA-256 signed Authorization header on every poll request per the EdgeGrid specification.",
+      "publisher": "Akamai",
+      "source": "Solutions/Akamai DDOS Protection",
+      "tables": []
     },
     {
       "connectorId": "alcide_kaudit",
@@ -1729,9 +1773,17 @@
       ]
     },
     {
+      "connectorId": "AtlassianAuditEventsConnector",
+      "connectorTitle": "Atlassian Organization Audit Events (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The Atlassian Organization Audit Events data connector provides the capability to ingest organization audit events from Atlassian Cloud into Microsoft Sentinel through the Polling API. This connector enables comprehensive security monitoring and compliance auditing across all Atlassian Cloud products including Jira (Software/Service Desk/Core), Confluence, Bitbucket, Trello, Opsgenie, Statuspage, and Loom. The connector ingests audit events covering user management, authentication activities, group changes, product access modifications, administrative actions, and policy changes. With 180 days of data retention in Atlassian Cloud, this connector provides visibility into user access granted/revoked, authentication failures and successes, MFA configuration changes, API token management, group membership changes, product license assignments, organization policy updates, and domain verification activities. The connector uses API Key authentication with read-only OAuth scope (read:events:admin) and is optimized for continuous polling with cursor-based pagination. This connector is built on Microsoft Sentinel Codeless Connector Platform and supports DCR-based ingestion time transformations for optimized query performance. Refer to Atlassian Organization Events API documentation for more information.",
+      "publisher": "Atlassian",
+      "source": "Solutions/AtlassianOrganizationAudit",
+      "tables": []
+    },
+    {
       "connectorId": "Auth0ConnectorCCPDefinition",
       "connectorTitle": "Auth0 Logs (via Codeless Connector Framework)",
-      "descriptionMarkdown": "The [Auth0](https://auth0.com/docs/api/management/v2/logs/get-logs) data connector allows ingesting logs from Auth0 API into Microsoft Sentinel. The data connector is built on Microsoft Sentinel Codeless Connector Platform. It uses Auth0 API to fetch logs and it supports DCR-based [ingestion time transformations](https://docs.microsoft.com/azure/azure-monitor/logs/custom-logs-overview) that parses the received security data into a custom table so that queries don't need to parse it again, thus resulting in better performance.",
+      "descriptionMarkdown": "The [Auth0](https://auth0.com/docs/api/management/v2/logs/get-logs) data connector ingests tenant log events from the Auth0 Management API into Microsoft Sentinel. Built on the Codeless Connector Framework, it supports connecting multiple Auth0 hosts and tags each record with its Auth0 domain.",
       "publisher": "Microsoft",
       "source": "Solutions/Auth0",
       "tables": []
@@ -1872,6 +1924,7 @@
       "source": "Solutions/Azure Key Vault",
       "tables": [
         "AzureDiagnostics",
+        "KeyVaults",
         "SecurityAlert",
         "SecurityIncident"
       ]
@@ -1894,6 +1947,19 @@
       "publisher": "Microsoft",
       "source": "Solutions/Azure Logic Apps",
       "tables": "AzureDiagnostics"
+    },
+    {
+      "connectorId": "AzureMonitor",
+      "connectorTitle": "Azure Monitor / Log Analytics platform",
+      "descriptionMarkdown": "Core Log Analytics / Azure Monitor workspace tables that are always available and require no data connector.",
+      "publisher": "Microsoft",
+      "source": "Platform",
+      "tables": [
+        "Heartbeat",
+        "LAQueryLogs",
+        "Operation",
+        "Usage"
+      ]
     },
     {
       "connectorId": "AzureResourceGraph",
@@ -2015,7 +2081,7 @@
     {
       "connectorId": "BitSight",
       "connectorTitle": "Bitsight data connector",
-      "descriptionMarkdown": "The [BitSight](https://www.BitSight.com/) Data Connector supports evidence-based cyber risk monitoring by bringing BitSight data in Microsoft Sentinel.",
+      "descriptionMarkdown": "The [BitSight](https://www.BitSight.com/) Data Connector supports evidence-based cyber risk monitoring by bringing BitSight data into Microsoft Sentinel using the [Logs Ingestion API](https://learn.microsoft.com/azure/azure-monitor/logs/logs-ingestion-api-overview).",
       "publisher": "BitSight Technologies, Inc.",
       "source": "Solutions/BitSight",
       "tables": [
@@ -2128,6 +2194,25 @@
       ]
     },
     {
+      "connectorId": "BV-ClaudeCompliance",
+      "connectorTitle": "BV-ClaudeCompliance (via Codeless Connector Framework)",
+      "descriptionMarkdown": "## BV-ClaudeCompliance (via Codeless Connector Framework)<br><br>This connector ingests **ClaudeCompliance** API data into Microsoft Sentinel using RestApiPoller.<br><br>### Data Collection<br>- Base API URL: `https://api.anthropic.com/`<br>- Authentication: `APIKey`<br>- Endpoint count: `1`<br><br>### Tables<br>- `ComplianceActivities` -> `BV_ClaudeCompliance_ComplianceActivities_CL`<br><br>### Sample Query<br>```kusto<br>BV_ClaudeCompliance_ComplianceActivities_CL<br>| take 10<br>```",
+      "publisher": "BlueVoyant",
+      "source": "Solutions/BlueVoyant Anthropic ClaudeCompliance",
+      "tables": []
+    },
+    {
+      "connectorId": "CayosoftGuardianConnector",
+      "connectorTitle": "Cayosoft Guardian Threat Alerts",
+      "descriptionMarkdown": "The Cayosoft Guardian data connector automatically ingests threat alerts from Cayosoft Guardian into Microsoft Sentinel. Cayosoft Guardian writes threat alerts to the Windows Event Log as Event ID 2. The Azure Monitor Agent (AMA) collects these events by using Data Collection Rules (DCRs) and sends the parsed data to the custom Log Analytics table named `CayosoftThreatAlerts_CL`. After the data is ingested, Microsoft Sentinel can use it for monitoring, analytics, incident creation, investigation, and automated response across your hybrid identity environment.",
+      "publisher": "Cayosoft",
+      "source": "Solutions/Cayosoft Guardian",
+      "tables": [
+        "CayosoftThreatAlerts_CL",
+        "SecurityIncident"
+      ]
+    },
+    {
       "connectorId": "CloudGuardCCPDefinition",
       "connectorTitle": "Check Point CloudGuard CNAPP Connector for Microsoft Sentinel",
       "descriptionMarkdown": "The [CloudGuard](https://sc1.checkpoint.com/documents/CloudGuard_Dome9/Documentation/Overview/CloudGuard-CSPM-Introduction.htm?cshid=help_center_documentation) data connector enables the ingestion of security events from the CloudGuard API into Microsoft Sentinel™, using Microsoft Sentinel’s Codeless Connector Platform. The connector supports DCR-based [ingestion time transformations](https://docs.microsoft.com/azure/azure-monitor/logs/custom-logs-overview) which parses incoming security event data into custom columns. This pre-parsing process eliminates the need for query-time parsing, resulting in improved performance for data queries.",
@@ -2150,6 +2235,30 @@
       "publisher": "Checkpoint Cyberint",
       "source": "Solutions/Check Point Cyberint IOC",
       "tables": []
+    },
+    {
+      "connectorId": "CheckPointEMIOCIntelligence",
+      "connectorTitle": "Check Point EM ThreatCloud Intelligence Feed Connector",
+      "descriptionMarkdown": "Check Point provides a Microsoft Sentinel integration to ingest high-fidelity Indicators of Compromise (IoCs) from the Infinity External Risk Management solution into Microsoft Sentinel. This connector incrementally pulls the premium IOC feed — including malicious IPs, domains, URLs, and file hashes — enriched with confidence, severity, malicious classification, kill chain stage, blocking and uniqueness flags, malware types, and CVE/campaign associations.",
+      "publisher": "Check Point",
+      "source": "Solutions/Check Point EM ThreatCloud Intelligence Feed",
+      "tables": []
+    },
+    {
+      "connectorId": "CheckPointEmailSecConnector",
+      "connectorTitle": "Check Point Email Security (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The [Check Point Email Security (Harmony Email Collaboration)](https://www.checkpoint.com/harmony/email-security/) data connector provides the capability to ingest security events and audit logs from Check Point's Email Security platform into Microsoft Sentinel through the REST API. The connector provides visibility into advanced email threats including zero-day threats, phishing, account takeover, data leakage, and shadow IT discovery. It ingests security events, anti-phishing exceptions, spam exceptions, and audit logs into Microsoft Sentinel, helping organizations maintain security and compliance visibility.",
+      "publisher": "Microsoft",
+      "source": "Solutions/Checkpoint Email Security",
+      "tables": []
+    },
+    {
+      "connectorId": "CheckpointHECConnectorDefinition",
+      "connectorTitle": "CheckpointHEC_CL On Demand Email Security (via Codeless Connector Platform)",
+      "descriptionMarkdown": "CheckpointHEC_CL Email Security data connector provides the capability to get Check Point security event data",
+      "publisher": "Checkpoint",
+      "source": "Solutions/CheckPoint Harmony Email and Collaboration",
+      "tables": "CheckpointHEC_CL"
     },
     {
       "connectorId": "CiscoASA",
@@ -2236,12 +2345,33 @@
       "tables": "CiscoDuo_CL"
     },
     {
+      "connectorId": "CiscoETDConnectorDefinition",
+      "connectorTitle": "Cisco Email Threat Defense (ETD)",
+      "descriptionMarkdown": "The [Cisco Email Threat Defense (ETD)](https://docs.cmd.cisco.com/en/Content/secure-email-threat-defense-user-guide/homeUG.htm) data connector provides the capability to ingest [message events](https://docs.cmd.cisco.com/en/Content/secure-email-threat-defense-user-guide/Messages/messages.htm) from Cisco ETD into Microsoft Sentinel using the [Log Export API](https://developer.cisco.com/docs/message-search-api/log-export-api/).",
+      "publisher": "Cisco",
+      "source": "Solutions/Cisco ETD",
+      "tables": "CiscoETDv2_CL"
+    },
+    {
       "connectorId": "CiscoETD",
       "connectorTitle": "Cisco ETD",
       "descriptionMarkdown": "The connector fetches data from ETD api for threat analysis",
       "publisher": "Cisco",
       "source": "Solutions/Cisco ETD",
-      "tables": "CiscoETD_CL"
+      "tables": "CiscoETDv2_CL"
+    },
+    {
+      "connectorId": "CiscoMerakiNativePoller",
+      "connectorTitle": "Cisco Meraki (using REST API)",
+      "descriptionMarkdown": "The [Cisco Meraki](https://aka.ms/ciscomeraki) connector allows you to easily connect your Cisco Meraki MX [security events](https://aka.ms/ciscomerakisecurityevents) to Microsoft Sentinel. The data connector uses [Cisco Meraki REST API](https://developer.cisco.com/meraki/api-v1/#!get-organization-appliance-security-events) to fetch security events and supports DCR-based [ingestion time transformations](https://docs.microsoft.com/azure/azure-monitor/logs/custom-logs-overview) that parses the received security event data into a custom columns so that queries don't need to parse it again, thus resulting in better performance.<br><br> **Supported ASIM schema:** <br> 1. Network Session",
+      "publisher": "Microsoft",
+      "source": "Solutions/CiscoMeraki",
+      "tables": [
+        "CiscoMerakiNativePoller_CL",
+        "meraki_CL",
+        "Syslog",
+        "ThreatIntelIndicators"
+      ]
     },
     {
       "connectorId": "CiscoMerakiMultiRule",
@@ -2255,16 +2385,15 @@
       ]
     },
     {
-      "connectorId": "CiscoMerakiNativePoller",
-      "connectorTitle": "Cisco Meraki (using REST API)",
-      "descriptionMarkdown": "The [Cisco Meraki](https://aka.ms/ciscomeraki) connector allows you to easily connect your Cisco Meraki MX [security events](https://aka.ms/ciscomerakisecurityevents) to Microsoft Sentinel. The data connector uses [Cisco Meraki REST API](https://developer.cisco.com/meraki/api-v1/#!get-organization-appliance-security-events) to fetch security events and supports DCR-based [ingestion time transformations](https://docs.microsoft.com/azure/azure-monitor/logs/custom-logs-overview) that parses the received security event data into a custom columns so that queries don't need to parse it again, thus resulting in better performance.<br><br> **Supported ASIM schema:** <br> 1. Network Session",
+      "connectorId": "CiscoMerakiConnector",
+      "connectorTitle": "Cisco Meraki Events (using REST API) (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The [Cisco Meraki](https://aka.ms/ciscomeraki) connector allows you to easily connect your Cisco Meraki organization events (Security events, Configuration Changes and API Requests) to Microsoft Sentinel. The data connector uses the [Cisco Meraki REST API](https://developer.cisco.com/meraki/api-v1/#!get-organization-appliance-security-events) to fetch logs and supports DCR-based [ingestion time transformations](https://docs.microsoft.com/azure/azure-monitor/logs/custom-logs-overview) that parses the received data and ingests into ASIM and custom tables in your Log Analytics workspace. This data connector benefits from capabilities such as DCR based ingestion-time filtering, data normalization.<br><br>In addition to the ASIM-normalized events, this connector also ingests Cisco Meraki Dashboard inventory and wireless security data into custom tables - Organizations, Network Clients, Organization Networks, and wireless Air Marshal (rogue access point) events.<br><br> **Supported ASIM schema:** <br> 1. Network Session <br> 2. Web Session  <br> 3. Audit Event",
       "publisher": "Microsoft",
-      "source": "Solutions/CiscoMeraki",
+      "source": "Solutions/Cisco Meraki Events via REST API",
       "tables": [
-        "CiscoMerakiNativePoller_CL",
-        "meraki_CL",
-        "Syslog",
-        "ThreatIntelIndicators"
+        "ASimAuditEventLogs",
+        "ASimNetworkSessionLogs",
+        "ASimWebSessionLogs"
       ]
     },
     {
@@ -2294,7 +2423,7 @@
       "connectorId": "CiscoUmbrellaConnector",
       "connectorTitle": "Cisco Umbrella (via Codeless Connector Framework)",
       "descriptionMarkdown": "The Cisco Cloud Security solution for Microsoft Sentinel enables you to ingest [Cisco Secure Access](https://securitydocs.cisco.com/secure-access-sub-landing-page) and [Cisco Umbrella](https://securitydocs.cisco.com/umbrella-sub-landing-page) logs stored in Cisco-managed Amazon S3 Bucket into Microsoft Sentinel using the Amazon S3 REST API. Refer to [Cisco Cloud Security log management documentation](https://securitydocs.cisco.com/docs/csa/olh/118897.dita) for more information.",
-      "publisher": "Cisco",
+      "publisher": "Microsoft",
       "source": "Solutions/CiscoUmbrella",
       "tables": [
         "Cisco_Umbrella_audit_CL",
@@ -2334,6 +2463,14 @@
         "CitrixAnalytics_SPA_Events_V1_CL",
         "CitrixAnalytics_userProfile_V1_CL"
       ]
+    },
+    {
+      "connectorId": "CitrixDaaSActionsConnector",
+      "connectorTitle": "Citrix DaaS Audit & Sessions (via Codeless Connector Framework)",
+      "descriptionMarkdown": "Ingest configuration audit logs and session activity from Citrix DaaS (Citrix Virtual Apps and Desktops service). Provides audit trails for security investigations, compliance monitoring, and operational troubleshooting.",
+      "publisher": "Microsoft",
+      "source": "Solutions/Citrix DaaS",
+      "tables": []
     },
     {
       "connectorId": "Citrix",
@@ -2422,12 +2559,20 @@
       "tables": "CommonSecurityLog"
     },
     {
+      "connectorId": "CommvaultSecurityIQConnector",
+      "connectorTitle": "Commvault Security IQ (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The Commvault Security IQ data connector ingests anomaly detection events from Commvault environments into Microsoft Sentinel, enabling detection and response for threats targeting backup infrastructure such as ransomware and suspicious file operations. Events are stored in the `CommvaultAlertsCCF_CL` table.",
+      "publisher": "Commvault",
+      "source": "Solutions/Commvault Security IQ",
+      "tables": "CommvaultAlertsCCF_CL"
+    },
+    {
       "connectorId": "CommvaultSecurityIQ_CL",
       "connectorTitle": "CommvaultSecurityIQ",
       "descriptionMarkdown": "This Azure Function enables Commvault users to ingest alerts/events into their Microsoft Sentinel instance. With Analytic Rules,Microsoft Sentinel can automatically create Microsoft Sentinel incidents from incoming events and logs.",
       "publisher": "Commvault",
       "source": "Solutions/Commvault Security IQ",
-      "tables": "CommvaultAlerts_CL"
+      "tables": "CommvaultAlertsCCF_CL"
     },
     {
       "connectorId": "ContrastADRCCF",
@@ -2617,18 +2762,18 @@
       "tables": "CommonSecurityLog"
     },
     {
-      "connectorId": "CrowdStrikeFalconS3CCPDefinition",
-      "connectorTitle": "CrowdStrike Falcon Data Replicator (AWS S3) (via Codeless Connector Framework)",
-      "descriptionMarkdown": "The Crowdstrike Falcon Data Replicator (S3) connector provides the capability to ingest FDR event datainto Microsoft Sentinel from the AWS S3 bucket where the FDR logs have been streamed. The connector provides ability to get events from Falcon Agents which helps to examine potential security risks, analyze your team's use of collaboration, diagnose configuration problems and more.<p><span style='color:red; font-weight:bold;'>NOTE:</span></p><div style='margin-left:20px;'><p>1. CrowdStrike FDR license must be available & enabled.</p><p>2. The connector requires an IAM role to be configured on AWS to allow access to the AWS S3 bucket and may not be suitable for environments that leverage CrowdStrike - managed buckets.</p><p>3. For environments that leverage CrowdStrike-managed buckets, please configure the <strong>CrowdStrike Falcon Data Replicator (CrowdStrike-Managed AWS S3)</strong> connector.</p></div>",
-      "publisher": "Microsoft",
+      "connectorId": "CrowdstrikeReplicatorv2",
+      "connectorTitle": "CrowdStrike Falcon Data Replicator (CrowdStrike Managed AWS-S3)",
+      "descriptionMarkdown": "This connector enables the ingestion of FDR data into Microsoft Sentinel using Azure Functions to support the assessment of potential security risks, analysis of collaboration activities, identification of configuration issues, and other operational insights.<p><span style='color:red; font-weight:bold;'>NOTE:</span></p><div style='margin-left:20px;'><p>1. CrowdStrike FDR license must be available & enabled.</p><p>2. The connector uses a Key & Secret based authentication and is suitable for CrowdStrike Managed buckets.</p><p>3. For environments that use a fully owned AWS S3 bucket, Microsoft recommends using the <strong>CrowdStrike Falcon Data Replicator (AWS S3)</strong> connector.</p></div>",
+      "publisher": "Crowdstrike",
       "source": "Solutions/CrowdStrike Falcon Endpoint Protection",
       "tables": "CommonSecurityLog"
     },
     {
-      "connectorId": "CrowdstrikeReplicatorv2",
-      "connectorTitle": "CrowdStrike Falcon Data Replicator (CrowdStrike Managed AWS-S3) (using Azure Function)",
-      "descriptionMarkdown": "This connector enables the ingestion of FDR data into Microsoft Sentinel using Azure Functions to support the assessment of potential security risks, analysis of collaboration activities, identification of configuration issues, and other operational insights.<p><span style='color:red; font-weight:bold;'>NOTE:</span></p><div style='margin-left:20px;'><p>1. CrowdStrike FDR license must be available & enabled.</p><p>2. The connector uses a Key & Secret based authentication and is suitable for CrowdStrike Managed buckets.</p><p>3. For environments that use a fully owned AWS S3 bucket, Microsoft recommends using the <strong>CrowdStrike Falcon Data Replicator (AWS S3)</strong> connector.</p></div>",
-      "publisher": "Crowdstrike",
+      "connectorId": "CrowdStrikeFalconS3CCPDefinition",
+      "connectorTitle": "CrowdStrike Falcon Data Replicator (User Managed AWS-S3) (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The Crowdstrike Falcon Data Replicator (S3) connector provides the capability to ingest FDR event datainto Microsoft Sentinel from the AWS S3 bucket where the FDR logs have been streamed. The connector provides ability to get events from Falcon Agents which helps to examine potential security risks, analyze your team's use of collaboration, diagnose configuration problems and more.<p><span style='color:red; font-weight:bold;'>NOTE:</span></p><div style='margin-left:20px;'><p>1. CrowdStrike FDR license must be available & enabled.</p><p>2. The connector requires an IAM role to be configured on AWS to allow access to the AWS S3 bucket and may not be suitable for environments that leverage CrowdStrike - managed buckets.</p><p>3. For environments that leverage CrowdStrike-managed buckets, please configure the <strong>CrowdStrike Falcon Data Replicator (CrowdStrike-Managed AWS S3)</strong> connector.</p></div>",
+      "publisher": "Microsoft",
       "source": "Solutions/CrowdStrike Falcon Endpoint Protection",
       "tables": "CommonSecurityLog"
     },
@@ -2726,6 +2871,14 @@
       "publisher": "Cybersixgill",
       "source": "Solutions/Cybersixgill-Actionable-Alerts",
       "tables": "CyberSixgill_Alerts_CL"
+    },
+    {
+      "connectorId": "CybersixgillAlertsCCFConnector",
+      "connectorTitle": "Cybersixgill Actionable Alerts (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The Cybersixgill Actionable Alerts data connector provides the capability to ingest [Cybersixgill](https://cybersixgill.com/) actionable alerts into Microsoft Sentinel through the REST API. The connector provides the ability to get actionable alerts from the Cybersixgill platform and analyze them in Microsoft Sentinel.",
+      "publisher": "Microsoft",
+      "source": "Solutions/Cybersixgill-Actionable-Alerts",
+      "tables": []
     },
     {
       "connectorId": "CybleVisionAlerts",
@@ -2858,12 +3011,36 @@
       "tables": "D3SOARIncidents_CL"
     },
     {
-      "connectorId": "DarktraceRESTConnector",
-      "connectorTitle": "Darktrace Connector for Microsoft Sentinel REST API",
-      "descriptionMarkdown": "The Darktrace REST API connector pushes real-time events from Darktrace to Microsoft Sentinel and is designed to be used with the Darktrace Solution for Sentinel. The connector writes logs to a custom log table titled \"darktrace_model_alerts_CL\"; Model Breaches, AI Analyst Incidents, System Alerts and Email Alerts can be ingested - additional filters can be set up on the Darktrace System Configuration page. Data is pushed to Sentinel from Darktrace masters.",
+      "connectorId": "DarktraceActiveAISecurityPlatform",
+      "connectorTitle": "Darktrace ActiveAI Security Platform Connector",
+      "descriptionMarkdown": "The Darktrace ActiveAI Security Platform Connector connector provides the capability to read raw event data from Darktrace in Microsoft Sentinel.",
       "publisher": "Darktrace",
       "source": "Solutions/Darktrace",
-      "tables": "darktrace_model_alerts_CL"
+      "tables": [
+        "darktrace_model_alerts_CL",
+        "DarktraceASM_CL",
+        "DarktraceEMAIL_CL",
+        "DarktraceIncidents_CL",
+        "DarktraceModelAlerts_CL",
+        "DarktraceResponseActions_CL",
+        "DarktraceSystemStatusAlerts_CL"
+      ]
+    },
+    {
+      "connectorId": "DarktraceRESTConnector",
+      "connectorTitle": "Darktrace Connector for Microsoft Sentinel REST API (Legacy)",
+      "descriptionMarkdown": "The Darktrace REST API connector pushes real-time events from Darktrace to Microsoft Sentinel and is designed to be used with the Darktrace Solution for Microsoft Sentinel. The connector writes logs to a custom log table titled \"darktrace_model_alerts_CL\"; Model Breaches, AI Analyst Incidents, System Alerts and Email Alerts can be ingested - additional filters can be set up on the Darktrace System Configuration page. Data is pushed to Microsoft Sentinel from Darktrace masters.",
+      "publisher": "Darktrace",
+      "source": "Solutions/Darktrace",
+      "tables": [
+        "darktrace_model_alerts_CL",
+        "DarktraceASM_CL",
+        "DarktraceEMAIL_CL",
+        "DarktraceIncidents_CL",
+        "DarktraceModelAlerts_CL",
+        "DarktraceResponseActions_CL",
+        "DarktraceSystemStatusAlerts_CL"
+      ]
     },
     {
       "connectorId": "DataBahnPush",
@@ -2871,6 +3048,14 @@
       "descriptionMarkdown": "The [DataBahn](https://databahn.ai/) connector provides the capability to push real-time platform telemetry from your DataBahn environment directly into Microsoft Sentinel using the Codeless Connector Framework (CCF) Push pattern. This connector ingests audit logs, operational alerts, and device inventory into custom Log Analytics tables for analysis, alerting, and visualization.",
       "publisher": "DataBahn",
       "source": "Solutions/Databahn",
+      "tables": []
+    },
+    {
+      "connectorId": "DatadogAuditLogsConnector",
+      "connectorTitle": "Datadog Audit Logs (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The Datadog Audit Logs data connector ingests [Datadog](https://www.datadoghq.com/) audit events into Microsoft Sentinel through the [Datadog Audit API](https://docs.datadoghq.com/api/latest/audit/). Audit events capture activity performed within the Datadog platform, providing visibility into configuration changes, access, and administrative actions for security monitoring and investigation.",
+      "publisher": "Microsoft",
+      "source": "Solutions/Datadog",
       "tables": []
     },
     {
@@ -2914,7 +3099,7 @@
       "descriptionMarkdown": "The Digital Shadows data connector provides ingestion of the incidents and alerts from Digital Shadows Searchlight into the Microsoft Sentinel using the REST API. The connector will provide the incidents and alerts information such that it helps to examine, diagnose and analyse the potential security risks and threats.",
       "publisher": "Digital Shadows",
       "source": "Solutions/Digital Shadows",
-      "tables": "DigitalShadows_CL"
+      "tables": "DigitalShadows_V2_CL"
     },
     {
       "connectorId": "DNS",
@@ -2929,12 +3114,28 @@
       ]
     },
     {
+      "connectorId": "DomainToolsCCFDefinition",
+      "connectorTitle": "DomainTools Threat Intelligence Domain Feed",
+      "descriptionMarkdown": "The DomainTools CCF Domain Data Connector retrieves threat-intelligence domain data from multiple DomainTools APIs—including Newly Observed Domains (NOD), Newly Active Domains (NAD), Newly Observed Hostnames (NOH), and Domain Discovery—and ingests it into Microsoft Sentinel for analysis and detection",
+      "publisher": "DomainTools",
+      "source": "Solutions/DomainTools CCF",
+      "tables": "DomainToolsThreatIntelDomains_CL"
+    },
+    {
       "connectorId": "Doppel_DataConnector",
       "connectorTitle": "Doppel Data Connector",
       "descriptionMarkdown": "The data connector is built on Microsoft Sentinel for Doppel events and alerts and supports DCR-based [ingestion time transformations](https://learn.microsoft.com/en-us/azure/azure-monitor/logs/ingestion-time-transformations) that parses the received security event data into a custom columns so that queries don't need to parse it again, thus resulting in better performance.",
       "publisher": "Doppel",
       "source": "Solutions/Doppel",
       "tables": "DoppelTable_CL"
+    },
+    {
+      "connectorId": "DragonCopilotNative",
+      "connectorTitle": "Dragon Copilot",
+      "descriptionMarkdown": "Microsoft Dragon Copilot is an AI-powered clinical assistant that captures and processes clinician interactions to generate structured clinical documentation and activity records. It leverages conversational, ambient, and generative AI to streamline clinical workflows, improve documentation efficiency, and surface actionable insights for healthcare professionals—including clinicians, nurses, and radiologists. Dragon Copilot activity logs represent administrative and user-level events (e.g., interactions, generated outputs, and system actions), making this connector the central ingestion point for admin, audit, and operational logs for the Dragon Copilot workload. Within the Microsoft Sentinel integration context, Dragon Copilot emits audit and activity signals representing user interactions and system-generated outputs. These signals enable security monitoring, compliance auditing, and operational visibility across healthcare workflows.",
+      "publisher": "Microsoft",
+      "source": "Solutions/DragonCopilot",
+      "tables": []
     },
     {
       "connectorId": "DragosSitestoreCCP",
@@ -3172,6 +3373,14 @@
       "tables": []
     },
     {
+      "connectorId": "ESETConnectConnector",
+      "connectorTitle": "ESET Connect Data Connector (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The ESET Connect data connector enables comprehensive security monitoring by ingesting threat detections and incident data from multiple ESET products through the ESET Connect REST API. All detections from ESET PROTECT, ESET Inspect, and ESET Cloud Office Security are unified into the Detections table, with ESET PROTECT and Inspect providing basic endpoint detections via the /v1/detections API, while ESET Cloud Office Security delivers enhanced email security detections through the /v2/detections API. Additionally, incident management data from ESET Inspect is collected into the Incidents table via the /v2/incidents endpoint, providing enhanced incident correlation and management capabilities. The connector uses ESET Connect API credentials with username and password authentication, requiring an API user account with appropriate permissions for your selected products. Before using this connector, ensure you have an ESET Connect API user account, access to your selected ESET products (EP/EI/ECOS), appropriate API permissions for data access, and note that ESET Cloud Office Security is not supported in the Japan region.",
+      "publisher": "ESET",
+      "source": "Solutions/ESET Protect Platform",
+      "tables": []
+    },
+    {
       "connectorId": "ESETInspect",
       "connectorTitle": "ESET Inspect",
       "descriptionMarkdown": "This connector will ingest detections from [ESET Inspect](https://www.eset.com/int/business/solutions/xdr-extended-detection-and-response/) using the provided [REST API](https://help.eset.com/ei_navigate/latest/en-US/api.html). This API is present in ESET Inspect version 1.4 and later.",
@@ -3256,6 +3465,14 @@
       "tables": []
     },
     {
+      "connectorId": "FieldEffectCCF",
+      "connectorTitle": "Field Effect MDR Data Connector (via Codeless Connector Framework)",
+      "descriptionMarkdown": "This solution enables Microsoft Sentinel to ingest Field Effect MDR data using the Codeless Connector Framework (CCF). The connector polls the Field Effect ARO API and sends results to a Log Analytics custom table for hunting, correlation, and alerting within Sentinel.",
+      "publisher": "Field Effect",
+      "source": "Solutions/FieldEffectMDR",
+      "tables": "FieldEffectAROAlerts_CL"
+    },
+    {
       "connectorId": "FilewallM365",
       "connectorTitle": "Filewall for Microsoft 365",
       "descriptionMarkdown": "Ingest events from Filewall into Microsoft Sentinel (Exchange, SharePoint, OneDrive and Teams).",
@@ -3319,11 +3536,7 @@
       "descriptionMarkdown": "The Fortinet FortiNDR Cloud data connector provides the capability to ingest [Fortinet FortiNDR Cloud](https://docs.fortinet.com/product/fortindr-cloud) data into Microsoft Sentinel using the FortiNDR Cloud API",
       "publisher": "Fortinet",
       "source": "Solutions/Fortinet FortiNDR Cloud",
-      "tables": [
-        "FncEventsDetections_CL",
-        "FncEventsObservation_CL",
-        "FncEventsSuricata_CL"
-      ]
+      "tables": "FortinetFortiNdrCloudRaw_CL"
     },
     {
       "connectorId": "FortinetFortiWebAma",
@@ -3340,6 +3553,14 @@
       "publisher": "Microsoft",
       "source": "Solutions/Agari",
       "tables": []
+    },
+    {
+      "connectorId": "GambitSecurityPush",
+      "connectorTitle": "Gambit Security Policy Issues (Push)",
+      "descriptionMarkdown": "The [Gambit Security](https://gambit.security/) connector provides the capability to push Gambit Security policy issues, enriched with resource, affected-system, and policy context, into Microsoft Sentinel.",
+      "publisher": "Gambit Security",
+      "source": "Solutions/GambitSecurity",
+      "tables": "GambitPoliciesIssues_CL"
     },
     {
       "connectorId": "GarrisonULTRARemoteLogs",
@@ -3431,6 +3652,7 @@
         "GitHubAdvancedSecurityAlerts_CL",
         "GitHubAuditLogPolling_CL",
         "GitHubAuditLogsV2_CL",
+        "GitHubAuditLogsV3_CL",
         "GitHubRepoLogs_CL",
         "githubscanaudit_CL"
       ]
@@ -3445,6 +3667,7 @@
         "GitHubAdvancedSecurityAlerts_CL",
         "GitHubAuditLogPolling_CL",
         "GitHubAuditLogsV2_CL",
+        "GitHubAuditLogsV3_CL",
         "GitHubRepoLogs_CL",
         "githubscanaudit_CL"
       ]
@@ -3459,6 +3682,7 @@
         "GitHubAdvancedSecurityAlerts_CL",
         "GitHubAuditLogPolling_CL",
         "GitHubAuditLogsV2_CL",
+        "GitHubAuditLogsV3_CL",
         "GitHubRepoLogs_CL",
         "githubscanaudit_CL"
       ]
@@ -3473,6 +3697,7 @@
         "GitHubAdvancedSecurityAlerts_CL",
         "GitHubAuditLogPolling_CL",
         "GitHubAuditLogsV2_CL",
+        "GitHubAuditLogsV3_CL",
         "GitHubRepoLogs_CL",
         "githubscanaudit_CL"
       ]
@@ -3564,12 +3789,31 @@
       "tables": []
     },
     {
+      "connectorId": "GSDetectionAlerts",
+      "connectorTitle": "Google SecOps Detection Alerts",
+      "descriptionMarkdown": "The [Google SecOps](https://cloud.google.com/security/products/security-operations) (formerly Chronicle) data connector provides the capability to ingest detection alerts from Google SecOps into Microsoft Sentinel using the [legacyStreamDetectionAlerts](https://cloud.google.com/chronicle/docs/reference/rest/v1alpha/projects.locations.instances.legacy/legacyStreamDetectionAlerts) API. Refer to [API documentation](https://cloud.google.com/chronicle/docs/reference/rest) for more information. The connector provides the ability to get detection alert data which helps to examine potential security threats, investigate rule-based detections, and respond to incidents identified by Google SecOps.",
+      "publisher": "Google",
+      "source": "Solutions/GoogleSecOps",
+      "tables": "DetectionAlerts_CL"
+    },
+    {
       "connectorId": "GoogleSCCDefinition",
       "connectorTitle": "Google Security Command Center",
       "descriptionMarkdown": "The Google Cloud Platform (GCP) Security Command Center is a comprehensive security and risk management platform for Google Cloud, ingested from Sentinel's connector. It offers features such as asset inventory and discovery, vulnerability and threat detection, and risk mitigation and remediation to help you gain insight into your organization's security and data attack surface. This integration enables you to perform tasks related to findings and assets more effectively.",
       "publisher": "Microsoft",
       "source": "Solutions/Google Cloud Platform Security Command Center",
       "tables": "GoogleCloudSCC"
+    },
+    {
+      "connectorId": "GoogleThreatIntelligenceRelevanceSystemAlertsAPI",
+      "connectorTitle": "Google Threat Intelligence Relevance System Alerts",
+      "descriptionMarkdown": "The [Google Threat Intelligence (virustotal)](https://www.virustotal.com) data connector ingests GTI Relevance System Alerts into Microsoft Sentinel. The connector polls the GTI Relevance System Alerts API on a configurable schedule and stores Relevance System Alerts data in the RelevanceSystemAlerts_CL custom table, enabling security analysts to investigate threats, correlate incidents, and respond to intelligence-driven alerts within the Sentinel workspace.",
+      "publisher": "Google",
+      "source": "Solutions/Google Threat Intelligence",
+      "tables": [
+        "RelevanceSystemAlerts_CL",
+        "ThreatIntelIndicators"
+      ]
     },
     {
       "connectorId": "GoogleWorkspaceCCPDefinition",
@@ -3648,15 +3892,28 @@
       "tables": []
     },
     {
-      "connectorId": "HolmSecurityAssets",
-      "connectorTitle": "Holm Security Asset Data",
-      "descriptionMarkdown": "The connector provides the capability to poll data from Holm Security Center into Microsoft Sentinel.",
+      "connectorId": "HalcyonPushV2",
+      "connectorTitle": "Halcyon Connector (v2)",
+      "descriptionMarkdown": "The [Halcyon](https://www.halcyon.ai) connector provides the capability to send data from Halcyon to Microsoft Sentinel. This v2 connector ingests Halcyon Events into `HalcyonEventsV2_CL` and Alert Updates into `HalcyonAlertUpdatesV2_CL`.",
+      "publisher": "Halcyon",
+      "source": "Solutions/Halcyon",
+      "tables": []
+    },
+    {
+      "connectorId": "HolmSecurityCCF",
+      "connectorTitle": "Holm Security Data Connector",
+      "descriptionMarkdown": "The Holm Security data connector provides the capability to ingest [Holm Security](https://www.holmsecurity.com/) asset data into Microsoft Sentinel through the REST API. The connector provides the ability to get web and network assets data from Holm Security.",
       "publisher": "Holm Security",
       "source": "Solutions/HolmSecurity",
-      "tables": [
-        "net_assets_CL",
-        "web_assets_CL"
-      ]
+      "tables": []
+    },
+    {
+      "connectorId": "HubspotDefinition",
+      "connectorTitle": "Hubspot (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The community [HubSpot](https://www.hubspot.com/) solution provides the capability to ingest [Hubspot account activity](https://developers.hubspot.com/docs/api-reference/account-audit-logs-v3/guide) into Microsoft Sentinel.",
+      "publisher": "Community",
+      "source": "Solutions/Hubspot",
+      "tables": []
     },
     {
       "connectorId": "HYASProtect",
@@ -3743,7 +4000,11 @@
       "descriptionMarkdown": "The [Imperva Cloud WAF](https://www.imperva.com/resources/resource-library/datasheets/imperva-cloud-waf/) data connector provides the capability to integrate and ingest Web Application Firewall events into Microsoft Sentinel through the REST API. Refer to Log integration [documentation](https://docs.imperva.com/bundle/cloud-application-security/page/settings/log-integration.htm#Download) for more information. The connector provides ability to get events which helps to examine potential security risks, analyze your team's use of collaboration, diagnose configuration problems and more.",
       "publisher": "Imperva",
       "source": "Solutions/ImpervaCloudWAF",
-      "tables": "ImpervaWAFCloud"
+      "tables": [
+        "ImpervaWAFCloud_CL",
+        "ImpervaWAFCloudV2_CL",
+        "SentinelImpervaWAFCloudV2Logs"
+      ]
     },
     {
       "connectorId": "ImpervaCloudWAFLogsCCFDefinition",
@@ -3751,7 +4012,11 @@
       "descriptionMarkdown": "The Imperva WAF Cloud data connector provides the capability to ingest logs into Microsoft Sentinel using the Imperva Log Integration via AWS S3 with SQS notifications. The connector parses CEF-formatted WAF events including access logs and security alerts for threat detection and investigation.Refer to [Imperva WAF Cloud Log Integration](https://docs.imperva.com/bundle/cloud-application-security/page/settings/log-integration.htm) for more information.",
       "publisher": "Microsoft",
       "source": "Solutions/ImpervaCloudWAF",
-      "tables": "ImpervaWAFCloud"
+      "tables": [
+        "ImpervaWAFCloud_CL",
+        "ImpervaWAFCloudV2_CL",
+        "SentinelImpervaWAFCloudV2Logs"
+      ]
     },
     {
       "connectorId": "ImpervaWAFGateway",
@@ -3786,22 +4051,24 @@
         "dossier_whitelist_CL",
         "dossier_whois_CL",
         "Host_Name_Info_CL",
+        "Infoblox_Config_Insight_Details_CL",
+        "Infoblox_Config_Insights_CL",
         "InfobloxInsight_CL",
         "InfobloxInsightAssets_CL",
-        "InfobloxInsightComments_CL",
         "InfobloxInsightEvents_CL",
         "InfobloxInsightIndicators_CL",
         "IP_Space_Info_CL",
         "SecurityAlert",
         "SecurityIncident",
         "Service_Name_Info_CL",
+        "ThreatIntelligenceIndicator",
         "tide_lookup_data_CL"
       ]
     },
     {
       "connectorId": "InfobloxSOCInsightsDataConnector_API",
-      "connectorTitle": "Infoblox SOC Insight Data Connector via REST API",
-      "descriptionMarkdown": "The Infoblox SOC Insight Data Connector allows you to easily connect your Infoblox BloxOne SOC Insight data with Microsoft Sentinel. By connecting your logs to Microsoft Sentinel, you can take advantage of search & correlation, alerting, and threat intelligence enrichment for each log.",
+      "connectorTitle": "Infoblox IQ for Threat Defense Insight Data Connector via REST API",
+      "descriptionMarkdown": "The Infoblox IQ for Threat Defense Insight Data Connector allows you to easily connect your Infoblox IQ for Threat Defense Insight data with Microsoft Sentinel. By connecting your logs to Microsoft Sentinel, you can take advantage of search & correlation, alerting, and threat intelligence enrichment for each log.",
       "publisher": "Infoblox",
       "source": "Solutions/Infoblox",
       "tables": [
@@ -3823,16 +4090,35 @@
         "dossier_whitelist_CL",
         "dossier_whois_CL",
         "Host_Name_Info_CL",
+        "Infoblox_Config_Insight_Details_CL",
+        "Infoblox_Config_Insights_CL",
         "InfobloxInsight_CL",
         "InfobloxInsightAssets_CL",
-        "InfobloxInsightComments_CL",
         "InfobloxInsightEvents_CL",
         "InfobloxInsightIndicators_CL",
         "IP_Space_Info_CL",
         "SecurityAlert",
         "SecurityIncident",
         "Service_Name_Info_CL",
+        "ThreatIntelligenceIndicator",
         "tide_lookup_data_CL"
+      ]
+    },
+    {
+      "connectorId": "InfobloxSOCInsightsConnector",
+      "connectorTitle": "Infoblox SOC Insights (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The [Infoblox SOC Insights](https://www.infoblox.com/products/bloxone-threat-defense/) data connector enables seamless integration of Infoblox BloxOne SOC Insight data with Microsoft Sentinel, allowing security teams to leverage advanced search, correlation, alerting, and threat intelligence enrichment capabilities. This connector provides comprehensive visibility into active security insights and threat detections, DNS security events with threat classifications, threat family and class categorizations, persistent and spreading threats across your network, and event blocking statistics. By aggregating Infoblox's advanced threat intelligence with Sentinel's powerful analytics, organizations can gain deeper insights into their security posture and respond more effectively to emerging threats. For detailed information about the underlying data sources and API capabilities, refer to the [Infoblox SOC Insights documentation](https://docs.infoblox.com/space/BloxOneThreatDefense/501514252/SOC+Insights).",
+      "publisher": "Microsoft",
+      "source": "Solutions/Infoblox SOC Insights",
+      "tables": [
+        "CommonSecurityLog",
+        "InfobloxInsight_CL",
+        "InfobloxInsightAssets_CL",
+        "InfobloxInsightComments_CL",
+        "InfobloxInsightEvents_CL",
+        "InfobloxInsightIndicators_CL",
+        "SecurityAlert",
+        "SecurityIncident"
       ]
     },
     {
@@ -4240,6 +4526,22 @@
       "tables": []
     },
     {
+      "connectorId": "M365AuditDLPCCPDefinition",
+      "connectorTitle": "Microsoft 365 Audit.DLP",
+      "descriptionMarkdown": "Microsoft 365 Audit.DLP connector ingests **DLP events for all workloads** from the Office 365 Management Activity API.<br><br>Data is ingested to the same **M365AuditGeneral_CL** table with **321 columns** including dedicated DLP schema fields.<br><br>**Prerequisites:** Entra ID app with Office 365 Management API permissions and DLP.All subscription.",
+      "publisher": "Marko Lauren",
+      "source": "Solutions/Microsoft 365 Audit General and DLP",
+      "tables": []
+    },
+    {
+      "connectorId": "M365AuditGeneralCCPDefinition",
+      "connectorTitle": "Microsoft 365 Audit.General",
+      "descriptionMarkdown": "Microsoft 365 Audit.General connector ingests **all SharePoint, Exchange, Teams, and Azure Active Directory events** from the Office 365 Management Activity API.<br><br>Data is ingested to a custom **M365AuditGeneral_CL** table with **321 columns** supporting all Office 365 record types and workloads.<br><br>**Prerequisites:** Entra ID app with Office 365 Management API permissions and Audit.General subscription.",
+      "publisher": "Marko Lauren",
+      "source": "Solutions/Microsoft 365 Audit General and DLP",
+      "tables": []
+    },
+    {
       "connectorId": "OfficeIRM",
       "connectorTitle": "Microsoft 365 Insider Risk Management",
       "descriptionMarkdown": "Microsoft 365 Insider Risk Management is a compliance solution in Microsoft 365 that helps minimize internal risks by enabling you to detect, investigate, and act on malicious and inadvertent activities in your organization. Risk analysts in your organization can quickly take appropriate actions to make sure users are compliant with your organization's compliance standards.<br><br>Insider risk policies allow you to:<br><br>-   define the types of risks you want to identify and detect in your organization.<br>-   decide on what actions to take in response, including escalating cases to Microsoft Advanced eDiscovery if needed.<br><br>This solution produces alerts that can be seen by Office customers in the Insider Risk Management solution in Microsoft 365 Compliance Center.<br>[Learn More](https://aka.ms/OfficeIRMConnector) about Insider Risk Management.<br><br>These alerts can be imported into Microsoft Sentinel with this connector, allowing you to see, investigate, and respond to them in a broader organizational threat context. For more information, see the [Microsoft Sentinel documentation](https://go.microsoft.com/fwlink/p/?linkid=2223721&wt.mc_id=sentinel_dataconnectordocs_content_cnl_csasci).",
@@ -4350,7 +4652,7 @@
       "connectorTitle": "Microsoft Defender for Identity",
       "descriptionMarkdown": "Connect Microsoft Defender for Identity to gain visibility into the events and user analytics. Microsoft Defender for Identity identifies, detects, and helps you investigate advanced threats, compromised identities, and malicious insider actions directed at your organization. Microsoft Defender for Identity enables SecOp analysts and security professionals struggling to detect advanced attacks in hybrid environments to:<br><br>-   Monitor users, entity behavior, and activities with learning-based analytics​<br>-   Protect user identities and credentials stored in Active Directory<br>-   Identify and investigate suspicious user activities and advanced attacks throughout the kill chain<br>-   Provide clear incident information on a simple timeline for fast triage<br><br>[Try now >](https://aka.ms/AtpTryNow)<br><br>[Deploy now >](https://aka.ms/AzureATP_Deploy)<br><br>For more information, see the [Microsoft Sentinel documentation >](https://go.microsoft.com/fwlink/p/?linkid=2220069&wt.mc_id=sentinel_dataconnectordocs_content_cnl_csasci).",
       "publisher": "Microsoft",
-      "source": "Solutions/Microsoft Defender for Identity",
+      "source": "Solutions/Microsoft Defender For Identity",
       "tables": "SecurityAlert"
     },
     {
@@ -4643,10 +4945,24 @@
     {
       "connectorId": "SAPCC",
       "connectorTitle": "Microsoft Sentinel for SAP applications - agentless",
-      "descriptionMarkdown": "Modern agentless ingestion of SAP NetWeaver/ABAP/HANA telemetry into Microsoft Sentinel via the Codeless Connector Framework (CCF). Streams ABAPAuditLog, ABAPChangeDocsLog, ABAPUserDetails, ABAPAuthorizationDetails, and SentinelHealth as defined in Solutions/SAP/Tools/IntegrationSuite/SAPCC_DCR.json. Recommended modern path alongside the agent-based MicrosoftSentinelSAP connector.",
+      "descriptionMarkdown": "Modern agentless ingestion of SAP NetWeaver/ABAP/HANA telemetry into Microsoft Sentinel. Streams the native ABAPAuditLog, ABAPAuthorizationDetails, ABAPChangeDocsLog, ABAPUserDetails, and SentinelHealth tables as defined in Solutions/SAP/Tools/IntegrationSuite/SAPCC_DCR.json. Recommended modern path alongside the agent-based MicrosoftSentinelSAP connector.",
       "publisher": "Microsoft",
       "source": "Solutions/SAP",
       "tables": []
+    },
+    {
+      "connectorId": "MicrosoftSentinelUEBA",
+      "connectorTitle": "Microsoft Sentinel UEBA",
+      "descriptionMarkdown": "User and Entity Behavior Analytics (UEBA) tables, populated when UEBA is enabled on the workspace. UEBA is a Microsoft Sentinel feature rather than a Content Hub data connector, so the Solutions Analyzer does not model it.",
+      "publisher": "Microsoft",
+      "source": "Platform",
+      "tables": [
+        "Anomalies",
+        "BehaviorAnalytics",
+        "IdentityInfo",
+        "UserAccessAnalytics",
+        "UserPeerAnalytics"
+      ]
     },
     {
       "connectorId": "MimecastAuditAPI",
@@ -4660,6 +4976,7 @@
         "Awareness_User_Data_CL",
         "Awareness_Watchlist_Details_CL",
         "Cloud_Integrated_CL",
+        "MimecastEvents_CL",
         "Seg_Cg_CL",
         "Seg_Dlp_CL",
         "Ttp_Attachment_CL",
@@ -4679,6 +4996,7 @@
         "Awareness_User_Data_CL",
         "Awareness_Watchlist_Details_CL",
         "Cloud_Integrated_CL",
+        "MimecastEvents_CL",
         "Seg_Cg_CL",
         "Seg_Dlp_CL",
         "Ttp_Attachment_CL",
@@ -4698,6 +5016,7 @@
         "Awareness_User_Data_CL",
         "Awareness_Watchlist_Details_CL",
         "Cloud_Integrated_CL",
+        "MimecastEvents_CL",
         "Seg_Cg_CL",
         "Seg_Dlp_CL",
         "Ttp_Attachment_CL",
@@ -4725,6 +5044,7 @@
         "Awareness_User_Data_CL",
         "Awareness_Watchlist_Details_CL",
         "Cloud_Integrated_CL",
+        "MimecastEvents_CL",
         "Seg_Cg_CL",
         "Seg_Dlp_CL",
         "Ttp_Attachment_CL",
@@ -4744,6 +5064,14 @@
       ]
     },
     {
+      "connectorId": "MimecastEventsCCFDefinition",
+      "connectorTitle": "Mimecast Security Events (via Codeless Connector Framework)",
+      "descriptionMarkdown": "Ingests Mimecast Secure Email Gateway, Targeted Threat Protection, DLP and Audit events into Microsoft Sentinel using Mimecast **Event Push** and the Codeless Connector Framework (Push). Mimecast posts events directly to the Azure Monitor Logs Ingestion API — no Mimecast credentials are stored in Sentinel.",
+      "publisher": "Obrela",
+      "source": "Solutions/MimecastEvents-CCF",
+      "tables": []
+    },
+    {
       "connectorId": "MimecastTTPAPI",
       "connectorTitle": "Mimecast Targeted Threat Protection",
       "descriptionMarkdown": "The data connector for [Mimecast Targeted Threat Protection](https://integrations.mimecast.com/tech-partners/microsoft-sentinel/) provides customers with the visibility into security events related to the Targeted Threat Protection inspection technologies within Microsoft Sentinel. The data connector provides pre-created dashboards to allow analysts to view insight into email based threats, aid in incident correlation and reduce investigation response times coupled with custom alert capabilities.  <br>The Mimecast products included within the connector are: <br>- URL Protect <br>- Impersonation Protect <br>- Attachment Protect<br>",
@@ -4755,6 +5083,7 @@
         "Awareness_User_Data_CL",
         "Awareness_Watchlist_Details_CL",
         "Cloud_Integrated_CL",
+        "MimecastEvents_CL",
         "Seg_Cg_CL",
         "Seg_Dlp_CL",
         "Ttp_Attachment_CL",
@@ -4811,6 +5140,22 @@
       "tables": "MuleSoft_Cloudhub_CL"
     },
     {
+      "connectorId": "MulesoftCloudhubConnector",
+      "connectorTitle": "Mulesoft CloudHub Alerts Connector (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The Mulesoft CloudHub data connector enables you to ingest alerts from Mulesoft CloudHub into Microsoft Sentinel through the CloudHub REST API v2. This connector supports configurable endpoints to accommodate different Mulesoft regions and deployment environments including US Commercial Cloud, EU Cloud, Government Cloud, and on-premises deployments. It uses multi-stream support so you can connect to multiple Mulesoft environments simultaneously. Configure the connector with your Anypoint Platform credentials, environment ID, and optional application name filter to begin collecting data. Use the `MuleSoftCloudhub` parser to query ingested alerts. Refer to [Mulesoft CloudHub API documentation](https://anypoint.mulesoft.com/exchange/portals/anypoint-platform/) for more information about the CloudHub APIs.",
+      "publisher": "Microsoft",
+      "source": "Solutions/Mulesoft",
+      "tables": []
+    },
+    {
+      "connectorId": "MulesoftCloudhubPushConnector",
+      "connectorTitle": "MuleSoft CloudHub Logs (Push Connector via Codeless Connector Framework)",
+      "descriptionMarkdown": "MuleSoft CloudHub Log4j push-based connector for receiving application logs directly from MuleSoft CloudHub via Log4j HTTP appender. This connector allows customers to stream logs in real-time as recommended by MuleSoft, avoiding API rate limiting and duplicate data issues. Configure your MuleSoft applications with the provided Log4j HTTP appender configuration to stream logs to Microsoft Sentinel.",
+      "publisher": "Microsoft",
+      "source": "Solutions/Mulesoft",
+      "tables": []
+    },
+    {
       "connectorId": "NucleusCyberNCProtect",
       "connectorTitle": "NC Protect",
       "descriptionMarkdown": "[NC Protect Data Connector (archtis.com)](https://info.archtis.com/get-started-with-nc-protect-sentinel-data-connector) provides the capability to ingest user activity logs and events into Microsoft Sentinel. The connector provides visibility into NC Protect user activity logs and events in Microsoft Sentinel to improve monitoring and investigation capabilities",
@@ -4837,6 +5182,14 @@
         "Netskope_Events_CL",
         "Netskope_WebTX_CL"
       ]
+    },
+    {
+      "connectorId": "NetskopeAlertEventsConnector",
+      "connectorTitle": "Netskope Alerts & Events (via Log Streaming)",
+      "descriptionMarkdown": "The Netskope Alerts & Events data connector enables ingestion of alert and event logs from Netskope into Microsoft Sentinel using Netskope Log Streaming (NLS) capability. Alerts & Events logs provide visibility into DLP incidents, malware and threat detections, policy violations, anomalous behavior, compromised credentials, and application activity across the Netskope Security Cloud.<br><br>This connector uses Azure Blob Storage and Event Grid to ingest the gzip-compressed CSV logs that Netskope streams to your storage account. The logs are mapped to columns positionally, so the Netskope Log Streaming configuration must use the matching field order.",
+      "publisher": "Netskope",
+      "source": "Solutions/NetskopeAlertEvents",
+      "tables": "NetskopeAlertEvents_CL"
     },
     {
       "connectorId": "NetskopeAlertsEvents",
@@ -4896,8 +5249,8 @@
     },
     {
       "connectorId": "NetskopeWebTxConnector",
-      "connectorTitle": "Netskope Web Transaction Connector (via Blob Storage)",
-      "descriptionMarkdown": "The Netskope Web Transaction connector ingests web transaction logs from Netskope Log Streaming into Microsoft Sentinel via Azure Blob Storage using the Codeless Connector Framework (CCF).",
+      "connectorTitle": "Netskope Web Transactions (via Blob Storage)",
+      "descriptionMarkdown": "The Netskope Web Transactions data connector enables ingestion of web transaction logs from Netskope into Microsoft Sentinel using Netskope Log Streaming (NLS) capability. Web transaction logs provide detailed visibility into all web traffic processed by Netskope, including user activity, application usage, URL categories, policy actions, and network metadata.<br><br>This connector uses Azure Blob Storage and Event Grid to ingest logs that Netskope streams to your storage account.",
       "publisher": "Netskope",
       "source": "Solutions/NetskopeWebTx",
       "tables": "NetskopeWebTransactions_CL"
@@ -5036,14 +5389,6 @@
       "tables": []
     },
     {
-      "connectorId": "OpenSystems",
-      "connectorTitle": "Open Systems Data Connector",
-      "descriptionMarkdown": "The Open Systems Logs API Microsoft Sentinel Connector provides the capability to ingest Open Systems logs into Microsoft Sentinel using Open Systems Logs API.",
-      "publisher": "Open Systems",
-      "source": "Solutions/Open Systems",
-      "tables": []
-    },
-    {
       "connectorId": "OpenAIConnector",
       "connectorTitle": "OpenAI (via Codeless Connector Framework)",
       "descriptionMarkdown": "The OpenAI data connector enables you to ingest audit logs, chat completion data, or both from your OpenAI organization into Microsoft Sentinel through the OpenAI API. Each data type uses a separate REST API poller and requires a different API key type: **audit logs** (user actions, API key management, organization changes, security events) require an **organization-level admin API key**, while **chat completions** (model usage, token consumption, performance metrics) require a **project-level API key**. You may configure one or both data types independently. Audit logs are collected into the custom OpenAIAuditLogs_CL table (aliased by the OpenAIAuditLogs parser). Chat completions are normalized into the ASimAgentEventLogs standard ASIM table (aliased by the OpenAIChatCompletions parser) for security monitoring, compliance analysis, and usage monitoring. Refer to [OpenAI API documentation](https://platform.openai.com/docs/api-reference) for more information.",
@@ -5066,6 +5411,14 @@
       "connectorId": "OrcaSecurityAlerts",
       "connectorTitle": "Orca Security Alerts",
       "descriptionMarkdown": "The Orca Security Alerts connector allows you to easily export Alerts logs to Microsoft Sentinel.",
+      "publisher": "Orca Security",
+      "source": "Solutions/Orca Security Alerts",
+      "tables": "OrcaAlerts_CL"
+    },
+    {
+      "connectorId": "OrcaSecurityAlertsCCF",
+      "connectorTitle": "Orca Security Alerts (via Microsoft Entra ID)",
+      "descriptionMarkdown": "The [Orca Security](https://orca.security/) Alerts connector lets you stream Orca cloud security alerts into Microsoft Sentinel. Orca pushes alerts to the Logs Ingestion API of a Data Collection Endpoint using a Microsoft Entra ID application, replacing the legacy Log Analytics Shared Key authentication.",
       "publisher": "Orca Security",
       "source": "Solutions/Orca Security Alerts",
       "tables": "OrcaAlerts_CL"
@@ -5124,9 +5477,25 @@
       "tables": []
     },
     {
+      "connectorId": "Panorays_ConnectorDefinition",
+      "connectorTitle": "Panorays",
+      "descriptionMarkdown": "The Panorays data connector allows ingesting company findings from the Panorays API into Microsoft Sentinel.",
+      "publisher": "Panorays",
+      "source": "Solutions/Panorays",
+      "tables": []
+    },
+    {
+      "connectorId": "resourceIdMicrosoft.OperationalInsightsworkspacesprovidersdataConnectorDefinitionsparametersworkspaceNameMicrosoft.SecurityInsightsvariablesconnectorDefinitionName",
+      "connectorTitle": "Panorays (Manual)",
+      "descriptionMarkdown": "Manually deployed Panorays Connector for testing.",
+      "publisher": "Panorays",
+      "source": "Solutions/Panorays",
+      "tables": []
+    },
+    {
       "connectorId": "Pathlock_TDnR",
-      "connectorTitle": "Pathlock Threat Detection and Response Integration",
-      "descriptionMarkdown": "Pathlock Threat Detection and Response enables seamless forwarding of security alerts and logs detected and collected by the Pathlock Platform into Microsoft Sentinel Solution for SAP.",
+      "connectorTitle": "Pathlock Inc.: Threat Detection and Response for SAP",
+      "descriptionMarkdown": "The [Pathlock Threat Detection and Response (TD&R)](https://pathlock.com/products/cybersecurity-application-controls/) integration with **Microsoft Sentinel Solution for SAP** delivers unified, real-time visibility into SAP security events, enabling organizations to detect and act on threats across all SAP landscapes. This out-of-the-box integration allows Security Operations Centers (SOCs) to correlate SAP-specific alerts with enterprise-wide telemetry, creating actionable intelligence that connects IT security with business processes.<br><br>Pathlock’s connector is purpose-built for SAP and forwards only **security-relevant events by default**, minimizing data volume and noise while maintaining the flexibility to forward all log sources when needed. Each event is enriched with **business process context**, allowing Microsoft Sentinel Solution for SAP analytics to distinguish operational patterns from real threats and to prioritize what truly matters.<br><br>This precision-driven approach helps security teams drastically reduce false positives, focus investigations, and accelerate **mean time to detect (MTTD)** and **mean time to respond (MTTR)**. Pathlock’s library consists of more than 1,500 SAP-specific detection signatures across 70+ log sources, the solution uncovers complex attack behaviors, configuration weaknesses, and access anomalies.<br><br>By combining business-context intelligence with advanced analytics, Pathlock enables enterprises to strengthen detection accuracy, streamline response actions, and maintain continuous control across their SAP environments—without adding complexity or redundant monitoring layers.<br><br>For detailed guidance on how to deploy this connector, refer to the [Pathlock help portal](https://help.pathlock.com).",
       "publisher": "Pathlock Inc.",
       "source": "Solutions/Pathlock_TDnR",
       "tables": "Pathlock_TDnR_CL"
@@ -5173,27 +5542,25 @@
     },
     {
       "connectorId": "PremiumMicrosoftDefenderForThreatIntelligence",
-      "connectorTitle": "Premium Microsoft Defender Threat Intelligence",
+      "connectorTitle": "Premium Microsoft Defender Threat Intelligence [Deprecated]",
       "descriptionMarkdown": "Microsoft Sentinel provides you the capability to import threat intelligence generated by Microsoft to enable monitoring, alerting and hunting. Use this data connector to import Indicators of Compromise (IOCs) from Premium Microsoft Defender Threat Intelligence (MDTI) into Microsoft Sentinel. Threat indicators can include IP addresses, domains, URLs, and file hashes, etc. Note: This is a paid connector. To use and ingest data from it, please purchase the \"MDTI API Access\" SKU from the Partner Center.",
       "publisher": "Microsoft",
-      "source": "Solutions/Threat Intelligence (NEW)",
+      "source": "Solutions/Threat Intelligence",
       "tables": [
         "AADNonInteractiveUserSignInLogs",
         "AppServiceHTTPLogs",
         "ASimAuditEventLogs",
         "AuditLogs",
         "AWSCloudTrail",
-        "AZFWApplicationRule",
-        "AZFWNetworkRule",
         "AzureActivity",
         "AzureDiagnostics",
         "AzureNetworkAnalytics_CL",
-        "CiscoDuo_CL",
         "CloudAppEvents",
         "CommonSecurityLog",
         "DeviceFileEvents",
         "DeviceNetworkEvents",
         "DnsEvents",
+        "DuoSecurityAuthentication_CL",
         "EmailEvents",
         "EmailUrlInfo",
         "GitHub_CL",
@@ -5203,12 +5570,29 @@
         "SecurityIncident",
         "SigninLogs",
         "Syslog",
-        "ThreatIntelIndicators",
+        "ThreatIntelligenceIndicator",
         "UrlClickEvents",
         "VMConnection",
         "W3CIISLog",
-        "WindowsEvent"
+        "WindowsEvent",
+        "WireData"
       ]
+    },
+    {
+      "connectorId": "PRODAFTUstaATPCCPDefinition",
+      "connectorTitle": "PRODAFT USTA - Account Takeover Prevention (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The PRODAFT USTA Account Takeover Prevention data connector ingests compromised-credential tickets from the PRODAFT USTA platform into Microsoft Sentinel. Sensitive values are redacted at ingestion: plaintext passwords are never stored — only password strength signals (score and length) are retained for triage.",
+      "publisher": "PRODAFT",
+      "source": "Solutions/PRODAFT USTA - Account Takeover Prevention",
+      "tables": "PRODAFTUstaCompromisedCredentials_CL"
+    },
+    {
+      "connectorId": "PRODAFTUstaPCFICCPDefinition",
+      "connectorTitle": "PRODAFT USTA - Payment Card Fraud Intelligence (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The PRODAFT USTA Payment Card Fraud Intelligence data connector ingests compromised payment-card tickets from the PRODAFT USTA platform into Microsoft Sentinel. Sensitive values are redacted at ingestion: the full card number (PAN) is never stored — only the BIN (first 6), the last 4 digits, the card brand, and the length are retained for triage.",
+      "publisher": "PRODAFT",
+      "source": "Solutions/PRODAFT USTA - Payment Card Fraud Intelligence",
+      "tables": "PRODAFTUstaCompromisedCards_CL"
     },
     {
       "connectorId": "ProofpointCCPDefinition",
@@ -5309,6 +5693,14 @@
       "connectorId": "RedCanaryDataConnector",
       "connectorTitle": "Red Canary Threat Detection",
       "descriptionMarkdown": "The Red Canary data connector provides the capability to ingest published Detections into Microsoft Sentinel using the Data Collector REST API.",
+      "publisher": "Red Canary",
+      "source": "Solutions/Red Canary",
+      "tables": "RedCanaryDetections_CL"
+    },
+    {
+      "connectorId": "RedCanary_ConnectorDefinition",
+      "connectorTitle": "Red Canary Threat Detection (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The [Red Canary](https://www.redcanary.com/) data connector enables Red Canary to publish detections into Microsoft Sentinel using the Codeless Connector Framework push pattern and the Azure Monitor Logs Ingestion API.",
       "publisher": "Red Canary",
       "source": "Solutions/Red Canary",
       "tables": "RedCanaryDetections_CL"
@@ -5458,10 +5850,14 @@
     {
       "connectorId": "SAPLogServ",
       "connectorTitle": "SAP LogServ (RISE), S/4HANA Cloud private edition",
-      "descriptionMarkdown": "SAP LogServ is an SAP Enterprise Cloud Services (ECS) service aimed at collection, storage, forwarding and access of logs. LogServ centralizes the logs from all systems, applications, and ECS services used by a registered customer. <br> Main Features include:<br>Near Realtime Log Collection: With ability to integrate into Microsoft Sentinel as SIEM solution.<br>LogServ complements the existing SAP application layer threat monitoring and detections in Microsoft Sentinel with the log types owned by SAP ECS as the system provider. This includes logs like: SAP Security Audit Log (AS ABAP), HANA database, AS JAVA, ICM, SAP Web Dispatcher, SAP Cloud Connector, OS, SAP Gateway, 3rd party Database, Network, DNS, Proxy, Firewall",
+      "descriptionMarkdown": "SAP LogServ is an SAP Enterprise Cloud Services (ECS) service aimed at collection, storage, forwarding and access of logs. LogServ centralizes the logs from all systems, applications, and ECS services used by a registered customer. <br> Main Features include:<br>Near Realtime Log Collection: With ability to integrate into Microsoft Sentinel as SIEM solution.<br>LogServ complements the existing SAP application layer threat monitoring and detections in Microsoft Sentinel with the log types owned by SAP ECS as the system provider. This includes logs like: SAP Security Audit Log (AS ABAP), HANA database, AS JAVA, ICM, SAP Web Dispatcher, SAP Cloud Connector, OS, SAP Gateway, 3rd party Database, Network, DNS, Proxy, Firewall<br><br>**ASIM-Enabled Routing:** Standard log formats (Linux/Syslog, Windows OS, DNS, network, web access) are automatically routed to dedicated Microsoft ASIM-normalized tables via DCR data flow branching, enabling reuse of existing detections and partner analytics. SAP Security Audit Log (AS ABAP) is routed to the Microsoft standard **ABAPAuditLog** table. SAP-specific logs remain in the SAPLogServ_CL custom table.",
       "publisher": "SAP SE",
       "source": "Solutions/SAP LogServ",
-      "tables": "SAPLogServ_CL"
+      "tables": [
+        "ASimDnsActivityLogs",
+        "ASimNetworkSessionLogs",
+        "ASimWebSessionLogs"
+      ]
     },
     {
       "connectorId": "SAPS4PublicAlerts",
@@ -5478,6 +5874,7 @@
       "publisher": "Microsoft",
       "source": "Solutions/Windows Security Events",
       "tables": [
+        "DeviceProcessEvents",
         "Event",
         "SecurityEvent",
         "WindowsEvent"
@@ -5573,6 +5970,23 @@
         "SentinelOneActivities_CL",
         "SentinelOneAgents_CL",
         "SentinelOneAlerts_CL",
+        "SentinelOneAlertsV2_CL",
+        "SentinelOneGroups_CL",
+        "SentinelOneThreats_CL"
+      ]
+    },
+    {
+      "connectorId": "SentinelOneV2Connector",
+      "connectorTitle": "SentinelOne V2 (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The SentinelOne V2 data connector ingests Activities, Agents, Groups and Threats logs from the SentinelOne REST API, and security alerts from the SentinelOne Unified Alert Management (UAM) GraphQL API, into Microsoft Sentinel. It is built on the Microsoft Sentinel Codeless Connector Platform and uses DCR-based ingestion-time transformations. See: [SentinelOne UAM GraphQL API](https://usea1-partners.sentinelone.net/soc-docs/en/unified-alert-management-graphql-api.html)",
+      "publisher": "Microsoft",
+      "source": "Solutions/SentinelOne",
+      "tables": [
+        "SentinelOne_CL",
+        "SentinelOneActivities_CL",
+        "SentinelOneAgents_CL",
+        "SentinelOneAlerts_CL",
+        "SentinelOneAlertsV2_CL",
         "SentinelOneGroups_CL",
         "SentinelOneThreats_CL"
       ]
@@ -5583,6 +5997,14 @@
       "descriptionMarkdown": "The Seraphic Web Security data connector provides the capability to ingest [Seraphic Web Security](https://seraphicsecurity.com/) events and alerts into Microsoft Sentinel.",
       "publisher": "Seraphic",
       "source": "Solutions/SeraphicSecurity",
+      "tables": []
+    },
+    {
+      "connectorId": "ServiceNowCMDBConnector",
+      "connectorTitle": "ServiceNow CMDB (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The [ServiceNow CMDB Data Connector](https://www.servicenow.com/) allows ingesting Configuration Management Database (CMDB) and Asset Management records from ServiceNow into Microsoft Sentinel. This connector retrieves multiple records from the ServiceNow Table API for specified tables including Asset Management (alm_asset), Configuration Items (cmdb_ci), Computer CIs (cmdb_ci_computer), and Server CIs (cmdb_ci_server). This connector is built on the Microsoft Sentinel Codeless Connector Platform and supports DCR-based ingestion time transformations for efficient query execution. Refer to [ServiceNow Table API documentation](https://www.servicenow.com/docs/r/api-reference/rest-apis/c_TableAPI.html?section=c_TableAPI) for more information.",
+      "publisher": "Microsoft",
+      "source": "Solutions/ServiceNowCMDB",
       "tables": []
     },
     {
@@ -5631,6 +6053,44 @@
         "SlackAudit_CL",
         "SlackAuditNativePoller_CL",
         "SlackAuditV2_CL"
+      ]
+    },
+    {
+      "connectorId": "SlashNextFunctionApp",
+      "connectorTitle": "SlashNext Function App",
+      "descriptionMarkdown": "The SlashNext function app utilizes python to perform the analysis of the raw logs and returns URLs present in the logs.",
+      "publisher": "SlashNext",
+      "source": "Solutions/SlashNext",
+      "tables": []
+    },
+    {
+      "connectorId": "SnowflakeConnector",
+      "connectorTitle": "Snowflake (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The Snowflake data connector provides the capability to ingest Snowflake [Login History Logs](https://docs.snowflake.com/en/sql-reference/account-usage/login_history), [Query History Logs](https://docs.snowflake.com/en/sql-reference/account-usage/query_history), [User-Grant Logs](https://docs.snowflake.com/en/sql-reference/account-usage/grants_to_users), [Role-Grant Logs](https://docs.snowflake.com/en/sql-reference/account-usage/grants_to_roles), [Load History Logs](https://docs.snowflake.com/en/sql-reference/account-usage/load_history), [Materialized View Refresh History Logs](https://docs.snowflake.com/en/sql-reference/account-usage/materialized_view_refresh_history), [Roles Logs](https://docs.snowflake.com/en/sql-reference/account-usage/roles), [Tables Logs](https://docs.snowflake.com/en/sql-reference/account-usage/tables), [Table Storage Metrics Logs](https://docs.snowflake.com/en/sql-reference/account-usage/table_storage_metrics), [Users Logs](https://docs.snowflake.com/en/sql-reference/account-usage/users) into Microsoft Sentinel using the Snowflake SQL API. Refer to [Snowflake SQL API documentation](https://docs.snowflake.com/en/developer-guide/sql-api/reference) for more information.",
+      "publisher": "Microsoft",
+      "source": "Solutions/Snowflake",
+      "tables": [
+        "Snowflake_CL",
+        "SnowflakeLoad_CL",
+        "SnowflakeLoadV2_CL",
+        "SnowflakeLogin_CL",
+        "SnowflakeLoginV2_CL",
+        "SnowflakeMaterializedView_CL",
+        "SnowflakeMaterializedViewV2_CL",
+        "SnowflakeQuery_CL",
+        "SnowflakeQueryV2_CL",
+        "SnowflakeRoleGrant_CL",
+        "SnowflakeRoleGrantV2_CL",
+        "SnowflakeRoles_CL",
+        "SnowflakeRolesV2_CL",
+        "SnowflakeTables_CL",
+        "SnowflakeTableStorageMetrics_CL",
+        "SnowflakeTableStorageMetricsV2_CL",
+        "SnowflakeTablesV2_CL",
+        "SnowflakeUserGrant_CL",
+        "SnowflakeUserGrantV2_CL",
+        "SnowflakeUsers_CL",
+        "SnowflakeUsersV2_CL"
       ]
     },
     {
@@ -5694,6 +6154,14 @@
       "tables": []
     },
     {
+      "connectorId": "SpyCloudEnterpriseProtectionCCF",
+      "connectorTitle": "SpyCloud Enterprise Protection Connector",
+      "descriptionMarkdown": "Ingests SpyCloud Watchlist exposure data into Microsoft Sentinel, including compromised credentials and infected machine records associated with monitored assets. Also includes SpyCloud breach catalog metadata for contextual enrichment and correlation.",
+      "publisher": "SpyCloud",
+      "source": "Solutions/SpyCloud Enterprise Protection CCF",
+      "tables": "SpyCloudBreachWatchlistV2_CL"
+    },
+    {
       "connectorId": "SquadraTechnologiesSecRMM",
       "connectorTitle": "Squadra Technologies secRMM",
       "descriptionMarkdown": "Use the Squadra Technologies secRMM Data Connector to push USB removable storage security event data into Microsoft Sentinel Log Analytics.",
@@ -5704,7 +6172,7 @@
     {
       "connectorId": "StealthTalkAnomalousAuth",
       "connectorTitle": "StealthTalk Anomalous Authentication",
-      "descriptionMarkdown": "The StealthTalk Anomalous Authentication connector ingests four classes of anomalous user-authentication events from the StealthTalk Enterprise messenger into a custom Log Analytics table via the Logs Ingestion API.\n\nEvents:\n- **OffHoursLogin** - login outside the user's configured working hours.\n- **NewDeviceLogin** - login from a previously-unseen device.\n- **GeoAnomalyLogin** - login from a country/city that does not match the user's assigned geo zone.\n- **MultiFailLogin** - multiple consecutive failed authentication attempts.",
+      "descriptionMarkdown": "The StealthTalk Anomalous Authentication connector ingests four classes of anomalous user-authentication events from the StealthTalk Enterprise messenger into a custom Log Analytics table via the Logs Ingestion API.<br><br>Events:<br>- **OffHoursLogin** - login outside the user's configured working hours.<br>- **NewDeviceLogin** - login from a previously-unseen device.<br>- **GeoAnomalyLogin** - login from a country/city that does not match the user's assigned geo zone.<br>- **MultiFailLogin** - multiple consecutive failed authentication attempts.",
       "publisher": "StealthTalk",
       "source": "Solutions/StealthTalk",
       "tables": "StealthTalkAnomalousAuth_CL"
@@ -5775,6 +6243,40 @@
       "publisher": "TacitRed",
       "source": "Solutions/TacitRedThreatIntelligence",
       "tables": "TacitRed_Findings_CL"
+    },
+    {
+      "connectorId": "TailscalePremiumCCF",
+      "connectorTitle": "Tailscale Premium (CCF)",
+      "descriptionMarkdown": "Comprehensive Tailscale telemetry for **Premium and Enterprise** tier tailnets. Polls every endpoint the Standard connector polls, **plus** Premium-only network flow logs and posture-integration inventory. Eleven endpoints in one Connect:<br><br>- `/logging/configuration` - configuration audit events<br>- `/logging/network` - **Premium** network flow logs (per-node traffic with src/dst/protocol/bytes)<br>- `/devices` - device inventory<br>- `/users` - user inventory<br>- `/keys?all=true` - auth keys + API tokens + OAuth clients<br>- `/webhooks` - webhook configuration<br>- `/dns/nameservers`, `/dns/preferences`, `/dns/searchpaths` - DNS state (merged into single `Tailscale_Dns_CL` table with `ConfigType` discriminator)<br>- `/settings` - tailnet settings flags<br>- `/posture/integrations` - **Premium** MDM/EDR integration inventory (Jamf, Kandji, Intune, Kolide, Microsoft Defender for Endpoint, CrowdStrike Falcon, SentinelOne, etc.)<br><br>**OAuth scopes required:** `logs:configuration:read`, `logs:network:read`, `devices:core:read`, `users:read`, `auth_keys:read`, `webhooks:read`, `dns:read`, `feature_settings:read` (or the bundled `all:read`).<br><br>**If your tailnet is Personal (Free) or Standard tier, install `Tailscale Standard (CCF)` instead - this Premium connector's network and posture pollers will return 403 on lower tiers.**",
+      "publisher": "Community",
+      "source": "Solutions/Tailscale (CCF)",
+      "tables": [
+        "Tailscale_Audit_CL",
+        "Tailscale_Devices_CL",
+        "Tailscale_Dns_CL",
+        "Tailscale_Keys_CL",
+        "Tailscale_Network_CL",
+        "Tailscale_PostureIntegrations_CL",
+        "Tailscale_Settings_CL",
+        "Tailscale_Users_CL"
+      ]
+    },
+    {
+      "connectorId": "TailscaleCCF",
+      "connectorTitle": "Tailscale Standard (CCF)",
+      "descriptionMarkdown": "Comprehensive Tailscale telemetry for **Personal (Free) and Standard** tier tailnets. Polls nine endpoints in one Connect:<br><br>- `/logging/configuration` - configuration audit events (includes ACL, DNS, tag/group, settings changes)<br>- `/devices` - device inventory (hostname, OS, IPs, tags, lastSeen, expiry)<br>- `/users` - user inventory (role, status, deviceCount, connection state)<br>- `/keys?all=true` - auth keys, API tokens, and OAuth client metadata<br>- `/webhooks` - webhook configuration<br>- `/dns/nameservers`, `/dns/preferences`, `/dns/searchpaths` - DNS state (merged into single `Tailscale_Dns_CL` table with `ConfigType` discriminator)<br>- `/settings` - tailnet settings flags (device approval, key duration, etc.)<br><br>Split-DNS state (per-domain DNS overrides) is captured via the audit log rather than a separate snapshot table - every change is recorded with the full before/after document and actor attribution, which is richer than a periodic snapshot.<br><br>**OAuth scopes required on the Tailscale client:** `logs:configuration:read`, `devices:core:read`, `users:read`, `auth_keys:read`, `webhooks:read`, `dns:read`, `feature_settings:read` (or the bundled `all:read`). For Premium and Enterprise tailnets that also need network flow logs and posture integrations, install **Tailscale Premium (CCF)** instead.",
+      "publisher": "Community",
+      "source": "Solutions/Tailscale (CCF)",
+      "tables": [
+        "Tailscale_Audit_CL",
+        "Tailscale_Devices_CL",
+        "Tailscale_Dns_CL",
+        "Tailscale_Keys_CL",
+        "Tailscale_Network_CL",
+        "Tailscale_PostureIntegrations_CL",
+        "Tailscale_Settings_CL",
+        "Tailscale_Users_CL"
+      ]
     },
     {
       "connectorId": "TalonLogs",
@@ -6088,6 +6590,14 @@
       "tables": "TransmitSecurityActivity_CL"
     },
     {
+      "connectorId": "TransmitSecurityConnectorDefinition",
+      "connectorTitle": "Transmit Security Data Connector (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The [Transmit Security](https://transmitsecurity.com/) data connector provides the capability to ingest Transmit Security activity events into Microsoft Sentinel through the REST API. Refer to API documentation for more information. The connector provides the ability to get events from Transmit Security platform.",
+      "publisher": "Transmit Security",
+      "source": "Solutions/TransmitSecurity",
+      "tables": []
+    },
+    {
       "connectorId": "TrellixConnector",
       "connectorTitle": "Trellix Endpoint Security (via Codeless Connector Framework)",
       "descriptionMarkdown": "The [Trellix Endpoint Security](https://www.trellix.com/) data connector enables you to ingest security events from Trellix ePO (ePolicy Orchestrator) into Microsoft Sentinel. This connector uses OAuth2 client credentials authentication and automatically handles pagination to collect comprehensive endpoint security data including threat detections, analyzer information, source and target system details, and threat response actions.",
@@ -6101,7 +6611,21 @@
       "descriptionMarkdown": "The [Trend Micro Cloud App Security](https://www.trendmicro.com/en_be/business/products/user-protection/sps/email-and-collaboration/cloud-app-security.html) data connector provides the capability to retrieve security event logs of the services that Cloud App Security protects and more events into Microsoft Sentinel through the Log Retrieval API. Refer to API [documentation](https://docs.trendmicro.com/en-us/enterprise/cloud-app-security-integration-api-online-help/supported-cloud-app-/log-retrieval-api/get-security-logs.aspx) for more information. The connector provides ability to get events which helps to examine potential security risks, analyze your team's use of collaboration, diagnose configuration problems and more.",
       "publisher": "Trend Micro",
       "source": "Solutions/Trend Micro Cloud App Security",
-      "tables": "TrendMicroCAS_CL"
+      "tables": [
+        "TrendMicroCAS_CL",
+        "TrendMicroCASV2_CL"
+      ]
+    },
+    {
+      "connectorId": "TrendMicroCASConnector",
+      "connectorTitle": "Trend Micro Cloud App Security (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The [Trend Micro Cloud App Security](https://www.trendmicro.com/en_be/business/products/user-protection/sps/email-and-collaboration/cloud-app-security.html) data connector provides the capability to retrieve security event logs of the services that Cloud App Security protects into Microsoft Sentinel through the SIEM API. The connector provides the ability to get events which helps to examine potential security risks, analyze your team's use of collaboration, diagnose configuration problems and more. It supports DCR-based [ingestion time transformations](https://docs.microsoft.com/azure/azure-monitor/logs/custom-logs-overview) that parse the received security event data into custom columns so that queries don't need to parse it again, thus resulting in better performance.",
+      "publisher": "Microsoft",
+      "source": "Solutions/Trend Micro Cloud App Security",
+      "tables": [
+        "TrendMicroCAS_CL",
+        "TrendMicroCASV2_CL"
+      ]
     },
     {
       "connectorId": "TrendMicroXDR",
@@ -6110,6 +6634,22 @@
       "publisher": "Trend Micro",
       "source": "Solutions/Trend Micro Vision One",
       "tables": "TrendMicro_XDR_WORKBENCH_CL"
+    },
+    {
+      "connectorId": "TrendAIVisionOneOAT",
+      "connectorTitle": "TrendAI Vision One™ - OAT Detections (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The [TrendAI Vision One™](https://www.trendmicro.com/en_us/business/products/detection-response/xdr.html) OAT data connector ingests Observed Attack Techniques (OAT) detections from TrendAI Vision One™ into Microsoft Sentinel. Detections include full process trees, file hashes, network indicators, and MITRE ATT&CK mappings.",
+      "publisher": "TrendAI",
+      "source": "Solutions/TrendAI Vision One(CCF)",
+      "tables": "TrendAI_XDR_WORKBENCH_V2_CL"
+    },
+    {
+      "connectorId": "TrendAIVisionOneWorkbench",
+      "connectorTitle": "TrendAI Vision One™ - Workbench Alerts (via Codeless Connector Framework)",
+      "descriptionMarkdown": "The [TrendAI Vision One™](https://www.trendmicro.com/en_us/business/products/detection-response/xdr.html) Workbench data connector ingests security alerts from TrendAI Vision One™ into Microsoft Sentinel.",
+      "publisher": "TrendAI",
+      "source": "Solutions/TrendAI Vision One(CCF)",
+      "tables": "TrendAI_XDR_WORKBENCH_V2_CL"
     },
     {
       "connectorId": "TropicoAlertsDefinition",
@@ -6136,12 +6676,42 @@
       "tables": []
     },
     {
+      "connectorId": "UniFiSiteManagerConnector",
+      "connectorTitle": "UniFi Site Manager (CCF)",
+      "descriptionMarkdown": "Connects to the [UniFi Site Manager API](https://developer.ui.com/site-manager-api/gettingstarted) and ingests four data types: Sites, Devices, Hosts, and ISP Metrics.<br><br>**Prerequisites:**<br>1. Sign in to [UniFi Site Manager](https://unifi.ui.com)<br>2. Navigate to **API** in the left navigation<br>3. Click **Create API Key**<br>4. Copy and securely store the generated key (shown only once)",
+      "publisher": "Community",
+      "source": "Solutions/UniFi Site Manager (CCF)",
+      "tables": [
+        "SecurityIncident",
+        "Unifi_SiteManager_Devices_CL",
+        "Unifi_SiteManager_Hosts_CL",
+        "Unifi_SiteManager_ISPMetrics_CL",
+        "Unifi_SiteManager_Sites_CL"
+      ]
+    },
+    {
+      "connectorId": "UpwindCatalogLoader",
+      "connectorTitle": "Upwind Catalog Loader (Ingestion API)",
+      "descriptionMarkdown": "The **Upwind Catalog Loader** data connector ingests compute platform assets from the [Upwind](https://upwind.io) cloud security platform into a Microsoft Sentinel custom table using an Azure Function and the [Azure Monitor Ingestion API](https://learn.microsoft.com/azure/azure-monitor/logs/logs-ingestion-api-overview) (DCE/DCR).<br><br>Upwind provides runtime-powered cloud security, correlating cloud posture with live workload context. This connector surfaces your Upwind inventory catalog — compute platform assets across AWS, GCP, and Azure — directly into Microsoft Sentinel for correlation, hunting, and incident enrichment.",
+      "publisher": "Upwind",
+      "source": "Solutions/Upwind",
+      "tables": []
+    },
+    {
       "connectorId": "UpwindLogsLoader",
       "connectorTitle": "Upwind Logs Loader (Ingestion API)",
       "descriptionMarkdown": "The **Upwind Logs Loader** data connector ingests compute platform assets from the [Upwind](https://upwind.io) cloud security platform into a Microsoft Sentinel custom table using an Azure Function and the [Azure Monitor Ingestion API](https://learn.microsoft.com/azure/azure-monitor/logs/logs-ingestion-api-overview) (DCE/DCR).<br><br>Upwind provides runtime-powered cloud security, correlating cloud posture with live workload context. This connector surfaces your Upwind inventory — compute platform assets across AWS, GCP, and Azure — directly into Microsoft Sentinel for correlation, hunting, and incident enrichment.",
       "publisher": "Upwind",
       "source": "Solutions/Upwind",
       "tables": "UpwindLogsAssets_CL"
+    },
+    {
+      "connectorId": "UtimacoESKMConnector",
+      "connectorTitle": "Utimaco Enterprise Secure Key Manager (ESKM)",
+      "descriptionMarkdown": "The Utimaco ESKM connector ingests KMIP server logs from Utimaco Enterprise Secure Key Manager (ESKM) into Microsoft Sentinel.<br><br>Supports Basic authentication (username/password).<br><br>For more information, visit [Utimaco ESKM Documentation](https://utimaco.com/key-management/enterprise-secure-key-manager).",
+      "publisher": "Utimaco",
+      "source": "Solutions/Utimaco Enterprise Secure Key Manager",
+      "tables": "UtimacoESKMKmipServerLogs_CL"
     },
     {
       "connectorId": "VaikoraSentinel",
@@ -6155,7 +6725,7 @@
       "connectorId": "ValimailEnforceEventsConnector",
       "connectorTitle": "Valimail Enforce Configuration Events",
       "descriptionMarkdown": "The [Valimail Configuration Events](https://support.valimail.com/en/articles/13133390-microsoft-sentinel) data connector allows ingesting email domain's configuration events from the Valimail's Reporting API into Microsoft Sentinel. The data connector is built on Microsoft Sentinel Codeless Connector Platform.",
-      "publisher": "Valimmail",
+      "publisher": "Valimail",
       "source": "Solutions/ValimailEnforce",
       "tables": "ValimailEnforceEvents_CL"
     },
@@ -6168,9 +6738,9 @@
       "tables": []
     },
     {
-      "connectorId": "VaronisSaaS",
-      "connectorTitle": "Varonis SaaS",
-      "descriptionMarkdown": "Varonis SaaS provides the capability to ingest [Varonis Alerts](https://www.varonis.com/products/datalert) into Microsoft Sentinel.<br><br>Varonis prioritizes deep data visibility, classification capabilities, and automated remediation for data access. Varonis builds a single prioritized view of risk for your data, so you can proactively and systematically eliminate risk from insider threats and cyberattacks.",
+      "connectorId": "VaronisSaaSAlertsPush",
+      "connectorTitle": "Varonis SaaS (Push)",
+      "descriptionMarkdown": "The [Varonis SaaS](https://www.varonis.com/) connector provides the capability to push real-time DatAlert security alerts from your Varonis application directly into Microsoft Sentinel using the Codeless Connector Framework (CCF) Push pattern. Varonis prioritizes deep data visibility, classification capabilities, and automated remediation for data access. This connector ingests alert severity, event types, user information, and related details into a custom Log Analytics table for analysis, alerting, and visualization.",
       "publisher": "Varonis",
       "source": "Solutions/VaronisSaaS",
       "tables": "VaronisAlerts_CL"
@@ -6198,6 +6768,22 @@
       "connectorTitle": "Veeam Data Connector (using Azure Functions)",
       "descriptionMarkdown": "Veeam Data Connector allows you to ingest Veeam telemetry data from multiple custom tables into Microsoft Sentinel.<br><br>The connector supports integration with Veeam Backup & Replication, Veeam ONE and Coveware platforms to provide comprehensive monitoring and security analytics. The data is collected through Azure Functions and stored in custom Log Analytics tables with dedicated Data Collection Rules (DCR) and Data Collection Endpoints (DCE).<br><br>**Custom Tables Included:**<br>- **VeeamMalwareEvents_CL**: Malware detection events from Veeam Backup & Replication<br>- **VeeamSecurityComplianceAnalyzer_CL**: Security & Compliance Analyzer results collected from Veeam backup infrastructure components<br>- **VeeamAuthorizationEvents_CL**: Authorization and authentication events<br>- **VeeamOneTriggeredAlarms_CL**: Triggered alarms from Veeam ONE servers<br>- **VeeamCovewareFindings_CL**: Security findings from Coveware solution<br>- **VeeamSessions_CL**: Veeam sessions",
       "publisher": "Veeam",
+      "source": "Solutions/Veeam",
+      "tables": [
+        "Event",
+        "Syslog",
+        "VeeamAuthorizationEvents_CL",
+        "VeeamMalwareEvents_CL",
+        "VeeamOneTriggeredAlarms_CL",
+        "VeeamSecurityComplianceAnalyzer_CL",
+        "VeeamSessions_CL"
+      ]
+    },
+    {
+      "connectorId": "VeeamConnector",
+      "connectorTitle": "Veeam Data Connector (via Codeless Connector Framework)",
+      "descriptionMarkdown": "Veeam Data Connector allows you to ingest Veeam telemetry data from multiple custom tables into Microsoft Sentinel.<br><br>The connector supports integration with Veeam Backup & Replication, Veeam ONE and Coveware platforms to provide comprehensive monitoring and security analytics. The data is collected through Azure Functions and stored in custom Log Analytics tables with dedicated Data Collection Rules (DCR) and Data Collection Endpoints (DCE).<br><br>**Custom Tables Included:**<br>- **VeeamMalwareEventsV2_CL**: Malware detection events from Veeam Backup & Replication<br>- **VeeamSecurityComplianceAnalyzerV2_CL**: Security & Compliance Analyzer results collected from Veeam backup infrastructure components<br>- **VeeamAuthorizationEventsV2_CL**: Authorization and authentication events<br>- **VeeamOneTriggeredAlarmsV2_CL**: Triggered alarms from Veeam ONE servers<br>- **VeeamCovewareFindingsV2_CL**: Security findings from Coveware solution<br>- **VeeamSessionsV2_CL**: Veeam sessions",
+      "publisher": "Microsoft",
       "source": "Solutions/Veeam",
       "tables": [
         "Event",
@@ -6346,15 +6932,24 @@
       "publisher": "Microsoft",
       "source": "Solutions/Windows Security Events",
       "tables": [
+        "DeviceProcessEvents",
         "Event",
         "SecurityEvent",
         "WindowsEvent"
       ]
     },
     {
+      "connectorId": "WithSecureElementsCCF",
+      "connectorTitle": "WithSecure Elements (CCF)",
+      "descriptionMarkdown": "WithSecure Elements security events ingested via Microsoft Sentinel's Codeless Connector Framework (CCF) — a fully SaaS deployment with no Azure Function, Storage Account or Key Vault to manage.<br><br>The connector polls the [WithSecure Elements security-events API](https://connect.withsecure.com/api-reference/elements#post-/security-events/v1/security-events) and stores normalized events in the `WsSecurityEvents_CL` Log Analytics table.",
+      "publisher": "WithSecure",
+      "source": "Solutions/WithSecureElementsCCF",
+      "tables": "WsSecurityEvents_CL"
+    },
+    {
       "connectorId": "WithSecureElementsViaFunction",
       "connectorTitle": "WithSecure Elements API (Azure Function)",
-      "descriptionMarkdown": "WithSecure Elements is the unified cloud-based cyber security platform designed to reduce risk, complexity, and inefficiency.<br><br>Elevate your security from your endpoints to your cloud applications. Arm yourself against every type of cyber threat, from targeted attacks to zero-day ransomware.<br><br>WithSecure Elements combines powerful predictive, preventive, and responsive security capabilities - all managed and monitored through a single security center. Our modular structure and flexible pricing models give you the freedom to evolve. With our expertise and insight, you'll always be empowered - and you'll never be alone.<br><br>With Microsoft Sentinel integration, you can correlate [security events](https://connect.withsecure.com/api-reference/security-events#overview) data from the WithSecure Elements solution with data from other sources, enabling a rich overview of your entire environment and faster reaction to threats.<br><br>With this solution Azure Function is deployed to your tenant, polling periodically for the WithSecure Elements security events.<br><br>For more information visit our website at: [https://www.withsecure.com](https://www.withsecure.com).",
+      "descriptionMarkdown": "> **[DEPRECATED]** This Azure Function based connector is deprecated and is no longer actively maintained. Please use the **WithSecure Elements via Codeless Connector Framework (CCF)** solution instead, which provides the same data ingestion without the need to deploy and maintain an Azure Function. New deployments should use the CCF solution.<br><br>WithSecure Elements is the unified cloud-based cyber security platform designed to reduce risk, complexity, and inefficiency.<br><br>Elevate your security from your endpoints to your cloud applications. Arm yourself against every type of cyber threat, from targeted attacks to zero-day ransomware.<br><br>WithSecure Elements combines powerful predictive, preventive, and responsive security capabilities - all managed and monitored through a single security center. Our modular structure and flexible pricing models give you the freedom to evolve. With our expertise and insight, you'll always be empowered - and you'll never be alone.<br><br>With Microsoft Sentinel integration, you can correlate [security events](https://connect.withsecure.com/api-reference/security-events#overview) data from the WithSecure Elements solution with data from other sources, enabling a rich overview of your entire environment and faster reaction to threats.<br><br>With this solution Azure Function is deployed to your tenant, polling periodically for the WithSecure Elements security events.<br><br>For more information visit our website at: [https://www.withsecure.com](https://www.withsecure.com).",
       "publisher": "WithSecure",
       "source": "Solutions/WithSecureElementsViaFunction",
       "tables": "WsSecurityEvents_CL"
@@ -6365,14 +6960,7 @@
       "descriptionMarkdown": "The Wiz connector allows you to easily send Wiz Issues, Vulnerability Findings, and Audit logs to Microsoft Sentinel.",
       "publisher": "Wiz",
       "source": "Solutions/Wiz",
-      "tables": [
-        "WizAuditLogs_CL",
-        "WizAuditLogsV2_CL",
-        "WizIssues_CL",
-        "WizIssuesV2_CL",
-        "WizVulnerabilities_CL",
-        "WizVulnerabilitiesV2_CL"
-      ]
+      "tables": "WizIssuesV3_CL"
     },
     {
       "connectorId": "WizSentinel",
@@ -6380,11 +6968,7 @@
       "descriptionMarkdown": "The Wiz integration pushes Wiz **Issues**, **Detections**, and **Audit Logs** into Microsoft Sentinel in real time. Wiz sends data to a Data Collection Endpoint using the Wiz service principal, so there is no Azure Function to host and no shared keys to manage. This connector grants that service principal the least-privilege RBAC it needs; Wiz then creates the data collection rule and tables and begins pushing once you configure the integration in the Wiz portal.",
       "publisher": "Wiz",
       "source": "Solutions/Wiz",
-      "tables": [
-        "WizAuditLogsV3_CL",
-        "WizDetectionsV3_CL",
-        "WizIssuesV3_CL"
-      ]
+      "tables": "WizIssuesV3_CL"
     },
     {
       "connectorId": "WorkdayCCPDefinition",
@@ -6618,17 +7202,6 @@
       "tables": [
         "ZimperiumThreatLog_CL",
         "ZimperiumThreatLogV2_CL"
-      ]
-    },
-    {
-      "connectorId": "Zoom",
-      "connectorTitle": "Zoom Reports",
-      "descriptionMarkdown": "The [Zoom](https://zoom.us/) Reports data connector provides the capability to ingest [Zoom Reports](https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#tag/Reports) events into Microsoft Sentinel through the REST API. Refer to [API documentation](https://developers.zoom.us/docs/api/) for more information. The connector provides ability to get events which helps to examine potential security risks, analyze your team's use of collaboration, diagnose configuration problems and more.",
-      "publisher": "Zoom",
-      "source": "Solutions/ZoomReports",
-      "tables": [
-        "Zoom_CL",
-        "ZoomV2_CL"
       ]
     },
     {
