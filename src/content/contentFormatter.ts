@@ -41,6 +41,17 @@ export class SentinelContentFormatter {
             case SentinelContentType.Watchlist:
             case SentinelContentType.Workbook:
             case SentinelContentType.Playbook:
+                // These types deploy as JSON but are often authored in YAML (New
+                // Content scaffolds them that way). Only the JSON form is formatted;
+                // re-dumping YAML would strip the template's comments.
+                if (!this.isJsonDocument(document)) {
+                    return {
+                        info,
+                        supported: false,
+                        edits: [],
+                        message: `${info.label} YAML is not reformatted. Use 'Convert Content YAML to JSON' to produce the formatted JSON for deployment.`
+                    };
+                }
                 return { info, supported: true, edits: JsonContentFormatter.formatDocument(document) };
 
             case SentinelContentType.DefenderDetection:
@@ -56,12 +67,13 @@ export class SentinelContentFormatter {
         }
     }
 
-    private static formatUnknown(document: vscode.TextDocument, info: ContentTypeInfo): ContentFormatResult {
-        // Fall back to JSON formatting for JSON documents that could not be classified.
-        if (document.languageId === 'json' || /\.(json|jsonc)$/i.test(document.uri.fsPath)) {
-            return { info, supported: true, edits: JsonContentFormatter.formatDocument(document) };
-        }
+    private static isJsonDocument(document: vscode.TextDocument): boolean {
+        return document.languageId === 'json' || /\.(json|jsonc)$/i.test(document.uri.fsPath);
+    }
 
+    private static formatUnknown(_document: vscode.TextDocument, info: ContentTypeInfo): ContentFormatResult {
+        // Unclassified documents (including arbitrary JSON such as package.json) are
+        // left alone rather than being reformatted as "Unknown" content.
         return {
             info,
             supported: false,

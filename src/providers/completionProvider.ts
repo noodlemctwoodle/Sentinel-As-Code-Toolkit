@@ -3,6 +3,7 @@ import { ConnectorLoader } from '../validation/connectorLoader';
 import { MitreLoader, MITRE_TACTIC_FIELDS, MITRE_TECHNIQUE_FIELDS } from '../validation/mitreLoader';
 import { RuleTypeDetector, RuleType } from '../utils/ruleTypeDetector';
 import { VALID_SEVERITIES } from '../validation/constants';
+import { isIntelliSenseEnabled } from './intellisenseSettings';
 
 // Export the interfaces so they can be used by the completion provider
 export interface MitreTactic {
@@ -27,6 +28,9 @@ export class SentinelCompletionProvider implements vscode.CompletionItemProvider
         _token: vscode.CancellationToken,
         _context: vscode.CompletionContext
     ): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
+        if (!isIntelliSenseEnabled()) {
+            return [];
+        }
 
         // Identifiers here never contain a hyphen, so keep the leading YAML list
         // dash ("- ") out of the replacement range.

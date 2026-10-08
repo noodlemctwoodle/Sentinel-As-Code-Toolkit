@@ -14,6 +14,9 @@ export class SentinelDocumentFormatProvider implements vscode.DocumentFormatting
  */
 export class SentinelContentFormatProvider implements vscode.DocumentFormattingEditProvider {
     provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
+        if (!vscode.workspace.getConfiguration('sentinelAsCode').get<boolean>('formatting.enabled', true)) {
+            return [];
+        }
         return SentinelContentFormatter.format(document).edits;
     }
 }
