@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Releases prior to 26.7.2 are listed on the
 [GitHub Releases](https://github.com/noodlemctwoodle/Sentinel-As-Code-Toolkit/releases) page.
 
-## [Unreleased]
+## [26.10.2] - 2026-10-08
 
 ### Added
 
