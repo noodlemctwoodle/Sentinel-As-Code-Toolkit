@@ -8,6 +8,10 @@ Releases prior to 26.7.2 are listed on the
 
 ## [26.10.2] - 2026-10-08
 
+The October 2026 release. It combines everything from 26.10.0 and 26.10.1 with
+the fixes found by a full feature test, so this one entry replaces the separate
+26.10.0 and 26.10.1 notes.
+
 ### Added
 
 - **Bulk Maintenance & Validation** works again. It validates, formats, or reports on
@@ -17,6 +21,16 @@ Releases prior to 26.7.2 are listed on the
 
 ### Changed
 
+- The minimum supported VS Code version is now 1.134 (`engines.vscode`
+  raised from `^1.125.0`), so the extension API typings can track current
+  VS Code releases.
+- Development toolchain updates: `@vscode/vsce` 4.x (requires Node.js 22 or
+  later), `@vscode/test-electron` 3.1, ESLint 10.11, Mocha 11.8, webpack
+  5.111, webpack-cli 7.2.3, typescript-eslint 8.71, and `@types/node` 26.6.
+- CI now validates on Node.js 22 and 24. Node.js 20 was dropped from the
+  matrix because it reached end of life and the packaging tool no longer
+  supports it. `actions/setup-node` moved to v7 and
+  `softprops/action-gh-release` to v3.0.2.
 - **Fix Field Order** is now Shift+Alt+O, so it no longer takes over Find in Files
   (Ctrl+Shift+F, or Cmd+Shift+F on macOS) in `.sentinel.yaml` files. The shortcut and
   the editor context menu entries now also work in `.sentinel.yml` files.
@@ -32,6 +46,19 @@ Releases prior to 26.7.2 are listed on the
 
 ### Fixed
 
+- **Decompile ARM to YAML** now writes MITRE technique IDs under the canonical
+  `relevantTechniques` key instead of the deprecated `techniques` alias,
+  matching the Sentinel-As-Code documentation, the Azure-Sentinel query style
+  guide, and every analytics rule in the Sentinel-As-Code content library.
+  Sub-technique IDs from the ARM `subTechniques` property are now folded into
+  the same list (for example `T1078.004` rather than a bare `T1078`), so
+  they are no longer dropped on conversion.
+  (noodlemctwoodle/Sentinel-As-Code#51)
+- Locally packaged builds no longer include leftover files from earlier
+  builds. The webpack output folder is now emptied before each build, so a
+  stale, unused `dist/401.extension.js` chunk and an outdated
+  `extension.js.LICENSE.txt` no longer end up in the VSIX. Builds from CI
+  were not affected because they start from a clean checkout.
 - Connector problems are reported again. Unknown connectors in strict or workspace
   mode, deprecated connectors, and tables a connector does not provide were never
   shown, because the validator could not find the line of a list item. Each
@@ -68,55 +95,6 @@ Releases prior to 26.7.2 are listed on the
   overwriting an existing file.
 - `intellisense.enabled` now turns off Sentinel completions and hovers.
 
-## [26.10.1] - 2026-10-08
-
-### Fixed
-
-- Locally packaged builds no longer include leftover files from earlier
-  builds. The webpack output folder is now emptied before each build, so a
-  stale, unused `dist/401.extension.js` chunk and an outdated
-  `extension.js.LICENSE.txt` no longer end up in the VSIX. Builds from CI
-  were not affected because they start from a clean checkout.
-
-### Security
-
-- Data connector hover text is no longer rendered as trusted markdown.
-  Connector details can come from a `.sentinel-connectors.json` file in the
-  workspace, so that text is now treated as untrusted content.
-- Removed the separate weekly connector refresh workflow, which pushed
-  regenerated data straight to the default branch. Connector data is still
-  refreshed weekly by the data job in `build.yaml`, which opens a pull
-  request for review.
-- The release workflow now passes inputs and job outputs to its shell
-  scripts through environment variables instead of inlining them.
-- Removed `tmp`, an unused runtime dependency.
-
-## [26.10.0] - 2026-10-08
-
-### Changed
-
-- The minimum supported VS Code version is now 1.134 (`engines.vscode`
-  raised from `^1.125.0`), so the extension API typings can track current
-  VS Code releases.
-- Development toolchain updates: `@vscode/vsce` 4.x (requires Node.js 22 or
-  later), `@vscode/test-electron` 3.1, ESLint 10.11, Mocha 11.8, webpack
-  5.111, webpack-cli 7.2.3, typescript-eslint 8.71, and `@types/node` 26.6.
-- CI now validates on Node.js 22 and 24. Node.js 20 was dropped from the
-  matrix because it reached end of life and the packaging tool no longer
-  supports it. `actions/setup-node` moved to v7 and
-  `softprops/action-gh-release` to v3.0.2.
-
-### Fixed
-
-- **Convert ARM to YAML** now writes MITRE technique IDs under the canonical
-  `relevantTechniques` key instead of the deprecated `techniques` alias,
-  matching the Sentinel-As-Code documentation, the Azure-Sentinel query style
-  guide, and every analytics rule in the Sentinel-As-Code content library.
-  Sub-technique IDs from the ARM `subTechniques` property are now folded into
-  the same list (for example `T1078.004` rather than a bare `T1078`), so
-  they are no longer dropped on conversion.
-  (noodlemctwoodle/Sentinel-As-Code#51)
-
 ### Security
 
 - Resolved all open Dependabot alerts. Runtime: `js-yaml` 4.3.2 (two high
@@ -127,9 +105,18 @@ Releases prior to 26.7.2 are listed on the
 - Reviewed the codebase with Mythos 5.1 code scanning, covering
   dependencies, YAML and JSON parsing, file writes, regular expressions,
   committed secrets, and the GitHub Actions workflows. No dependency
-  vulnerabilities or committed secrets were found. A small number of
-  hardening items were identified and will be addressed in a follow-up
-  release.
+  vulnerabilities or committed secrets were found. The hardening items it
+  identified are fixed in this release and listed below.
+- Data connector hover text is no longer rendered as trusted markdown.
+  Connector details can come from a `.sentinel-connectors.json` file in the
+  workspace, so that text is now treated as untrusted content.
+- Removed the separate weekly connector refresh workflow, which pushed
+  regenerated data straight to the default branch. Connector data is still
+  refreshed weekly by the data job in `build.yaml`, which opens a pull
+  request for review.
+- The release workflow now passes inputs and job outputs to its shell
+  scripts through environment variables instead of inlining them.
+- Removed `tmp`, an unused runtime dependency.
 
 ## [26.7.3] - 2026-07-10
 
