@@ -255,7 +255,6 @@ export class SentinelRuleHoverProvider implements vscode.HoverProvider {
         
         if (connectorInfo) {
             const markdown = new vscode.MarkdownString();
-            markdown.isTrusted = true;
             
             markdown.appendMarkdown(`### ${connectorInfo.displayName}\n\n`);
             

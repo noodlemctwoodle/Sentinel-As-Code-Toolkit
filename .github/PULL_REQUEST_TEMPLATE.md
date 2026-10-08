@@ -78,7 +78,7 @@ automatically when you open the PR and should not be skipped without
 explicit reviewer agreement.
 -->
 
-- `pr-validation` - aggregation gate over `validate` (compile, webpack, lint, VS Code tests, and package across the Node 20.x / 22.x matrix)
+- `pr-validation` - aggregation gate over `validate` (compile, webpack, lint, VS Code tests, and package across the Node 22.x / 24.x matrix)
 
 ## Related
 
