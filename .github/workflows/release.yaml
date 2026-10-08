@@ -159,6 +159,69 @@ jobs:
           VERSION: ${{ needs.check-release.outputs.version }}
         run: npm run package -- --out "sentinel-as-code-toolkit-${VERSION}.vsix"
         
+      - name: Generate release notes
+        id: release-notes
+        env:
+          VERSION: ${{ needs.check-release.outputs.version }}
+          IS_MANUAL: ${{ needs.check-release.outputs.is-manual-trigger }}
+          OVERWRITE_EXISTING: ${{ github.event.inputs.overwrite_existing }}
+        run: |
+          # The release body is this version's CHANGELOG.md section, so the GitHub
+          # release and the changelog always match. Runs before tagging so a
+          # missing section stops the release before anything is published.
+          awk -v heading="## [${VERSION}]" '
+            index($0, heading) == 1 { found = 1; next }
+            found && /^## \[/ { exit }
+            found { print }
+          ' CHANGELOG.md > changelog_section.md
+          if ! grep -q '[^[:space:]]' changelog_section.md; then
+            echo "::error::CHANGELOG.md has no section for ${VERSION}. Add one before releasing."
+            exit 1
+          fi
+
+          MANUAL_NOTICE=""
+          if [ "$IS_MANUAL" = "true" ]; then
+            if [ "$OVERWRITE_EXISTING" = "true" ]; then
+              MANUAL_NOTICE="**This release was manually triggered and overwrote an existing release.**"
+            else
+              MANUAL_NOTICE="**This release was manually triggered.**"
+            fi
+          fi
+
+          {
+            echo "Version ${VERSION}"
+            echo
+            if [ -n "$MANUAL_NOTICE" ]; then
+              echo "$MANUAL_NOTICE"
+              echo
+            fi
+            cat changelog_section.md
+            cat <<'EOF'
+
+          ## Installation
+
+          ### From VS Code Marketplace
+          1. Open VS Code Extensions (Ctrl+Shift+X)
+          2. Search for "Sentinel as Code Toolkit"
+          3. Click Install
+
+          ### Manual Installation
+          1. Download the `.vsix` file below
+          2. In VS Code: Extensions, then "...", then "Install from VSIX"
+          3. Select the downloaded file
+
+          ## Resources
+          - [Documentation](https://github.com/noodlemctwoodle/Sentinel-As-Code/tree/main/Docs/Toolkit)
+          - [Report Issues](https://github.com/noodlemctwoodle/Sentinel-As-Code/issues)
+          - [Sentinel Blog](https://sentinel.blog)
+          EOF
+          } > release_notes.md
+
+          # Releases are titled by year and month (e.g. v26.10); the tag carries
+          # the exact version.
+          echo "release-notes-file=release_notes.md" >> "$GITHUB_OUTPUT"
+          echo "release-name=Sentinel as Code Toolkit v${VERSION%.*}" >> "$GITHUB_OUTPUT"
+
       - name: Delete existing release and tag (if manual trigger with overwrite)
         if: needs.check-release.outputs.is-manual-trigger == 'true' && github.event.inputs.overwrite_existing == 'true'
         run: |
@@ -199,69 +262,15 @@ jobs:
           git tag "$TAG_NAME"
           git push origin "$TAG_NAME"
           
-      - name: Generate release notes
-        id: release-notes
-        env:
-          VERSION: ${{ needs.check-release.outputs.version }}
-          IS_MANUAL: ${{ needs.check-release.outputs.is-manual-trigger }}
-          OVERWRITE_EXISTING: ${{ github.event.inputs.overwrite_existing }}
-        run: |
-          STABILITY_NOTE="**Stable release** - Ready for production use."
-          
-          # Add manual trigger notice if applicable
-          MANUAL_NOTICE=""
-          if [ "$IS_MANUAL" = "true" ]; then
-            if [ "$OVERWRITE_EXISTING" = "true" ]; then
-              MANUAL_NOTICE="**This release was manually triggered and overwrote an existing release.**"
-            else
-              MANUAL_NOTICE="**This release was manually triggered.**"
-            fi
-          fi
-          
-          cat > release_notes.md << EOF
-          # Sentinel as Code Toolkit v${VERSION}
-          
-          ${STABILITY_NOTE}
-          
-          ${MANUAL_NOTICE}
-          
-          ## Installation
-          
-          ### From VS Code Marketplace
-          1. Open VS Code Extensions (Ctrl+Shift+X)
-          2. Search for "Sentinel as Code Toolkit"
-          3. Click Install
-          
-          ### Manual Installation
-          1. Download the \`.vsix\` file below
-          2. In VS Code: Extensions → "..." → "Install from VSIX"
-          3. Select the downloaded file
-          
-          ## Resources
-          - [Documentation](https://github.com/noodlemctwoodle/Sentinel-As-Code/tree/main/Docs/Toolkit)
-          - [Report Issues](https://github.com/noodlemctwoodle/Sentinel-As-Code/issues)
-          - [Sentinel Blog](https://sentinel.blog)
-          
-          ## What's Included
-          - Content-based Sentinel rule detection
-          - Real-time validation with MITRE ATT&CK v16
-          - Professional formatting and field ordering
-          - Comprehensive rule templates
-          - Configurable connector validation
-          
-          EOF
-          
-          echo "release-notes-file=release_notes.md" >> $GITHUB_OUTPUT
-          
       - name: Create GitHub Release
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           tag_name: ${{ needs.check-release.outputs.tag-name }}
-          name: "Sentinel as Code Toolkit v${{ needs.check-release.outputs.version }}"
+          name: ${{ steps.release-notes.outputs.release-name }}
           body_path: ${{ steps.release-notes.outputs.release-notes-file }}
           draft: false
           prerelease: false
-          generate_release_notes: true  # This adds automatic changelog
+          generate_release_notes: false  # the body is the CHANGELOG.md section
           make_latest: true
           files: |
             sentinel-as-code-toolkit-*.vsix
