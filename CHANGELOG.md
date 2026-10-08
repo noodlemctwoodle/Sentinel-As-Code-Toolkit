@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Releases prior to 26.7.2 are listed on the
 [GitHub Releases](https://github.com/noodlemctwoodle/Sentinel-As-Code-Toolkit/releases) page.
 
+## [Unreleased]
+
+### Fixed
+
+- Locally packaged builds no longer include leftover files from earlier
+  builds. The webpack output folder is now emptied before each build, so a
+  stale, unused `dist/401.extension.js` chunk and an outdated
+  `extension.js.LICENSE.txt` no longer end up in the VSIX. Builds from CI
+  were not affected because they start from a clean checkout.
+
 ## [26.10.0] - 2026-10-08
 
 ### Changed
@@ -39,6 +49,12 @@ Releases prior to 26.7.2 are listed on the
   `browserslist` 4.29, `baseline-browser-mapping` 2.11, and the `braces`
   advisory reachable through `@vscode/vsce` 3.x. `npm audit` reports no
   remaining vulnerabilities.
+- Reviewed the codebase with Mythos 5.1 code scanning, covering
+  dependencies, YAML and JSON parsing, file writes, regular expressions,
+  committed secrets, and the GitHub Actions workflows. No dependency
+  vulnerabilities or committed secrets were found. A small number of
+  hardening items were identified and will be addressed in a follow-up
+  release.
 
 ## [26.7.3] - 2026-07-10
 
