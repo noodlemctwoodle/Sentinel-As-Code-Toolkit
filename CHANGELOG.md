@@ -33,6 +33,14 @@ Releases prior to 26.7.2 are listed on the
   warning reading "found 0 error(s) and 0 warning(s)".
 - Only a file's own name decides whether it is treated as a Sentinel rule by name, so
   a folder with "sentinel" in its path no longer pulls in unrelated YAML files.
+- **Format Content** no longer fails on summary rules, automation rules, and
+  watchlists authored in YAML. It explains that the YAML is not reformatted and points
+  to **Convert Content YAML to JSON**.
+- **Format Content** no longer reformats unrelated JSON files and reports
+  "Formatted Unknown".
+- `formatting.enabled` now turns off Format Document for Sentinel content, and
+  `fieldOrdering.enforceOrder` set to off keeps the existing field order when
+  formatting rules.
 
 ## [26.10.1] - 2026-10-08
 
