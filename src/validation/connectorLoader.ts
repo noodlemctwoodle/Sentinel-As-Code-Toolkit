@@ -386,17 +386,46 @@ export class ConnectorLoader {
         return index;
     }
 
-    // Connectors that provide a table, ranked non-deprecated + Microsoft first.
+    // The connector that natively ingests a core table. The bundled connector data
+    // attributes every table a solution's content queries to all of that solution's
+    // connectors, so without this, threat-intelligence or Exchange connectors can
+    // outrank the real source of a table such as SecurityEvent.
+    private static readonly PREFERRED_TABLE_CONNECTORS: Record<string, string> = {
+        SigninLogs: 'AzureActiveDirectory',
+        AuditLogs: 'AzureActiveDirectory',
+        SecurityEvent: 'SecurityEvents',
+        WindowsEvent: 'WindowsForwardedEvents',
+        OfficeActivity: 'Office365',
+        Syslog: 'Syslog',
+        CommonSecurityLog: 'CefAma',
+        AzureActivity: 'AzureActivity',
+        AWSCloudTrail: 'AWS',
+        SecurityAlert: 'MicrosoftThreatProtection',
+        DeviceProcessEvents: 'MicrosoftThreatProtection'
+    };
+
+    // Connectors that provide a table, ranked best-first: the preferred native
+    // connector, then non-deprecated, then connectors named after the table, then
+    // Microsoft, then the most specific (fewest tables), then by id.
     private static rankConnectorsForTable(table: string): ConnectorInfo[] {
         const matches = this.getTableConnectorIndex().get(this.normalizeDataType(table)) ?? [];
+        const preferred = this.PREFERRED_TABLE_CONNECTORS[table];
+        const compact = (text: string) => text.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const tableKey = compact(table);
+        const score = (c: ConnectorInfo): number[] => [
+            c.id === preferred ? 0 : 1,
+            c.deprecated ? 1 : 0,
+            compact(c.id).includes(tableKey) || compact(c.displayName ?? '').includes(tableKey) ? 0 : 1,
+            c.publisher === 'Microsoft' ? 0 : 1,
+            c.dataTypes.length
+        ];
         return [...matches].sort((a, b) => {
-            if (!!a.deprecated !== !!b.deprecated) {
-                return a.deprecated ? 1 : -1;
-            }
-            const aMicrosoft = a.publisher === 'Microsoft' ? 0 : 1;
-            const bMicrosoft = b.publisher === 'Microsoft' ? 0 : 1;
-            if (aMicrosoft !== bMicrosoft) {
-                return aMicrosoft - bMicrosoft;
+            const sa = score(a);
+            const sb = score(b);
+            for (let i = 0; i < sa.length; i++) {
+                if (sa[i] !== sb[i]) {
+                    return sa[i] - sb[i];
+                }
             }
             return a.id.localeCompare(b.id);
         });

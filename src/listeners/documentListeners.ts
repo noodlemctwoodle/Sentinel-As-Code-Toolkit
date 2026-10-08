@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { SentinelRuleValidator } from '../validation/validator';
+import { affectsSentinelSettings, shouldValidateOnSave, shouldValidateOnType } from '../utils/validationTriggers';
 
 export class DocumentListenerManager {
     private validator: SentinelRuleValidator;
@@ -14,14 +15,18 @@ export class DocumentListenerManager {
         // Document change listener
         disposables.push(
             vscode.workspace.onDidChangeTextDocument((event) => {
-                this.validator.updateDiagnostics(event.document);
+                if (shouldValidateOnType()) {
+                    this.validator.updateDiagnostics(event.document);
+                }
             })
         );
 
         // Document save listener  
         disposables.push(
             vscode.workspace.onDidSaveTextDocument((document) => {
-                this.validator.updateDiagnostics(document);
+                if (shouldValidateOnSave()) {
+                    this.validator.updateDiagnostics(document);
+                }
             })
         );
 
@@ -29,6 +34,16 @@ export class DocumentListenerManager {
         disposables.push(
             vscode.workspace.onDidOpenTextDocument((document) => {
                 this.validator.updateDiagnostics(document);
+            })
+        );
+
+        // Re-run validation when settings change (validation.enabled, MITRE and
+        // connector strictness, field-order hints) so open files reflect them.
+        disposables.push(
+            vscode.workspace.onDidChangeConfiguration((event) => {
+                if (affectsSentinelSettings(event)) {
+                    this.validateOpenDocuments();
+                }
             })
         );
 

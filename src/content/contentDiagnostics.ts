@@ -8,6 +8,7 @@ import * as vscode from 'vscode';
 import { detectContentType, SentinelContentType } from './contentTypes';
 import { HuntingQueryValidator } from './huntingQueryValidator';
 import { isDocumentExcludedFromValidation } from '../utils/validationExclusions';
+import { affectsSentinelSettings, shouldValidateOnSave, shouldValidateOnType } from '../utils/validationTriggers';
 
 /**
  * Provides live diagnostics for Sentinel-as-Code content types that are not
@@ -25,9 +26,22 @@ export class ContentDiagnosticsManager {
     public registerListeners(): vscode.Disposable[] {
         return [
             this.collection,
-            vscode.workspace.onDidChangeTextDocument(event => this.update(event.document)),
-            vscode.workspace.onDidSaveTextDocument(document => this.update(document)),
-            vscode.workspace.onDidOpenTextDocument(document => this.update(document))
+            vscode.workspace.onDidChangeTextDocument(event => {
+                if (shouldValidateOnType()) {
+                    this.update(event.document);
+                }
+            }),
+            vscode.workspace.onDidSaveTextDocument(document => {
+                if (shouldValidateOnSave()) {
+                    this.update(document);
+                }
+            }),
+            vscode.workspace.onDidOpenTextDocument(document => this.update(document)),
+            vscode.workspace.onDidChangeConfiguration(event => {
+                if (affectsSentinelSettings(event)) {
+                    this.updateOpenDocuments();
+                }
+            })
         ];
     }
 

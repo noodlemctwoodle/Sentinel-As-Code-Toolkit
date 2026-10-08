@@ -1,6 +1,6 @@
 import * as yaml from 'js-yaml';
 import { v4 as uuidv4 } from 'uuid';
-import { EXPECTED_ORDER, VALID_SEVERITIES, VALID_TRIGGER_OPERATORS } from '../validation/constants';
+import { EXPECTED_ORDER, VALID_ENTITY_TYPES, VALID_SEVERITIES, VALID_TRIGGER_OPERATORS } from '../validation/constants';
 
 // ARM Template Interfaces
 export interface ArmTemplate {
@@ -49,10 +49,11 @@ export interface SentinelYamlRule {
     description: string;
     severity: string;
     requiredDataConnectors: DataConnector[];
-    queryFrequency: string;
-    queryPeriod: string;
-    triggerOperator: string;
-    triggerThreshold: number;
+    // Scheduling and trigger fields apply to Scheduled rules only; NRT rules omit them.
+    queryFrequency?: string;
+    queryPeriod?: string;
+    triggerOperator?: string;
+    triggerThreshold?: number;
     enabled?: boolean;
     tactics: string[];
     relevantTechniques?: string[];
@@ -93,6 +94,7 @@ export interface ConversionOptions {
     includeOptionalFields?: boolean;
     preserveQueryFormatting?: boolean;
     defaultVersion?: string;
+    validateEntityMappings?: boolean;
 }
 
 export interface ConversionResult {
@@ -119,7 +121,8 @@ export class ArmToYamlConverter {
         autoFormat: true,
         includeOptionalFields: true,
         preserveQueryFormatting: true,
-        defaultVersion: '1.0.0'
+        defaultVersion: '1.0.0',
+        validateEntityMappings: true
     };
 
     /**
@@ -269,7 +272,9 @@ export class ArmToYamlConverter {
 
         try {
             const armProps = armResource.properties;
-            
+            const kind = this.normalizeKind(armResource.kind || 'Scheduled');
+            const isNrt = kind === 'NRT';
+
             // Create YAML rule object
             const yamlRule: SentinelYamlRule = {
                 id: this.extractOrGenerateId(armResource),
@@ -277,17 +282,19 @@ export class ArmToYamlConverter {
                 description: this.formatDescription(armProps.description),
                 severity: this.normalizeSeverity(armProps.severity),
                 requiredDataConnectors: this.extractDataConnectors(armProps),
-                queryFrequency: this.normalizeFrequency(armProps.queryFrequency || 'PT5M'),
-                queryPeriod: this.normalizeFrequency(armProps.queryPeriod || 'PT5M'),
-                triggerOperator: this.normalizeTriggerOperator(armProps.triggerOperator || 'gt'),
-                triggerThreshold: armProps.triggerThreshold || 0,
+                ...(isNrt ? {} : {
+                    queryFrequency: this.normalizeFrequency(armProps.queryFrequency || 'PT5M'),
+                    queryPeriod: this.normalizeFrequency(armProps.queryPeriod || 'PT5M'),
+                    triggerOperator: this.normalizeTriggerOperator(armProps.triggerOperator || 'gt'),
+                    triggerThreshold: armProps.triggerThreshold || 0
+                }),
                 enabled: armProps.enabled !== false,
                 tactics: this.normalizeTactics(armProps.tactics || []),
                 relevantTechniques: this.normalizeTechniques(armProps),
                 query: this.formatQuery(armProps.query, options.preserveQueryFormatting),
                 entityMappings: this.normalizeEntityMappings(armProps.entityMappings || []),
                 version: armProps.templateVersion || options.defaultVersion || '1.0.0',
-                kind: this.normalizeKind(armResource.kind || 'Scheduled')
+                kind
             };
 
             // Add optional fields if requested
@@ -314,6 +321,9 @@ export class ArmToYamlConverter {
 
             // Validate and add warnings for missing required fields
             this.validateRequiredFields(yamlRule, result);
+            if (options.validateEntityMappings !== false) {
+                this.validateEntityMappings(armProps.entityMappings, result);
+            }
 
             // Generate YAML content with proper field ordering
             const orderedRule = this.reorderFields(yamlRule);
@@ -471,10 +481,42 @@ export class ArmToYamlConverter {
             .join('\n');
     }
 
+    // ARM exports use kind "NRT" for near-real-time rules ("NearRealTime" is accepted
+    // as an alias). MLBehaviorAnalytics is kept as-is; any other kind falls back to
+    // Scheduled.
     private static normalizeKind(kind: string): string {
-        const validKinds = ['Scheduled', 'NearRealTime', 'MLBehaviorAnalytics'];
-        const normalizedKind = validKinds.find(k => k.toLowerCase() === kind.toLowerCase());
-        return normalizedKind || 'Scheduled';
+        const lower = kind.toLowerCase();
+        if (lower === 'nrt' || lower === 'nearrealtime') {
+            return 'NRT';
+        }
+        if (lower === 'mlbehavioranalytics') {
+            return 'MLBehaviorAnalytics';
+        }
+        return 'Scheduled';
+    }
+
+    // Checks the source ARM entity mappings: entity types must be ones Sentinel
+    // recognises, and every field mapping needs an identifier and a column name.
+    private static validateEntityMappings(entityMappings: unknown, result: ConversionResult): void {
+        if (!Array.isArray(entityMappings)) {
+            return;
+        }
+        const validTypes = new Set<string>(VALID_ENTITY_TYPES);
+        entityMappings.forEach((mapping: any, i: number) => {
+            const label = `Entity mapping ${i + 1}`;
+            if (!mapping || typeof mapping.entityType !== 'string' || !validTypes.has(mapping.entityType)) {
+                result.warnings.push(`${label}: unknown entity type '${mapping?.entityType ?? ''}'`);
+            }
+            const fields = Array.isArray(mapping?.fieldMappings) ? mapping.fieldMappings : [];
+            if (fields.length === 0) {
+                result.warnings.push(`${label}: no field mappings`);
+            }
+            fields.forEach((field: any, j: number) => {
+                if (!field?.identifier || !field?.columnName) {
+                    result.warnings.push(`${label}, field ${j + 1}: identifier and columnName are both required`);
+                }
+            });
+        });
     }
 
     private static validateRequiredFields(yamlRule: SentinelYamlRule, result: ConversionResult): void {

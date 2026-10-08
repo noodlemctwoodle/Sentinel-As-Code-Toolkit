@@ -61,7 +61,8 @@ export class ConversionCommands extends BaseCommand {
                 autoFormat: config.get('autoFormatAfterConversion', true),
                 includeOptionalFields: config.get('includeOptionalFields', true),
                 preserveQueryFormatting: config.get('preserveQueryFormatting', true),
-                defaultVersion: config.get('defaultVersion', '1.0.0')
+                defaultVersion: config.get('defaultVersion', '1.0.0'),
+                validateEntityMappings: config.get('validateEntityMappings', true)
             };
 
             // Show progress
