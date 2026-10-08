@@ -41,6 +41,13 @@ Releases prior to 26.7.2 are listed on the
 - `formatting.enabled` now turns off Format Document for Sentinel content, and
   `fieldOrdering.enforceOrder` set to off keeps the existing field order when
   formatting rules.
+- **Decompile ARM to YAML** keeps near-real-time rules as `kind: NRT`, without the
+  scheduling and trigger fields. ARM exports use the kind `NRT`, which was converted
+  to a Scheduled rule with an invented five-minute schedule.
+- `conversion.validateEntityMappings` now takes effect, warning about unknown entity
+  types and incomplete field mappings during conversion.
+- **Convert Content YAML to JSON** and **Convert Content JSON to YAML** ask before
+  overwriting an existing file.
 
 ## [26.10.1] - 2026-10-08
 
