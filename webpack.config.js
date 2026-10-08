@@ -8,7 +8,8 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'extension.js',
-    libraryTarget: 'commonjs2'
+    libraryTarget: 'commonjs2',
+    clean: true
   },
   externals: {
     vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must be excluded
