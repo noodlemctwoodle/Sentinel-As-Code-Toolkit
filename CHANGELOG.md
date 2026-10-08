@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Releases prior to 26.7.2 are listed on the
 [GitHub Releases](https://github.com/noodlemctwoodle/Sentinel-As-Code-Toolkit/releases) page.
 
+## [Unreleased]
+
+### Changed
+
+- `validation.onType` now defaults to on, matching how validation already behaved.
+
+### Fixed
+
+- Connector problems are reported again. Unknown connectors in strict or workspace
+  mode, deprecated connectors, and tables a connector does not provide were never
+  shown, because the validator could not find the line of a list item. Each
+  unavailable table is now reported once, as a warning on its own line, and only for
+  connectors whose tables are known.
+- Unknown tactics and techniques now show the information message that
+  `mitre.allowUnknownTactics` and `mitre.allowUnknownTechniques` describe.
+  Information-level diagnostics, including field-order hints, were previously
+  discarded. `fieldOrdering.showOrderHints` now hides the field-order hints.
+- Field-order hints only consider top-level keys, so nested keys such as
+  `incidentConfiguration.groupingConfiguration.enabled` no longer produce false hints.
+- Turning off `validation.enabled` now stops analytics rule validation, not just
+  hunting query validation.
+- `validation.onType` and `validation.onSave` now control when validation runs, and
+  changing any Sentinel-as-Code setting revalidates open files.
+- **Validate Rule** reports a pass when a rule has no errors or warnings, instead of a
+  warning reading "found 0 error(s) and 0 warning(s)".
+- Only a file's own name decides whether it is treated as a Sentinel rule by name, so
+  a folder with "sentinel" in its path no longer pulls in unrelated YAML files.
+
 ## [26.10.1] - 2026-10-08
 
 ### Fixed

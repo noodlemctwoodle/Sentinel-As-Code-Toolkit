@@ -389,8 +389,8 @@
         },
         "sentinelAsCode.validation.onType": {
           "type": "boolean",
-          "default": false,
-          "description": "Validate rules as you type (may impact performance)"
+          "default": true,
+          "description": "Validate rules as you type. Turn off to validate only when files are opened or saved."
         },
         "sentinelAsCode.validation.excludePatterns": {
           "type": "array",

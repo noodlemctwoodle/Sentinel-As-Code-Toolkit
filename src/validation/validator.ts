@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { MitreLoader } from './mitreLoader';
 import { ConnectorLoader } from './connectorLoader';
@@ -14,6 +15,10 @@ import {
 } from './constants';
 import { RuleTypeDetector, RuleType } from '../utils/ruleTypeDetector';
 import { isDocumentExcludedFromValidation } from '../utils/validationExclusions';
+import { findIndexedFieldLine, parseIndexedPath } from '../utils/yamlLineLocator';
+
+/** Diagnostic code for field-order hints, so they can be hidden by setting. */
+export const FIELD_ORDER_CODE = 'field-order';
 
 export class SentinelRuleValidator {
     private diagnosticCollection: vscode.DiagnosticCollection;
@@ -374,33 +379,20 @@ export class SentinelRuleValidator {
                         }
                     }
                     
-                    // Handle data types validation
-                    if (validation.dataTypeValidation.invalidDataTypes.length > 0 || 
-                        validation.dataTypeValidation.missingDataTypes.length > 0) {
-                        
-                        if (validation.dataTypeValidation.message) {
-                            const line = this.findFieldLine(lines, `requiredDataConnectors[${index}].dataTypes`);
-                            if (line !== -1) {
-                                const diagnostic = new vscode.Diagnostic(
-                                    new vscode.Range(line, 0, line, lines[line].length),
-                                    validation.dataTypeValidation.message,
-                                    validation.dataTypeValidation.severity || vscode.DiagnosticSeverity.Warning
-                                );
-                                
-                                diagnostics.push(diagnostic);
-                            }
-                        }
-                    }
-                    
-                    // Validate individual data types if connector is known
-                    if (connector.dataTypes && Array.isArray(connector.dataTypes)) {
+                    // Data types can only be checked against a connector whose tables are
+                    // known. Unknown connectors are handled by the connector check above
+                    // (per validation mode), and connectors registered by id only (for
+                    // example through connectors.customConnectors) list no tables.
+                    const connectorInfo = ConnectorLoader.getConnectorInfo(connector.connectorId);
+
+                    // Report each unavailable data type once, on its own line.
+                    if (connectorInfo && connectorInfo.dataTypes.length > 0 && Array.isArray(connector.dataTypes)) {
                         connector.dataTypes.forEach((dataType: string, _dtIndex: number) => {
                             if (validation.dataTypeValidation.invalidDataTypes.includes(dataType)) {
                                 const line = this.findFieldLine(lines, `requiredDataConnectors[${index}].dataTypes`, dataType);
                                 if (line !== -1) {
-                                    const connectorInfo = ConnectorLoader.getConnectorInfo(connector.connectorId);
-                                    const availableTypes = connectorInfo?.dataTypes.join(', ') || 'none';
-                                    
+                                    const availableTypes = connectorInfo.dataTypes.join(', ');
+
                                     diagnostics.push(new vscode.Diagnostic(
                                         new vscode.Range(line, 0, line, lines[line].length),
                                         `Data type '${dataType}' not available for connector '${connector.connectorId}'. Available: ${availableTypes}`,
@@ -421,17 +413,25 @@ export class SentinelRuleValidator {
         
         let currentIndex = 0;
         for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
+            const raw = lines[i];
+            // Only top-level keys take part in field ordering; nested keys such as
+            // incidentConfiguration.groupingConfiguration.enabled must not count.
+            if (/^\s/.test(raw)) {
+                continue;
+            }
+            const line = raw.trim();
             if (line && !line.startsWith('#') && line.includes(':')) {
                 const fieldName = line.split(':')[0].trim();
                 if (expectedPresentFields.includes(fieldName)) {
                     const expectedField = expectedPresentFields[currentIndex];
                     if (fieldName !== expectedField) {
-                        diagnostics.push(new vscode.Diagnostic(
+                        const diagnostic = new vscode.Diagnostic(
                             new vscode.Range(i, 0, i, line.length),
                             `Field order: '${fieldName}' should come after '${expectedField}' for better consistency`,
                             vscode.DiagnosticSeverity.Information
-                        ));
+                        );
+                        diagnostic.code = FIELD_ORDER_CODE;
+                        diagnostics.push(diagnostic);
                     }
                     currentIndex++;
                 }
@@ -440,6 +440,13 @@ export class SentinelRuleValidator {
     }
 
     private findFieldLine(lines: string[], fieldPath: string, value?: string): number {
+        // Paths into a list item, such as requiredDataConnectors[0].connectorId, need
+        // the item located first; the dotted walk below cannot match the [n] suffix.
+        const indexed = parseIndexedPath(fieldPath);
+        if (indexed) {
+            return findIndexedFieldLine(lines, indexed.listKey, indexed.index, indexed.field, value);
+        }
+
         const parts = fieldPath.split('.');
         let currentLevel = 0;
         let inTargetSection = parts.length === 1;
@@ -516,14 +523,19 @@ export class SentinelRuleValidator {
     }
 
     public updateDiagnostics(document: vscode.TextDocument): void {
-        if (this.isRelevantDocument(document)) {
-            const diagnostics = this.validateDocument(document);
-            const errors = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Error);
-            const warnings = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Warning);
-            this.diagnosticCollection.set(document.uri, [...errors, ...warnings]);
-        } else {
+        const config = vscode.workspace.getConfiguration('sentinelAsCode');
+        if (!config.get<boolean>('validation.enabled', true) || !this.isRelevantDocument(document)) {
             this.diagnosticCollection.delete(document.uri);
+            return;
         }
+
+        // Information diagnostics are kept: unknown tactics/techniques and field-order
+        // hints are reported at that level by design.
+        let diagnostics = this.validateDocument(document);
+        if (!config.get<boolean>('fieldOrdering.showOrderHints', true)) {
+            diagnostics = diagnostics.filter(d => d.code !== FIELD_ORDER_CODE);
+        }
+        this.diagnosticCollection.set(document.uri, diagnostics);
     }
 
     private isRelevantDocument(document: vscode.TextDocument): boolean {
@@ -538,8 +550,9 @@ export class SentinelRuleValidator {
             return false;
         }
 
-        // Quick filename check for obvious Sentinel files (optimization)
-        if (document.fileName.includes('sentinel')) {
+        // Quick filename check for obvious Sentinel files (optimization). Only the file
+        // name counts, so a folder named "sentinel" does not pull in every YAML file.
+        if (path.basename(document.fileName).toLowerCase().includes('sentinel')) {
             return true;
         }
 
