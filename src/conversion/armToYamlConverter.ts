@@ -25,6 +25,7 @@ export interface SentinelRuleProperties {
     enabled?: boolean;
     tactics?: string[];
     techniques?: string[];
+    subTechniques?: string[];
     query: string;
     queryFrequency?: string;
     queryPeriod?: string;
@@ -54,7 +55,7 @@ export interface SentinelYamlRule {
     triggerThreshold: number;
     enabled?: boolean;
     tactics: string[];
-    techniques?: string[];
+    relevantTechniques?: string[];
     tags?: string[];
     query: string;
     entityMappings: EntityMapping[];
@@ -282,7 +283,7 @@ export class ArmToYamlConverter {
                 triggerThreshold: armProps.triggerThreshold || 0,
                 enabled: armProps.enabled !== false,
                 tactics: this.normalizeTactics(armProps.tactics || []),
-                techniques: armProps.techniques || [],
+                relevantTechniques: this.normalizeTechniques(armProps),
                 query: this.formatQuery(armProps.query, options.preserveQueryFormatting),
                 entityMappings: this.normalizeEntityMappings(armProps.entityMappings || []),
                 version: armProps.templateVersion || options.defaultVersion || '1.0.0',
@@ -413,6 +414,17 @@ export class ArmToYamlConverter {
             return ['YourTactic'];
         }
         return tactics;
+    }
+
+    private static normalizeTechniques(armProps: SentinelRuleProperties): string[] {
+        const techniques = Array.isArray(armProps.techniques) ? armProps.techniques : [];
+        const subTechniques = Array.isArray(armProps.subTechniques) ? armProps.subTechniques : [];
+        const parentsWithSubTechniques = new Set(subTechniques.map(t => t.split('.')[0]));
+        const merged = [
+            ...techniques.filter(t => !parentsWithSubTechniques.has(t)),
+            ...subTechniques
+        ];
+        return [...new Set(merged)];
     }
 
     private static normalizeEntityMappings(entityMappings: any[]): EntityMapping[] {
