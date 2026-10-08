@@ -39,6 +39,14 @@ Releases prior to 26.7.2 are listed on the
 
 ### Fixed
 
+- **Convert ARM to YAML** now writes MITRE technique IDs under the canonical
+  `relevantTechniques` key instead of the deprecated `techniques` alias,
+  matching the Sentinel-As-Code documentation, the Azure-Sentinel query style
+  guide, and every analytics rule in the Sentinel-As-Code content library.
+  Sub-technique IDs from the ARM `subTechniques` property are now folded into
+  the same list (for example `T1078.004` rather than a bare `T1078`), so
+  they are no longer dropped on conversion.
+  (noodlemctwoodle/Sentinel-As-Code#51)
 - Technique completion now recognises the `relevantTechniques` and
   `mitreTechniques` fields (previously only `techniques` matched) and no longer
   stops after the first 50 techniques, so all techniques and sub-techniques are
