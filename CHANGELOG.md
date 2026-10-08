@@ -8,6 +8,13 @@ Releases prior to 26.7.2 are listed on the
 
 ## [Unreleased]
 
+### Added
+
+- **Bulk Maintenance & Validation** works again. It validates, formats, or reports on
+  every analytics rule in a folder, chosen from a dialog or by right-clicking a folder
+  in the Explorer. Scaffolding templates and excluded files are skipped. The command
+  had been listed in the Command Palette without a handler since the rebrand.
+
 ### Changed
 
 - `validation.onType` now defaults to on, matching how validation already behaved.

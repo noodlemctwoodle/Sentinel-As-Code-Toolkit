@@ -264,6 +264,11 @@
           "group": "sentinel@1"
         },
         {
+          "when": "explorerResourceIsFolder",
+          "command": "sentinelAsCode.validateWorkspace",
+          "group": "sentinel@2"
+        },
+        {
           "when": "resourceExtname == .yaml || resourceExtname == .yml",
           "command": "sentinelAsCode.regenerateGuid",
           "group": "sentinel@2"
