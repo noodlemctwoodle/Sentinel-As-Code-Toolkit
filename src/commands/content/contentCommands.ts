@@ -167,7 +167,7 @@ export class ContentCommands {
                 title: 'Save converted JSON'
             });
         }
-        if (!targetUri) {
+        if (!targetUri || !(await this.confirmOverwrite(targetUri))) {
             return;
         }
 
@@ -235,7 +235,7 @@ export class ContentCommands {
                 title: 'Save converted YAML'
             });
         }
-        if (!targetUri) {
+        if (!targetUri || !(await this.confirmOverwrite(targetUri))) {
             return;
         }
 
@@ -380,6 +380,24 @@ export class ContentCommands {
         const summary = connectors.map(c => `${c.connectorId} (${c.dataTypes.join(', ')})`).join('; ');
         const registeredNote = registeredCount > 0 ? ` (registered ${registeredCount} custom table${registeredCount === 1 ? '' : 's'} in .sentinel-connectors.json)` : '';
         vscode.window.showInformationMessage(`Populated requiredDataConnectors from the query: ${summary}${registeredNote}`);
+    }
+
+    /**
+     * Asks before replacing an existing file with converted output. Returns true when
+     * the target does not exist yet or the user chose to overwrite it.
+     */
+    private async confirmOverwrite(targetUri: vscode.Uri): Promise<boolean> {
+        try {
+            await vscode.workspace.fs.stat(targetUri);
+        } catch {
+            return true;
+        }
+        const choice = await vscode.window.showWarningMessage(
+            `${path.basename(targetUri.fsPath)} already exists. Overwrite it with the converted content?`,
+            { modal: true },
+            'Overwrite'
+        );
+        return choice === 'Overwrite';
     }
 
     /**

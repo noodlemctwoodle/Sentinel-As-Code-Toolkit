@@ -93,12 +93,15 @@ export class ValidationCommands extends BaseCommand {
             
             // If diagnostics is an array (vscode.Diagnostic[])
             if (Array.isArray(diagnostics)) {
-                if (diagnostics.length === 0) {
-                    vscode.window.showInformationMessage('✅ Sentinel Analytics Rule validation passed!');
+                // Information-level results (field-order hints, unknown-but-allowed
+                // MITRE values) never fail validation.
+                const errorCount = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Error).length;
+                const warningCount = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Warning).length;
+                const infoCount = diagnostics.length - errorCount - warningCount;
+                if (errorCount === 0 && warningCount === 0) {
+                    const hints = infoCount > 0 ? ` (${infoCount} hint${infoCount === 1 ? '' : 's'} in the Problems panel)` : '';
+                    vscode.window.showInformationMessage(`✅ Sentinel Analytics Rule validation passed!${hints}`);
                 } else {
-                    const errorCount = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Error).length;
-                    const warningCount = diagnostics.filter(d => d.severity === vscode.DiagnosticSeverity.Warning).length;
-                    
                     vscode.window.showWarningMessage(
                         `Sentinel Rule validation found ${errorCount} error(s) and ${warningCount} warning(s)`
                     );

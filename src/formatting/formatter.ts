@@ -113,7 +113,7 @@ kind: Scheduled
 `;
     }
 
-    public static formatDocument(document: vscode.TextDocument): vscode.TextEdit[] {
+    public static formatDocument(document: vscode.TextDocument, notify = true): vscode.TextEdit[] {
         const edits: vscode.TextEdit[] = [];
         const content = document.getText();
         
@@ -138,8 +138,12 @@ kind: Scheduled
                 changes.push(`Auto-corrected values: ${correctedValues.join(', ')}`);
             }
 
-            // Reorder fields according to expected order
-            const reorderedYaml = this.reorderFields(parsedYaml);
+            // Reorder fields according to expected order, unless the user has turned
+            // field-order enforcement off.
+            const enforceOrder = vscode.workspace
+                .getConfiguration('sentinelAsCode')
+                .get<boolean>('fieldOrdering.enforceOrder', true);
+            const reorderedYaml = enforceOrder ? this.reorderFields(parsedYaml) : parsedYaml;
 
             // Convert back to YAML
             const newContent = yaml.dump(reorderedYaml, {
@@ -158,16 +162,19 @@ kind: Scheduled
 
             edits.push(new vscode.TextEdit(fullRange, newContent));
 
-            // Show user feedback
-            if (changes.length > 0) {
-                vscode.window.showInformationMessage(`Sentinel rule formatted: ${changes.join('; ')}`);
-            } else {
-                vscode.window.showInformationMessage('Sentinel rule formatted (field order corrected)');
+            // Show user feedback (suppressed for bulk runs, which report once at the end)
+            if (notify) {
+                const message = changes.length > 0
+                    ? `Sentinel rule formatted: ${changes.join('; ')}`
+                    : (enforceOrder ? 'Sentinel rule formatted (field order corrected)' : 'Sentinel rule formatted');
+                vscode.window.showInformationMessage(message);
             }
 
         } catch (error) {
             console.error('Formatting error:', error);
-            vscode.window.showErrorMessage(`Failed to format document: ${error}`);
+            if (notify) {
+                vscode.window.showErrorMessage(`Failed to format document: ${error}`);
+            }
         }
 
         return edits;
