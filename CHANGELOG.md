@@ -51,6 +51,7 @@ Releases prior to 26.7.2 are listed on the
   types and incomplete field mappings during conversion.
 - **Convert Content YAML to JSON** and **Convert Content JSON to YAML** ask before
   overwriting an existing file.
+- `intellisense.enabled` now turns off Sentinel completions and hovers.
 
 ## [26.10.1] - 2026-10-08
 

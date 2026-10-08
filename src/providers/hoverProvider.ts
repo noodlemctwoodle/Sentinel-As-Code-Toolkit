@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { MitreLoader, MITRE_TACTIC_FIELDS, MITRE_TECHNIQUE_FIELDS } from '../validation/mitreLoader';
 import { ConnectorLoader } from '../validation/connectorLoader';
+import { isIntelliSenseEnabled } from './intellisenseSettings';
 
 export class SentinelRuleHoverProvider implements vscode.HoverProvider {
     
@@ -9,7 +10,10 @@ export class SentinelRuleHoverProvider implements vscode.HoverProvider {
         position: vscode.Position, 
         _token: vscode.CancellationToken
     ): vscode.ProviderResult<vscode.Hover> {
-        
+        if (!isIntelliSenseEnabled()) {
+            return undefined;
+        }
+
         // First, try to match MITRE technique IDs
         let wordRange = document.getWordRangeAtPosition(position, /T\d{4}(?:\.\d{3})?/);
         if (wordRange) {
