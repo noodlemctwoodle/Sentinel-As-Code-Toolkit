@@ -6,7 +6,7 @@
 
 
 
-![VS Code](https://img.shields.io/badge/VS%20Code-1.125+-0078D4?logo=visualstudiocode&logoColor=white) ![Version](https://img.shields.io/badge/version-26.07--3-blue) ![License](https://img.shields.io/badge/license-Apache%202.0-green)
+![VS Code](https://img.shields.io/badge/VS%20Code-1.134+-0078D4?logo=visualstudiocode&logoColor=white) ![Version](https://img.shields.io/badge/version-26.10--0-blue) ![License](https://img.shields.io/badge/license-Apache%202.0-green)
 
 **The dedicated VS Code authoring toolkit for the [Sentinel-as-Code](https://github.com/noodlemctwoodle/Sentinel-As-Code) project.**
 
@@ -59,7 +59,7 @@ The full technical reference lives in the [Sentinel-as-Code](https://github.com/
 
 ## Requirements
 
-- Visual Studio Code 1.125 or later.
+- Visual Studio Code 1.134 or later.
 - Familiarity with the Microsoft Sentinel analytics rule schema (KQL, MITRE ATT&CK).
 
 ---

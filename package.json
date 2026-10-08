@@ -2,11 +2,11 @@
   "name": "sentinelcodeguard",
   "displayName": "Sentinel as Code Toolkit",
   "description": "The dedicated VS Code toolkit for the Sentinel-as-Code project: intelligent validation, formatting, templates, and ARM-to-YAML conversion for Microsoft Sentinel Analytics Rules",
-  "version": "26.7.3",
+  "version": "26.10.0",
   "publisher": "noodlemctwoodle",
   "icon": "images/icon.png",
   "engines": {
-    "vscode": "^1.125.0"
+    "vscode": "^1.134.0"
   },
   "categories": [
     "Linters",
@@ -617,26 +617,26 @@
     "@eslint/js": "^10.0.1",
     "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^26.1.1",
-    "@types/vscode": "^1.125.0",
-    "@typescript-eslint/eslint-plugin": "^8.63.0",
-    "@typescript-eslint/parser": "^8.63.0",
-    "@vscode/test-electron": "^3.0.0",
-    "@vscode/vsce": "^3.9.2",
-    "eslint": "^10.6.0",
+    "@types/node": "^26.6.3",
+    "@types/vscode": "~1.134.0",
+    "@typescript-eslint/eslint-plugin": "^8.71.0",
+    "@typescript-eslint/parser": "^8.71.0",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.0.0",
+    "eslint": "^10.11.0",
     "glob": "^13.0.6",
-    "mocha": "^11.7.6",
+    "mocha": "^11.8.0",
     "rimraf": "^6.1.3",
     "ts-loader": "^9.6.2",
     "typescript": "~6.0.3",
-    "webpack": "^5.108.4",
-    "webpack-cli": "^7.2.1"
+    "webpack": "^5.111.1",
+    "webpack-cli": "^7.2.3"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^4.3.2",
     "jsonschema": "^1.5.0",
     "tmp": "^0.2.7",
-    "uuid": "^14.0.1"
+    "uuid": "^14.0.2"
   },
   "overrides": {
     "form-data": "^4.0.6",
