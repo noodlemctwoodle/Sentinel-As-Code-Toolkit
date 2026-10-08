@@ -11,6 +11,9 @@ Releases prior to 26.7.2 are listed on the
 ### Changed
 
 - `validation.onType` now defaults to on, matching how validation already behaved.
+- **Populate Required Data Connectors** suggests each core table's native connector
+  first, for example Windows Security Events for `SecurityEvent` rather than an
+  Exchange on-premises collector.
 
 ### Fixed
 
