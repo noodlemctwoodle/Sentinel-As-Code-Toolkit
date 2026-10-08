@@ -17,10 +17,18 @@ Releases prior to 26.7.2 are listed on the
 
 ### Changed
 
+- **Fix Field Order** is now Shift+Alt+O, so it no longer takes over Find in Files
+  (Ctrl+Shift+F, or Cmd+Shift+F on macOS) in `.sentinel.yaml` files. The shortcut and
+  the editor context menu entries now also work in `.sentinel.yml` files.
 - `validation.onType` now defaults to on, matching how validation already behaved.
 - **Populate Required Data Connectors** suggests each core table's native connector
   first, for example Windows Security Events for `SecurityEvent` rather than an
   Exchange on-premises collector.
+
+### Removed
+
+- The `mitre.version` setting. Only one MITRE ATT&CK data set ships with the
+  extension, so the setting had no effect.
 
 ### Fixed
 

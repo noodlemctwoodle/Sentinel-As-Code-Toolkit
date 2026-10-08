@@ -212,12 +212,12 @@
     "menus": {
       "editor/context": [
         {
-          "when": "resourceExtname == .yaml && resourceFilename =~ /.*\\.sentinel\\.(yaml|yml)$/",
+          "when": "resourceFilename =~ /.*\\.sentinel\\.(yaml|yml)$/",
           "command": "sentinelAsCode.fixFieldOrder",
           "group": "sentinel@1"
         },
         {
-          "when": "resourceExtname == .yaml && resourceFilename =~ /.*\\.sentinel\\.(yaml|yml)$/",
+          "when": "resourceFilename =~ /.*\\.sentinel\\.(yaml|yml)$/",
           "command": "sentinelAsCode.formatRule",
           "group": "sentinel@2"
         },
@@ -292,7 +292,7 @@
       "commandPalette": [
         {
           "command": "sentinelAsCode.fixFieldOrder",
-          "when": "resourceExtname == .yaml"
+          "when": "resourceExtname == .yaml || resourceExtname == .yml"
         },
         {
           "command": "sentinelAsCode.createSentinelRule",
@@ -304,14 +304,14 @@
         },
         {
           "command": "sentinelAsCode.regenerateGuid",
-          "when": "resourceExtname == .yaml"
+          "when": "resourceExtname == .yaml || resourceExtname == .yml"
         },
         {
           "command": "sentinelAsCode.regenerateAllGuids"
         },
         {
           "command": "sentinelAsCode.formatRule",
-          "when": "resourceExtname == .yaml"
+          "when": "resourceExtname == .yaml || resourceExtname == .yml"
         },
         {
           "command": "sentinelAsCode.formatContent",
@@ -374,9 +374,8 @@
     "keybindings": [
       {
         "command": "sentinelAsCode.fixFieldOrder",
-        "key": "ctrl+shift+f",
-        "mac": "cmd+shift+f",
-        "when": "resourceExtname == .yaml && resourceFilename =~ /.*\\.sentinel\\.(yaml|yml)$/"
+        "key": "shift+alt+o",
+        "when": "editorTextFocus && resourceFilename =~ /.*\\.sentinel\\.(yaml|yml)$/"
       }
     ],
     "configuration": {
@@ -424,16 +423,6 @@
           "type": "boolean",
           "default": true,
           "description": "Enable IntelliSense for Sentinel rule fields"
-        },
-        "sentinelAsCode.mitre.version": {
-          "type": "string",
-          "default": "v16",
-          "enum": [
-            "v16",
-            "v15",
-            "v14"
-          ],
-          "description": "MITRE ATT&CK framework version to use for validation"
         },
         "sentinelAsCode.mitre.frameworks": {
           "type": "array",
