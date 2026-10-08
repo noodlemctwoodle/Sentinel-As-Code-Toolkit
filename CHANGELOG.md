@@ -16,6 +16,19 @@ Releases prior to 26.7.2 are listed on the
   `extension.js.LICENSE.txt` no longer end up in the VSIX. Builds from CI
   were not affected because they start from a clean checkout.
 
+### Security
+
+- Data connector hover text is no longer rendered as trusted markdown.
+  Connector details can come from a `.sentinel-connectors.json` file in the
+  workspace, so that text is now treated as untrusted content.
+- Removed the separate weekly connector refresh workflow, which pushed
+  regenerated data straight to the default branch. Connector data is still
+  refreshed weekly by the data job in `build.yaml`, which opens a pull
+  request for review.
+- The release workflow now passes inputs and job outputs to its shell
+  scripts through environment variables instead of inlining them.
+- Removed `tmp`, an unused runtime dependency.
+
 ## [26.10.0] - 2026-10-08
 
 ### Changed

@@ -44,6 +44,10 @@ jobs:
           
       - name: Check version and release conditions
         id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          FORCE_RELEASE: ${{ github.event.inputs.force_release }}
+          OVERWRITE_EXISTING: ${{ github.event.inputs.overwrite_existing }}
         run: |
           # Get current version from package.json
           CURRENT_VERSION=$(node -p "require('./package.json').version")
@@ -51,7 +55,7 @@ jobs:
           
           # Check if this is a manual trigger
           IS_MANUAL_TRIGGER="false"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             IS_MANUAL_TRIGGER="true"
             echo "Manual trigger detected"
           fi
@@ -66,12 +70,12 @@ jobs:
           SHOULD_RELEASE="false"
           
           # Check for manual trigger first
-          if [ "$IS_MANUAL_TRIGGER" = "true" ] && [ "${{ github.event.inputs.force_release }}" = "true" ]; then
+          if [ "$IS_MANUAL_TRIGGER" = "true" ] && [ "$FORCE_RELEASE" = "true" ]; then
             SHOULD_RELEASE="true"
             echo "Manual release triggered - forcing release creation"
             
             # Check if overwrite is enabled and tag exists
-            if [ "${{ github.event.inputs.overwrite_existing }}" = "true" ]; then
+            if [ "$OVERWRITE_EXISTING" = "true" ]; then
               if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
                 echo "Tag $TAG_NAME exists and overwrite is enabled - will recreate"
               else
@@ -151,13 +155,13 @@ jobs:
           xvfb-run -a npm test
           
       - name: Package extension
-        run: npm run package -- --out "sentinel-as-code-toolkit-${{ needs.check-release.outputs.version }}.vsix"
+        env:
+          VERSION: ${{ needs.check-release.outputs.version }}
+        run: npm run package -- --out "sentinel-as-code-toolkit-${VERSION}.vsix"
         
       - name: Delete existing release and tag (if manual trigger with overwrite)
         if: needs.check-release.outputs.is-manual-trigger == 'true' && github.event.inputs.overwrite_existing == 'true'
         run: |
-          TAG_NAME="${{ needs.check-release.outputs.tag-name }}"
-          
           echo "Manual trigger with overwrite enabled - cleaning up existing release"
           
           # Delete existing release if it exists
@@ -181,31 +185,33 @@ jobs:
           sleep 3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG_NAME: ${{ needs.check-release.outputs.tag-name }}
           
       - name: Create Git tag
+        env:
+          TAG_NAME: ${{ needs.check-release.outputs.tag-name }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          TAG_NAME="${{ needs.check-release.outputs.tag-name }}"
-          
           # Create new tag
           echo "Creating tag $TAG_NAME"
-          git tag $TAG_NAME
-          git push origin $TAG_NAME
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
           
       - name: Generate release notes
         id: release-notes
+        env:
+          VERSION: ${{ needs.check-release.outputs.version }}
+          IS_MANUAL: ${{ needs.check-release.outputs.is-manual-trigger }}
+          OVERWRITE_EXISTING: ${{ github.event.inputs.overwrite_existing }}
         run: |
-          VERSION="${{ needs.check-release.outputs.version }}"
-          IS_MANUAL="${{ needs.check-release.outputs.is-manual-trigger }}"
-          
           STABILITY_NOTE="**Stable release** - Ready for production use."
           
           # Add manual trigger notice if applicable
           MANUAL_NOTICE=""
           if [ "$IS_MANUAL" = "true" ]; then
-            if [ "${{ github.event.inputs.overwrite_existing }}" = "true" ]; then
+            if [ "$OVERWRITE_EXISTING" = "true" ]; then
               MANUAL_NOTICE="**This release was manually triggered and overwrote an existing release.**"
             else
               MANUAL_NOTICE="**This release was manually triggered.**"
@@ -263,13 +269,19 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Release Summary
+        env:
+          VERSION: ${{ needs.check-release.outputs.version }}
+          TAG_NAME: ${{ needs.check-release.outputs.tag-name }}
+          IS_MANUAL: ${{ needs.check-release.outputs.is-manual-trigger }}
+          OVERWRITE_EXISTING: ${{ github.event.inputs.overwrite_existing }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          echo "Successfully created release v${{ needs.check-release.outputs.version }}"
-          echo "Tag: ${{ needs.check-release.outputs.tag-name }}"
-          echo "Manual: ${{ needs.check-release.outputs.is-manual-trigger }}"
-          echo "VSIX: sentinel-as-code-toolkit-${{ needs.check-release.outputs.version }}.vsix"
-          echo "Release URL: https://github.com/${{ github.repository }}/releases/tag/${{ needs.check-release.outputs.tag-name }}"
+          echo "Successfully created release v${VERSION}"
+          echo "Tag: ${TAG_NAME}"
+          echo "Manual: ${IS_MANUAL}"
+          echo "VSIX: sentinel-as-code-toolkit-${VERSION}.vsix"
+          echo "Release URL: https://github.com/${REPOSITORY}/releases/tag/${TAG_NAME}"
           
-          if [ "${{ needs.check-release.outputs.is-manual-trigger }}" = "true" ] && [ "${{ github.event.inputs.overwrite_existing }}" = "true" ]; then
+          if [ "$IS_MANUAL" = "true" ] && [ "$OVERWRITE_EXISTING" = "true" ]; then
             echo "This was a manual overwrite of an existing release"
           fi

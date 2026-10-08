@@ -9,8 +9,8 @@ suite('Data Freshness Tests', () => {
         assert.ok(connectorData.metadata, 'Connector data should have metadata');
         assert.ok(connectorData.metadata.generatedDate, 'Should have generation date');
 
-        // Freshness of the committed data is enforced by the scheduled refresh-connectors
-        // workflow, not this deterministic suite. Assert only that the recorded date is
+        // Freshness of the committed data is enforced by the scheduled data refresh in
+        // build.yaml, not this deterministic suite. Assert only that the recorded date is
         // valid and not in the future so the test stays time-independent.
         const generatedDate = new Date(connectorData.metadata.generatedDate);
         assert.ok(!Number.isNaN(generatedDate.getTime()),
